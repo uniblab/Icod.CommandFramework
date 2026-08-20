@@ -51,7 +51,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageVersion>1.0.0-RC1</PackageVersion>
+    <PackageVersion>1.0.0-RC2</PackageVersion>
     <PackageReleaseNotes>Initial release of the cross-suite command framework</PackageReleaseNotes>
     <Authors>Timothy J. Bruce</Authors>
     <Description>Cross-platform .NET command infrastructure for argument parsing, diagnostics, streams, filesystem, processes, terminals, temporary storage, and text.</Description>
