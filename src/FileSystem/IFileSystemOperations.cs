@@ -3,7 +3,7 @@ namespace Icod.CommandFramework.FileSystem;
 using Icod.CommandFramework.Platform;
 
 /// <summary>
-/// Supplies injectable, capability-aware durable-flush and sparse-file operations.
+/// Supplies injectable, capability-aware durable-flush, sparse-file, and file-clone operations.
 /// Implementations never take ownership of caller-supplied streams.
 /// </summary>
 /// <remarks>
@@ -45,6 +45,28 @@ public interface IFileSystemOperations {
 	/// <summary>Requests a flush of all mounted filesystems.</summary>
 	ValueTask<PlatformOperationResult> FlushAllFileSystemsAsync(
 		CancellationToken cancellationToken = default
+	);
+
+	/// <summary>
+	/// Attempts to clone the complete source file into the destination by sharing physical storage.
+	/// </summary>
+	/// <remarks>
+	/// This is a host mechanism, not a command policy. Implementations preserve both managed stream
+	/// positions. A successful clone may change the destination length and contents. A controlled
+	/// unsupported result means callers may choose an ordinary-copy fallback.
+	/// </remarks>
+	/// <param name="source">The readable source file.</param>
+	/// <param name="destination">The writable destination file.</param>
+	/// <param name="cancellationToken">The cancellation token.</param>
+	/// <returns>The explicit platform operation result.</returns>
+	ValueTask<PlatformOperationResult> CloneFileAsync(
+		FileStream source,
+		FileStream destination,
+		CancellationToken cancellationToken = default
+	) => ValueTask.FromResult(
+		PlatformOperationResult.Unsupported(
+			"copy-on-write file cloning is not implemented by this provider"
+		)
 	);
 
 	/// <summary>

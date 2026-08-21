@@ -108,6 +108,21 @@ public sealed class FileSystemMetadataTests {
 			Assert.True( information.MaximumNameLength.IsAvailable );
 			Assert.True( information.IsReadOnly.IsAvailable );
 			Assert.True( information.TotalBytes.GetRequiredValue() >= information.FreeBytes.GetRequiredValue() );
+			if ( OperatingSystem.IsWindows() ) {
+				Assert.Equal( FileSystemMetadataAvailability.Unsupported, information.TotalInodes.Availability );
+				Assert.Equal( FileSystemMetadataAvailability.Unsupported, information.FreeInodes.Availability );
+				Assert.Equal( FileSystemMetadataAvailability.Unsupported, information.AvailableInodes.Availability );
+			} else if ( OperatingSystem.IsLinux() || OperatingSystem.IsMacOS() ) {
+				Assert.True( information.TotalInodes.IsAvailable );
+				Assert.True( information.FreeInodes.IsAvailable );
+				Assert.True( information.AvailableInodes.IsAvailable );
+				Assert.True(
+					information.TotalInodes.GetRequiredValue() >= information.FreeInodes.GetRequiredValue()
+				);
+				Assert.True(
+					information.FreeInodes.GetRequiredValue() >= information.AvailableInodes.GetRequiredValue()
+				);
+			}
 		} finally {
 			Directory.Delete( directory, true );
 		}

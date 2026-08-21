@@ -150,6 +150,9 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 				TotalBytes = native.TotalBytes,
 				FreeBytes = native.FreeBytes,
 				AvailableBytes = native.AvailableBytes,
+				TotalInodes = native.TotalInodes,
+				FreeInodes = native.FreeInodes,
+				AvailableInodes = native.AvailableInodes,
 				BlockSize = native.BlockSize,
 				FragmentSize = native.FragmentSize,
 				MaximumNameLength = native.MaximumNameLength,
@@ -164,6 +167,9 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 			TotalBytes = Prefer( native.TotalBytes, CaptureUnsigned( () => drive.TotalSize ) ),
 			FreeBytes = Prefer( native.FreeBytes, CaptureUnsigned( () => drive.TotalFreeSpace ) ),
 			AvailableBytes = Prefer( native.AvailableBytes, CaptureUnsigned( () => drive.AvailableFreeSpace ) ),
+			TotalInodes = native.TotalInodes,
+			FreeInodes = native.FreeInodes,
+			AvailableInodes = native.AvailableInodes,
 			BlockSize = native.BlockSize,
 			FragmentSize = native.FragmentSize,
 			MaximumNameLength = native.MaximumNameLength,
@@ -889,6 +895,15 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 			MountPoint = FileSystemMetadataValue<string>.Available( root ),
 			FileSystemType = FileSystemMetadataValue<string>.Available( fileSystemName.ToString() ),
 			VolumeName = FileSystemMetadataValue<string>.Available( volumeName.ToString() ),
+			TotalInodes = FileSystemMetadataValue<ulong>.Unsupported(
+				"Windows does not expose a filesystem inode pool through this adapter."
+			),
+			FreeInodes = FileSystemMetadataValue<ulong>.Unsupported(
+				"Windows does not expose a filesystem inode pool through this adapter."
+			),
+			AvailableInodes = FileSystemMetadataValue<ulong>.Unsupported(
+				"Windows does not expose a filesystem inode pool through this adapter."
+			),
 			BlockSize = FileSystemMetadataValue<ulong>.Available( bytesPerSector ),
 			FragmentSize = FileSystemMetadataValue<ulong>.Available( allocationUnit ),
 			MaximumNameLength = FileSystemMetadataValue<ulong>.Available( maximumComponentLength ),
@@ -905,6 +920,9 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 			TotalBytes = MultiplyMetadata( statistics.Blocks, fragmentSize, "filesystem capacity" ),
 			FreeBytes = MultiplyMetadata( statistics.BlocksFree, fragmentSize, "filesystem free capacity" ),
 			AvailableBytes = MultiplyMetadata( statistics.BlocksAvailable, fragmentSize, "filesystem available capacity" ),
+			TotalInodes = FileSystemMetadataValue<ulong>.Available( statistics.Files ),
+			FreeInodes = FileSystemMetadataValue<ulong>.Available( statistics.FilesFree ),
+			AvailableInodes = FileSystemMetadataValue<ulong>.Available( statistics.FilesAvailable ),
 			BlockSize = FileSystemMetadataValue<ulong>.Available( statistics.BlockSize ),
 			FragmentSize = FileSystemMetadataValue<ulong>.Available( fragmentSize ),
 			MaximumNameLength = FileSystemMetadataValue<ulong>.Available( statistics.MaximumNameLength ),
@@ -1503,6 +1521,15 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 		/// <summary>Gets caller-available bytes reported by the native adapter.</summary>
 		public FileSystemMetadataValue<ulong> AvailableBytes { get; init; }
 
+		/// <summary>Gets total inodes reported by the native adapter.</summary>
+		public FileSystemMetadataValue<ulong> TotalInodes { get; init; }
+
+		/// <summary>Gets free inodes reported by the native adapter.</summary>
+		public FileSystemMetadataValue<ulong> FreeInodes { get; init; }
+
+		/// <summary>Gets caller-available inodes reported by the native adapter.</summary>
+		public FileSystemMetadataValue<ulong> AvailableInodes { get; init; }
+
 		/// <summary>Gets the native filesystem block size.</summary>
 		public FileSystemMetadataValue<ulong> BlockSize { get; init; }
 
@@ -1525,6 +1552,9 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 			TotalBytes = FileSystemMetadataValue<ulong>.Unavailable( message ),
 			FreeBytes = FileSystemMetadataValue<ulong>.Unavailable( message ),
 			AvailableBytes = FileSystemMetadataValue<ulong>.Unavailable( message ),
+			TotalInodes = FileSystemMetadataValue<ulong>.Unavailable( message ),
+			FreeInodes = FileSystemMetadataValue<ulong>.Unavailable( message ),
+			AvailableInodes = FileSystemMetadataValue<ulong>.Unavailable( message ),
 			BlockSize = FileSystemMetadataValue<ulong>.Unavailable( message ),
 			FragmentSize = FileSystemMetadataValue<ulong>.Unavailable( message ),
 			MaximumNameLength = FileSystemMetadataValue<ulong>.Unavailable( message ),

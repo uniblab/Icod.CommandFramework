@@ -51,8 +51,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageVersion>1.0.0</PackageVersion>
-    <PackageReleaseNotes>Initial release of the cross-suite command framework</PackageReleaseNotes>
+    <PackageVersion>1.1.0</PackageVersion>
+    <PackageReleaseNotes>Add filesystem inode-pool observations, current-process creation-mask observation, and capability-aware Linux file-clone/reflink support.</PackageReleaseNotes>
     <Authors>Timothy J. Bruce</Authors>
     <Description>Cross-platform .NET command infrastructure for argument parsing, diagnostics, streams, filesystem, processes, terminals, temporary storage, and text.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>

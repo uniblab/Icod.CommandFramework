@@ -17,6 +17,7 @@ public sealed class FileSystemOperationsTests {
 			Assert.False( capabilities.SupportsGlobalFlush );
 			Assert.True( capabilities.SupportsSparseExtension );
 			Assert.True( capabilities.SupportsAllocatedRangeQuery );
+			Assert.False( capabilities.SupportsFileClone );
 			return;
 		}
 		if ( OperatingSystem.IsLinux() ) {
@@ -26,6 +27,7 @@ public sealed class FileSystemOperationsTests {
 			Assert.True( capabilities.SupportsGlobalFlush );
 			Assert.True( capabilities.SupportsSparseExtension );
 			Assert.True( capabilities.SupportsAllocatedRangeQuery );
+			Assert.True( capabilities.SupportsFileClone );
 			return;
 		}
 		if ( OperatingSystem.IsMacOS() ) {
@@ -35,6 +37,7 @@ public sealed class FileSystemOperationsTests {
 			Assert.True( capabilities.SupportsGlobalFlush );
 			Assert.True( capabilities.SupportsSparseExtension );
 			Assert.False( capabilities.SupportsAllocatedRangeQuery );
+			Assert.False( capabilities.SupportsFileClone );
 			return;
 		}
 		if ( OperatingSystem.IsFreeBSD() ) {
@@ -44,6 +47,7 @@ public sealed class FileSystemOperationsTests {
 			Assert.True( capabilities.SupportsGlobalFlush );
 			Assert.True( capabilities.SupportsSparseExtension );
 			Assert.True( capabilities.SupportsAllocatedRangeQuery );
+			Assert.False( capabilities.SupportsFileClone );
 		}
 	}
 
@@ -257,6 +261,73 @@ public sealed class FileSystemOperationsTests {
 			Assert.False( result.Supported );
 			Assert.False( result.Succeeded );
 			Assert.NotNull( result.Message );
+		}
+	}
+
+	[Fact]
+	public async Task FileCloneReturnsAControlledResultAndPreservesPositions() {
+		var sourcePath = System.IO.Path.GetTempFileName();
+		var destinationPath = System.IO.Path.GetTempFileName();
+		try {
+			var expected = Enumerable.Range(
+				0,
+				8192
+			).Select(
+				value => unchecked( (byte)value )
+			).ToArray();
+			await File.WriteAllBytesAsync(
+				sourcePath,
+				expected
+			);
+			await using var source = OpenTemporaryFile(
+				sourcePath
+			);
+			await using var destination = OpenTemporaryFile(
+				destinationPath
+			);
+			source.Position = 37;
+			destination.Position = 0;
+
+			var result = await Operations.CloneFileAsync(
+				source,
+				destination
+			);
+
+			Assert.Equal(
+				37,
+				source.Position
+			);
+			Assert.Equal(
+				0,
+				destination.Position
+			);
+			if ( !Operations.Capabilities.SupportsFileClone ) {
+				Assert.False( result.Supported );
+				Assert.False( result.Succeeded );
+				Assert.NotNull( result.Message );
+				return;
+			}
+			if ( !result.Succeeded ) {
+				Assert.NotNull( result.Message );
+				return;
+			}
+			Assert.True( result.Supported );
+			destination.Position = 0;
+			var actual = new byte[expected.Length];
+			await destination.ReadExactlyAsync(
+				actual
+			);
+			Assert.Equal(
+				expected,
+				actual
+			);
+		} finally {
+			File.Delete(
+				destinationPath
+			);
+			File.Delete(
+				sourcePath
+			);
 		}
 	}
 
@@ -723,6 +794,15 @@ public sealed class FileSystemOperationsTests {
 					_ = await Operations.FlushFileAsync(
 						path,
 						FileFlushMode.DataAndMetadata,
+						cancellation.Token
+					);
+				}
+			);
+			await Assert.ThrowsAsync<OperationCanceledException>(
+				async () => {
+					_ = await Operations.CloneFileAsync(
+						file,
+						file,
 						cancellation.Token
 					);
 				}

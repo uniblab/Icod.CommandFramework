@@ -41,6 +41,15 @@ public sealed class FileSystemInformation {
 	/// <summary>Gets the free capacity available to the current caller in bytes.</summary>
 	public FileSystemMetadataValue<ulong> AvailableBytes { get; init; }
 
+	/// <summary>Gets the total filesystem inode pool.</summary>
+	public FileSystemMetadataValue<ulong> TotalInodes { get; init; }
+
+	/// <summary>Gets the total free inode pool.</summary>
+	public FileSystemMetadataValue<ulong> FreeInodes { get; init; }
+
+	/// <summary>Gets the free inode pool available to the current caller.</summary>
+	public FileSystemMetadataValue<ulong> AvailableInodes { get; init; }
+
 	/// <summary>Gets the fundamental filesystem block size in bytes.</summary>
 	public FileSystemMetadataValue<ulong> BlockSize { get; init; }
 

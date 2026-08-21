@@ -26,7 +26,7 @@ Source-compatible Boolean overloads remain available for existing consumers.
 - host file attributes; and
 - timestamp-mutation capabilities.
 
-`FileSystemInformation` reports the E1 filesystem identity, mount point or volume root, filesystem type, volume label, total/free/available capacity, block and fragment sizes, maximum component length, and read-only state.
+`FileSystemInformation` reports the E1 filesystem identity, mount point or volume root, filesystem type, volume label, total/free/available capacity, total/free/caller-available inode pools, block and fragment sizes, maximum component length, and read-only state. Inode pools use the same explicit availability model as every other host observation; Windows reports them unsupported rather than substituting guessed values.
 
 ## Explicit availability
 
@@ -62,7 +62,7 @@ This lets traversal, canonicalization, `stat`, `touch`, `test`, Patch, Tar, and 
 | Change time | Native handle information | Native | Native | Explicitly unavailable |
 | Birth time | Creation time | Native when `statx` reports it | Native | Explicitly unsupported or unavailable |
 | Allocated blocks | Native allocation size, represented in 512-byte accounting units | Native 512-byte block count | Native 512-byte block count | Explicitly unavailable |
-| Filesystem information | volume APIs plus `DriveInfo` | `statvfs` plus `DriveInfo` | `statvfs` plus `DriveInfo` | `DriveInfo` where available |
+| Filesystem information | volume APIs plus `DriveInfo`; inode pools unsupported | `statvfs` plus `DriveInfo`, including inode pools | `statvfs` plus `DriveInfo`, including inode pools | `DriveInfo` where available; inode pools explicit when unavailable |
 | Access/modify timestamp mutation | `SetFileTime` | `utimensat` | `utimensat` | BCL fallback |
 | Birth-time mutation | Supported | Unsupported | Unsupported | Platform-dependent fallback is not claimed |
 | No-follow indirection/reparse timestamp mutation | Reparse-point handle | `AT_SYMLINK_NOFOLLOW` | `AT_SYMLINK_NOFOLLOW` | Unsupported |
