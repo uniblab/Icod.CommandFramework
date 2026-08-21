@@ -850,8 +850,11 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 			if ( OperatingSystem.IsWindows() ) {
 				return TryGetWindowsFileSystemDetails( path );
 			}
-			if ( OperatingSystem.IsLinux() || OperatingSystem.IsMacOS() ) {
+			if ( OperatingSystem.IsLinux() ) {
 				return TryGetPosixFileSystemDetails( path );
+			}
+			if ( OperatingSystem.IsMacOS() ) {
+				return TryGetDarwinFileSystemDetails( path );
 			}
 		} catch ( Exception exception ) when (
 			exception is DllNotFoundException
@@ -912,7 +915,28 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 	}
 
 	private static NativeFileSystemDetails TryGetPosixFileSystemDetails( string path ) {
-		if ( StatVfs( path, out var statistics ) != 0 ) {
+		if ( InvokePosixStatVfs( path, out var statistics ) != 0 ) {
+			return NativeFileSystemDetails.Unavailable( new Win32Exception( Marshal.GetLastPInvokeError() ).Message );
+		}
+		var fragmentSize = statistics.FragmentSize == 0 ? statistics.BlockSize : statistics.FragmentSize;
+		return new NativeFileSystemDetails {
+			TotalBytes = MultiplyMetadata( statistics.Blocks, fragmentSize, "filesystem capacity" ),
+			FreeBytes = MultiplyMetadata( statistics.BlocksFree, fragmentSize, "filesystem free capacity" ),
+			AvailableBytes = MultiplyMetadata( statistics.BlocksAvailable, fragmentSize, "filesystem available capacity" ),
+			TotalInodes = FileSystemMetadataValue<ulong>.Available( statistics.Files ),
+			FreeInodes = FileSystemMetadataValue<ulong>.Available( statistics.FilesFree ),
+			AvailableInodes = FileSystemMetadataValue<ulong>.Available( statistics.FilesAvailable ),
+			BlockSize = FileSystemMetadataValue<ulong>.Available( statistics.BlockSize ),
+			FragmentSize = FileSystemMetadataValue<ulong>.Available( fragmentSize ),
+			MaximumNameLength = FileSystemMetadataValue<ulong>.Available( statistics.MaximumNameLength ),
+			IsReadOnly = FileSystemMetadataValue<bool>.Available(
+				(statistics.Flags & PosixReadOnlyFileSystem) != 0
+			)
+		};
+	}
+
+	private static NativeFileSystemDetails TryGetDarwinFileSystemDetails( string path ) {
+		if ( InvokeDarwinStatVfs( path, out var statistics ) != 0 ) {
 			return NativeFileSystemDetails.Unavailable( new Win32Exception( Marshal.GetLastPInvokeError() ).Message );
 		}
 		var fragmentSize = statistics.FragmentSize == 0 ? statistics.BlockSize : statistics.FragmentSize;
@@ -1329,7 +1353,10 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 	);
 
 	[DllImport( "libc", EntryPoint = "statvfs", SetLastError = true )]
-	private static extern int StatVfs( string path, out PosixStatVfs statistics );
+	private static extern int InvokePosixStatVfs( string path, out PosixStatVfs statistics );
+
+	[DllImport( "libc", EntryPoint = "statvfs", SetLastError = true )]
+	private static extern int InvokeDarwinStatVfs( string path, out DarwinStatVfs statistics );
 
 	[DllImport( "libc", EntryPoint = "stat$INODE64", SetLastError = true )]
 	private static extern int DarwinStatInode64( string path, out DarwinStatStructure statistics );
@@ -1470,6 +1497,21 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 		internal int Spare3;
 		internal int Spare4;
 		internal int Spare5;
+	}
+
+	[StructLayout( LayoutKind.Sequential )]
+	private struct DarwinStatVfs {
+		internal ulong BlockSize;
+		internal ulong FragmentSize;
+		internal uint Blocks;
+		internal uint BlocksFree;
+		internal uint BlocksAvailable;
+		internal uint Files;
+		internal uint FilesFree;
+		internal uint FilesAvailable;
+		internal ulong FileSystemIdentifier;
+		internal ulong Flags;
+		internal ulong MaximumNameLength;
 	}
 
 	[StructLayout( LayoutKind.Sequential )]
