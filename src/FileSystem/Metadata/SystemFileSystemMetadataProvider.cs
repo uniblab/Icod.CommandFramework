@@ -150,6 +150,9 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 				TotalBytes = native.TotalBytes,
 				FreeBytes = native.FreeBytes,
 				AvailableBytes = native.AvailableBytes,
+				TotalInodes = native.TotalInodes,
+				FreeInodes = native.FreeInodes,
+				AvailableInodes = native.AvailableInodes,
 				BlockSize = native.BlockSize,
 				FragmentSize = native.FragmentSize,
 				MaximumNameLength = native.MaximumNameLength,
@@ -164,6 +167,9 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 			TotalBytes = Prefer( native.TotalBytes, CaptureUnsigned( () => drive.TotalSize ) ),
 			FreeBytes = Prefer( native.FreeBytes, CaptureUnsigned( () => drive.TotalFreeSpace ) ),
 			AvailableBytes = Prefer( native.AvailableBytes, CaptureUnsigned( () => drive.AvailableFreeSpace ) ),
+			TotalInodes = native.TotalInodes,
+			FreeInodes = native.FreeInodes,
+			AvailableInodes = native.AvailableInodes,
 			BlockSize = native.BlockSize,
 			FragmentSize = native.FragmentSize,
 			MaximumNameLength = native.MaximumNameLength,
@@ -844,8 +850,11 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 			if ( OperatingSystem.IsWindows() ) {
 				return TryGetWindowsFileSystemDetails( path );
 			}
-			if ( OperatingSystem.IsLinux() || OperatingSystem.IsMacOS() ) {
+			if ( OperatingSystem.IsLinux() ) {
 				return TryGetPosixFileSystemDetails( path );
+			}
+			if ( OperatingSystem.IsMacOS() ) {
+				return TryGetDarwinFileSystemDetails( path );
 			}
 		} catch ( Exception exception ) when (
 			exception is DllNotFoundException
@@ -889,6 +898,15 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 			MountPoint = FileSystemMetadataValue<string>.Available( root ),
 			FileSystemType = FileSystemMetadataValue<string>.Available( fileSystemName.ToString() ),
 			VolumeName = FileSystemMetadataValue<string>.Available( volumeName.ToString() ),
+			TotalInodes = FileSystemMetadataValue<ulong>.Unsupported(
+				"Windows does not expose a filesystem inode pool through this adapter."
+			),
+			FreeInodes = FileSystemMetadataValue<ulong>.Unsupported(
+				"Windows does not expose a filesystem inode pool through this adapter."
+			),
+			AvailableInodes = FileSystemMetadataValue<ulong>.Unsupported(
+				"Windows does not expose a filesystem inode pool through this adapter."
+			),
 			BlockSize = FileSystemMetadataValue<ulong>.Available( bytesPerSector ),
 			FragmentSize = FileSystemMetadataValue<ulong>.Available( allocationUnit ),
 			MaximumNameLength = FileSystemMetadataValue<ulong>.Available( maximumComponentLength ),
@@ -897,7 +915,7 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 	}
 
 	private static NativeFileSystemDetails TryGetPosixFileSystemDetails( string path ) {
-		if ( StatVfs( path, out var statistics ) != 0 ) {
+		if ( InvokePosixStatVfs( path, out var statistics ) != 0 ) {
 			return NativeFileSystemDetails.Unavailable( new Win32Exception( Marshal.GetLastPInvokeError() ).Message );
 		}
 		var fragmentSize = statistics.FragmentSize == 0 ? statistics.BlockSize : statistics.FragmentSize;
@@ -905,6 +923,30 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 			TotalBytes = MultiplyMetadata( statistics.Blocks, fragmentSize, "filesystem capacity" ),
 			FreeBytes = MultiplyMetadata( statistics.BlocksFree, fragmentSize, "filesystem free capacity" ),
 			AvailableBytes = MultiplyMetadata( statistics.BlocksAvailable, fragmentSize, "filesystem available capacity" ),
+			TotalInodes = FileSystemMetadataValue<ulong>.Available( statistics.Files ),
+			FreeInodes = FileSystemMetadataValue<ulong>.Available( statistics.FilesFree ),
+			AvailableInodes = FileSystemMetadataValue<ulong>.Available( statistics.FilesAvailable ),
+			BlockSize = FileSystemMetadataValue<ulong>.Available( statistics.BlockSize ),
+			FragmentSize = FileSystemMetadataValue<ulong>.Available( fragmentSize ),
+			MaximumNameLength = FileSystemMetadataValue<ulong>.Available( statistics.MaximumNameLength ),
+			IsReadOnly = FileSystemMetadataValue<bool>.Available(
+				(statistics.Flags & PosixReadOnlyFileSystem) != 0
+			)
+		};
+	}
+
+	private static NativeFileSystemDetails TryGetDarwinFileSystemDetails( string path ) {
+		if ( InvokeDarwinStatVfs( path, out var statistics ) != 0 ) {
+			return NativeFileSystemDetails.Unavailable( new Win32Exception( Marshal.GetLastPInvokeError() ).Message );
+		}
+		var fragmentSize = statistics.FragmentSize == 0 ? statistics.BlockSize : statistics.FragmentSize;
+		return new NativeFileSystemDetails {
+			TotalBytes = MultiplyMetadata( statistics.Blocks, fragmentSize, "filesystem capacity" ),
+			FreeBytes = MultiplyMetadata( statistics.BlocksFree, fragmentSize, "filesystem free capacity" ),
+			AvailableBytes = MultiplyMetadata( statistics.BlocksAvailable, fragmentSize, "filesystem available capacity" ),
+			TotalInodes = FileSystemMetadataValue<ulong>.Available( statistics.Files ),
+			FreeInodes = FileSystemMetadataValue<ulong>.Available( statistics.FilesFree ),
+			AvailableInodes = FileSystemMetadataValue<ulong>.Available( statistics.FilesAvailable ),
 			BlockSize = FileSystemMetadataValue<ulong>.Available( statistics.BlockSize ),
 			FragmentSize = FileSystemMetadataValue<ulong>.Available( fragmentSize ),
 			MaximumNameLength = FileSystemMetadataValue<ulong>.Available( statistics.MaximumNameLength ),
@@ -1311,7 +1353,10 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 	);
 
 	[DllImport( "libc", EntryPoint = "statvfs", SetLastError = true )]
-	private static extern int StatVfs( string path, out PosixStatVfs statistics );
+	private static extern int InvokePosixStatVfs( string path, out PosixStatVfs statistics );
+
+	[DllImport( "libc", EntryPoint = "statvfs", SetLastError = true )]
+	private static extern int InvokeDarwinStatVfs( string path, out DarwinStatVfs statistics );
 
 	[DllImport( "libc", EntryPoint = "stat$INODE64", SetLastError = true )]
 	private static extern int DarwinStatInode64( string path, out DarwinStatStructure statistics );
@@ -1455,6 +1500,21 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 	}
 
 	[StructLayout( LayoutKind.Sequential )]
+	private struct DarwinStatVfs {
+		internal ulong BlockSize;
+		internal ulong FragmentSize;
+		internal uint Blocks;
+		internal uint BlocksFree;
+		internal uint BlocksAvailable;
+		internal uint Files;
+		internal uint FilesFree;
+		internal uint FilesAvailable;
+		internal ulong FileSystemIdentifier;
+		internal ulong Flags;
+		internal ulong MaximumNameLength;
+	}
+
+	[StructLayout( LayoutKind.Sequential )]
 	private struct DarwinTimespec {
 		internal long Seconds;
 		internal long Nanoseconds;
@@ -1503,6 +1563,15 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 		/// <summary>Gets caller-available bytes reported by the native adapter.</summary>
 		public FileSystemMetadataValue<ulong> AvailableBytes { get; init; }
 
+		/// <summary>Gets total inodes reported by the native adapter.</summary>
+		public FileSystemMetadataValue<ulong> TotalInodes { get; init; }
+
+		/// <summary>Gets free inodes reported by the native adapter.</summary>
+		public FileSystemMetadataValue<ulong> FreeInodes { get; init; }
+
+		/// <summary>Gets caller-available inodes reported by the native adapter.</summary>
+		public FileSystemMetadataValue<ulong> AvailableInodes { get; init; }
+
 		/// <summary>Gets the native filesystem block size.</summary>
 		public FileSystemMetadataValue<ulong> BlockSize { get; init; }
 
@@ -1525,6 +1594,9 @@ public sealed class SystemFileSystemMetadataProvider : IFileSystemMetadataProvid
 			TotalBytes = FileSystemMetadataValue<ulong>.Unavailable( message ),
 			FreeBytes = FileSystemMetadataValue<ulong>.Unavailable( message ),
 			AvailableBytes = FileSystemMetadataValue<ulong>.Unavailable( message ),
+			TotalInodes = FileSystemMetadataValue<ulong>.Unavailable( message ),
+			FreeInodes = FileSystemMetadataValue<ulong>.Unavailable( message ),
+			AvailableInodes = FileSystemMetadataValue<ulong>.Unavailable( message ),
 			BlockSize = FileSystemMetadataValue<ulong>.Unavailable( message ),
 			FragmentSize = FileSystemMetadataValue<ulong>.Unavailable( message ),
 			MaximumNameLength = FileSystemMetadataValue<ulong>.Unavailable( message ),

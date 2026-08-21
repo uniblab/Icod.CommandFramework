@@ -6,7 +6,7 @@ using Icod.CommandFramework.Platform;
 using Microsoft.Win32.SafeHandles;
 
 /// <summary>
-/// Implements durable-flush and sparse-file operations using the current operating system.
+/// Implements durable-flush, sparse-file, and file-clone operations using the current operating system.
 /// Unsupported semantics return controlled platform results rather than reporting false success.
 /// </summary>
 public sealed class SystemFileSystemOperations : IFileSystemOperations {
@@ -24,7 +24,10 @@ public sealed class SystemFileSystemOperations : IFileSystemOperations {
 	private const int ErrorIoPending = 997;
 	private const int ErrorNoSuchDeviceOrAddress = 6;
 	private const int ErrorInvalidArgument = 22;
+	private const int ErrorCrossDeviceLink = 18;
+	private const int ErrorInappropriateIoControl = 25;
 	private const int LinuxOperationNotSupported = 95;
+	private const ulong LinuxFiclone = 0x40049409;
 	private const int FreeBsdOperationNotSupported = 45;
 	private const int SeekSet = 0;
 	private const int SeekData = 3;
@@ -335,6 +338,122 @@ public sealed class SystemFileSystemOperations : IFileSystemOperations {
 						"the native filesystem library is unavailable: ",
 						exception.Message
 					)
+				)
+			);
+		}
+	}
+
+	/// <inheritdoc />
+	public ValueTask<PlatformOperationResult> CloneFileAsync(
+		FileStream source,
+		FileStream destination,
+		CancellationToken cancellationToken = default
+	) {
+		ArgumentNullException.ThrowIfNull(
+			source
+		);
+		ArgumentNullException.ThrowIfNull(
+			destination
+		);
+		cancellationToken.ThrowIfCancellationRequested();
+		if ( !this.Capabilities.SupportsFileClone ) {
+			return ValueTask.FromResult(
+				PlatformOperationResult.Unsupported(
+					"copy-on-write whole-file cloning is unavailable on this platform"
+				)
+			);
+		}
+
+		try {
+			if ( !source.CanRead ) {
+				return ValueTask.FromResult(
+					PlatformOperationResult.Failure(
+						"the source file must be open for reading"
+					)
+				);
+			}
+			if ( !destination.CanWrite ) {
+				return ValueTask.FromResult(
+					PlatformOperationResult.Failure(
+						"the destination file must be open for writing"
+					)
+				);
+			}
+
+			var sourceHandle = source.SafeFileHandle;
+			var destinationHandle = destination.SafeFileHandle;
+			var sourceReferenceAdded = false;
+			var destinationReferenceAdded = false;
+			try {
+				var sourceDescriptor = AcquireFileDescriptor(
+					sourceHandle,
+					out sourceReferenceAdded
+				);
+				var destinationDescriptor = AcquireFileDescriptor(
+					destinationHandle,
+					out destinationReferenceAdded
+				);
+				cancellationToken.ThrowIfCancellationRequested();
+				var cloned = NativeMethods.CloneFile(
+					destinationDescriptor,
+					LinuxFiclone,
+					sourceDescriptor
+				);
+				if ( 0 == cloned ) {
+					return ValueTask.FromResult(
+						PlatformOperationResult.Success()
+					);
+				}
+				var error = Marshal.GetLastPInvokeError();
+				var exception = new Win32Exception(
+					error
+				);
+				if ( IsLinuxCloneUnsupportedError( error ) ) {
+					return ValueTask.FromResult(
+						PlatformOperationResult.Unsupported(
+							exception.Message
+						)
+					);
+				}
+				return ValueTask.FromResult(
+					PlatformOperationResult.Failure(
+						System.String.Concat(
+							"FICLONE failed: ",
+							exception.Message
+						),
+						exception
+					)
+				);
+			} finally {
+				if ( destinationReferenceAdded ) {
+					destinationHandle.DangerousRelease();
+				}
+				if ( sourceReferenceAdded ) {
+					sourceHandle.DangerousRelease();
+				}
+			}
+		} catch ( Exception exception ) when (
+			exception is DllNotFoundException
+			or EntryPointNotFoundException
+			or BadImageFormatException
+			or PlatformNotSupportedException
+		) {
+			return ValueTask.FromResult(
+				PlatformOperationResult.Unsupported(
+					exception.Message
+				)
+			);
+		} catch ( Exception exception ) when (
+			exception is IOException
+			or UnauthorizedAccessException
+			or ObjectDisposedException
+			or NotSupportedException
+			or ArgumentException
+		) {
+			return ValueTask.FromResult(
+				PlatformOperationResult.Failure(
+					exception.Message,
+					exception
 				)
 			);
 		}
@@ -803,7 +922,9 @@ public sealed class SystemFileSystemOperations : IFileSystemOperations {
 				SupportsGlobalFlush: false,
 				SupportsSparseExtension: true,
 				SupportsAllocatedRangeQuery: true
-			);
+			) {
+				SupportsFileClone = false
+			};
 		}
 		if ( OperatingSystem.IsLinux() ) {
 			return new FileSystemCapabilities(
@@ -813,7 +934,9 @@ public sealed class SystemFileSystemOperations : IFileSystemOperations {
 				SupportsGlobalFlush: true,
 				SupportsSparseExtension: true,
 				SupportsAllocatedRangeQuery: true
-			);
+			) {
+				SupportsFileClone = true
+			};
 		}
 		if ( OperatingSystem.IsMacOS() ) {
 			return new FileSystemCapabilities(
@@ -823,7 +946,9 @@ public sealed class SystemFileSystemOperations : IFileSystemOperations {
 				SupportsGlobalFlush: true,
 				SupportsSparseExtension: true,
 				SupportsAllocatedRangeQuery: false
-			);
+			) {
+				SupportsFileClone = false
+			};
 		}
 		if ( OperatingSystem.IsFreeBSD() ) {
 			return new FileSystemCapabilities(
@@ -833,7 +958,9 @@ public sealed class SystemFileSystemOperations : IFileSystemOperations {
 				SupportsGlobalFlush: true,
 				SupportsSparseExtension: true,
 				SupportsAllocatedRangeQuery: true
-			);
+			) {
+				SupportsFileClone = false
+			};
 		}
 		return new FileSystemCapabilities(
 			SupportsDataOnlyFileFlush: false,
@@ -842,7 +969,9 @@ public sealed class SystemFileSystemOperations : IFileSystemOperations {
 			SupportsGlobalFlush: false,
 			SupportsSparseExtension: false,
 			SupportsAllocatedRangeQuery: false
-		);
+		) {
+			SupportsFileClone = false
+		};
 	}
 
 	private static bool InvokeDeviceIoControl(
@@ -1335,6 +1464,15 @@ public sealed class SystemFileSystemOperations : IFileSystemOperations {
 		or ErrorNotSupported
 	;
 
+	private static bool IsLinuxCloneUnsupportedError(
+		int error
+	) => error is
+		ErrorCrossDeviceLink
+		or ErrorInvalidArgument
+		or ErrorInappropriateIoControl
+		or LinuxOperationNotSupported
+	;
+
 	private static bool IsUnixSeekUnsupportedError(
 		int error
 	) {
@@ -1587,6 +1725,16 @@ public sealed class SystemFileSystemOperations : IFileSystemOperations {
 			int descriptor,
 			long offset,
 			int origin
+		);
+
+		/// <summary>
+		/// Performs the Linux whole-file clone operation.
+		/// </summary>
+		[DllImport( "libc", EntryPoint = "ioctl", SetLastError = true )]
+		internal static extern int CloneFile(
+			int destinationDescriptor,
+			ulong request,
+			int sourceDescriptor
 		);
 	}
 }

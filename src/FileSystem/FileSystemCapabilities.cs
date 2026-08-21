@@ -10,6 +10,7 @@ namespace Icod.CommandFramework.FileSystem;
 /// <param name="SupportsGlobalFlush">The supports global flush value.</param>
 /// <param name="SupportsSparseExtension">The supports sparse extension value.</param>
 /// <param name="SupportsAllocatedRangeQuery">The supports allocated range query value.</param>
+/// <remarks>Per-filesystem support may still be narrower than the operating-system API capability report.</remarks>
 public sealed record FileSystemCapabilities(
 	bool SupportsDataOnlyFileFlush,
 	bool SupportsDataAndMetadataFileFlush,
@@ -17,7 +18,12 @@ public sealed record FileSystemCapabilities(
 	bool SupportsGlobalFlush,
 	bool SupportsSparseExtension,
 	bool SupportsAllocatedRangeQuery
-);
+) {
+	/// <summary>
+	/// Gets whether the operating system exposes a copy-on-write whole-file clone primitive.
+	/// </summary>
+	public bool SupportsFileClone { get; init; }
+}
 
 /// <summary>Identifies the durability requested for a file-specific flush.</summary>
 public enum FileFlushMode {
