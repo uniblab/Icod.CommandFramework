@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
-using Icod.CommandFramework.Time;
+using Icod.Timing;
 
 /// <summary>
 /// Provides the compatibility facade for shared child-process execution.
