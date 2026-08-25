@@ -5,6 +5,9 @@ using System.Runtime.CompilerServices;
 /// <summary>
 /// Describes one fixed-rate periodic scheduling observation.
 /// </summary>
+[Obsolete(
+	"Use the Icod.Timing package and Icod.Timing.PeriodicTick instead."
+)]
 public sealed class PeriodicTick {
 	/// <summary>Gets how late the observation occurred relative to the fixed-rate schedule.</summary>
 	public TimeSpan Lateness => this.ObservedElapsed > this.ScheduledElapsed
@@ -45,6 +48,9 @@ public sealed class PeriodicTick {
 /// <summary>
 /// Produces cancellable fixed-rate periodic ticks without using wall-clock time.
 /// </summary>
+[Obsolete(
+	"Use the Icod.Timing package and Icod.Timing.IPeriodicScheduler instead."
+)]
 public interface IPeriodicScheduler {
 	/// <summary>Schedules periodic ticks.</summary>
 	IAsyncEnumerable<PeriodicTick> ScheduleAsync(
@@ -57,6 +63,9 @@ public interface IPeriodicScheduler {
 /// <summary>
 /// Implements drift-resistant fixed-rate scheduling over an injectable monotonic clock.
 /// </summary>
+[Obsolete(
+	"Use the Icod.Timing package and Icod.Timing.MonotonicPeriodicScheduler instead."
+)]
 public sealed class MonotonicPeriodicScheduler : IPeriodicScheduler {
 	private readonly IMonotonicClock _clock;
 

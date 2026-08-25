@@ -5,6 +5,9 @@ using System.Diagnostics;
 /// <summary>
 /// Supplies monotonic timestamps and cancellable delays for timeout and scheduling logic.
 /// </summary>
+[Obsolete(
+	"Use the Icod.Timing package and Icod.Timing.IMonotonicClock instead."
+)]
 public interface IMonotonicClock {
 	/// <summary>Gets a monotonic timestamp in provider-defined units.</summary>
 	long GetTimestamp();
@@ -25,6 +28,9 @@ public interface IMonotonicClock {
 /// <summary>
 /// Provides monotonic timestamps through <see cref="Stopwatch"/> and delays through the task scheduler.
 /// </summary>
+[Obsolete(
+	"Use the Icod.Timing package and Icod.Timing.SystemMonotonicClock instead."
+)]
 public sealed class SystemMonotonicClock : IMonotonicClock {
 	private static readonly TimeSpan MaximumDelaySlice = TimeSpan.FromDays(
 		7
