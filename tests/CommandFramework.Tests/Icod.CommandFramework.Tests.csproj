@@ -55,4 +55,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsNotAsErrors>CS1591;CS0618</WarningsNotAsErrors>
   </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Icod.Timing" Version="1.0.0" />
+	</ItemGroup>
 </Project>

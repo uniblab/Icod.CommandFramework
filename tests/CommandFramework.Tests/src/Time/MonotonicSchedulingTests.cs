@@ -1,7 +1,7 @@
 namespace Icod.CommandFramework.Tests.Time;
 
 using Xunit;
-using Icod.CommandFramework.Time;
+using Icod.Timing;
 
 /// <summary>
 /// Verifies monotonic delay and drift-resistant periodic scheduling contracts.
