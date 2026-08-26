@@ -61,14 +61,10 @@ The package is organized into focused namespaces. Most areas also contain a loca
 | `Icod.CommandFramework.IO` | Input operands and the conventional `-` standard-input marker, byte/token readers, delimited readers and writers, bounded stream operations, pathname expansion, text/byte adaptation, and temporary spooling. |
 | `Icod.CommandFramework.Records` | Byte-preserving record models and readers/writers, including segmented processing for records too large to materialize as one buffer. |
 | `Icod.CommandFramework.FileSystem` | Filesystem capability discovery, metadata, POSIX mode vocabulary, traversal, mutation, recursive mutation, and transactional replacement through reusable system/provider boundaries. |
-| `Icod.CommandFramework.Processes` | Executable lookup, child environments, exact process launch, stream forwarding/capture, cancellation and timeout, process identities and targets, signals, process groups, priority/nice operations, waiting, termination, and controlled operation results. |
 | `Icod.CommandFramework.Platform` | Cross-platform feature/result contracts, user/group/process identity services, security-context capability checks, and SELinux integration where the host provides it. |
-| `Icod.CommandFramework.Terminal` | Terminal attachment and dimensions, environment observation, color policy, filename presentation, terminal modes, and Unix/Windows terminal-control providers. |
 | `Icod.CommandFramework.Text` | Byte-preserving text units and logical lines, malformed-encoding policy, locale classification, Unicode display width, display-column tracking, and explicit/recurring tab-stop models. |
 | `Icod.CommandFramework.RegularExpressions` | Fully managed GNU Basic, GNU Extended, and GNU Emacs regular-expression profiles with POSIX/GNU leftmost-longest matching, captures, locale-aware character classes, cancellation/resource limits, and exact byte-coordinate matching. |
 | `Icod.CommandFramework.Temporary` | Cryptographically strong temporary-name generation, exclusive file/directory creation, template handling, collision reporting, and disposable temporary workspaces. |
-| `Icod.CommandFramework.Host` | Host and processor-resource observations with explicit availability, provenance, and semantic-fidelity information. |
-| `Icod.CommandFramework.Time` | Monotonic time and periodic scheduling primitives suitable for timeout, polling, and process-control code. |
 
 ### Command-line parsing
 
@@ -93,24 +89,6 @@ Portable command-line tools need more than `File.Copy` and `Directory.EnumerateF
 The intent is to separate **what the platform can do** from **what a command chooses to do**. A copy, remove, archive, or install command can build its own policy on top of the common mechanics rather than embedding that policy in the framework.
 
 Canonical-path resolution is intentionally maintained in the separate `Icod.Path` package and is referenced by `Icod.CommandFramework`.
-
-### Process execution and control
-
-The process layer is designed for programs that must supervise or control other programs rather than merely call `Process.Start()`.
-
-It includes executable resolution, explicit environment construction, exact argument-vector launch, asynchronous standard-stream handling, process identity and PID-reuse protection, cancellation and monotonic timeout behavior, process-tree/process-group handling, waiting and liveness checks, signal translation and delivery where supported, and portable priority/nice abstractions.
-
-Platform differences remain visible. Unsupported signal, group, session, or priority semantics return controlled results instead of being silently reinterpreted.
-
-See [`src/Processes/README.md`](src/Processes/README.md).
-
-### Terminal presentation and control
-
-Command behavior often changes when output is redirected, when a terminal has a known width, or when color/control sequences are available.
-
-The terminal layer provides injectable observation and control contracts for stream attachment, terminal size, `TERM`/related environment data, color capability, filename presentation, and platform-specific terminal modes and control operations. Unix and Windows implementations share common contracts without claiming that the underlying terminal APIs are identical.
-
-See [`src/Terminal/README.md`](src/Terminal/README.md).
 
 ### Text and display width
 
@@ -139,16 +117,6 @@ Temporary-name generation is security-sensitive when a program creates files on 
 The temporary-object layer uses cryptographically secure random substitutions and exclusive creation semantics. Existing files, directories, or links are treated as collisions rather than targets to follow or replace. The API can create both individual temporary objects and disposable workspaces.
 
 See [`src/Temporary/README.md`](src/Temporary/README.md).
-
-### Host and platform observations
-
-Portable tools should not convert “unsupported,” “temporarily unavailable,” and “not applicable” into the same magic value.
-
-Host-resource APIs carry availability and provenance information, and observation fidelity distinguishes exact, equivalent, approximated, synthesized, and unavailable data. The platform layer likewise exposes capability and operation-result contracts for services such as system identity and security contexts.
-
-This makes it possible for a command to decide whether approximation is acceptable instead of having the framework make that policy decision invisibly.
-
-See [`src/Host/README.md`](src/Host/README.md).
 
 ## What this library is not
 
