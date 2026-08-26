@@ -8,7 +8,6 @@
     <IsTestProject>true</IsTestProject>
     <AssemblyName>Icod.CommandFramework.Tests</AssemblyName>
     <RootNamespace>Icod.CommandFramework.Tests</RootNamespace>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Configurations>Debug;Release;Staging</Configurations>
   </PropertyGroup>
   <ItemGroup>
@@ -52,10 +51,6 @@
     <Optimize>true</Optimize>
     <SignAssembly>false</SignAssembly>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CS1591;CS0618</WarningsNotAsErrors>
+    <WarningsNotAsErrors>CS1591</WarningsNotAsErrors>
   </PropertyGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Icod.Timing" Version="1.0.0" />
-	</ItemGroup>
 </Project>
