@@ -2,20 +2,16 @@
 
 **Cross-platform .NET infrastructure for building serious command-line tools.**
 
-`Icod.CommandFramework` provides the reusable machinery that tends to sit underneath Unix-style command-line programs: option parsing, deterministic diagnostics, byte-oriented streaming, record processing, filesystem capabilities and mutation, process execution and control, terminal handling, secure temporary objects, text/display-width handling, host observations, and managed GNU/POSIX regular expressions.
+`Icod.CommandFramework` provides the reusable machinery that tends to sit underneath Unix-style command-line programs: option parsing, deterministic diagnostics, byte-oriented streaming, record processing, filesystem capabilities and mutation, secure temporary objects, text/display-width handling, and managed GNU/POSIX regular expressions.
 
-It is intended for applications that need more than a thin wrapper around `System.Console`, `System.IO`, and `System.Diagnostics.Process`—especially tools that must behave predictably across Windows, Linux, and macOS while preserving Unix/POSIX semantics where those semantics matter.
+It is intended for applications that need more than a thin wrapper around `System.Console` and `System.IO`—especially tools that must behave predictably across Windows, Linux, and macOS while preserving Unix/POSIX semantics where those semantics matter.
 
 The library originated as the command-neutral infrastructure developed while porting GNU Coreutils and related Unix utilities to C#. It is now a standalone package so unrelated command suites and applications can reuse the same tested foundation without depending on `Icod.CoreUtils`.
 
 > [!IMPORTANT]
-> The historical `Icod.CommandFramework.Host`, `Icod.CommandFramework.Processes`,
-> `Icod.CommandFramework.Terminal`, and `Icod.CommandFramework.Time` APIs are
-> compatibility-only and deprecated. New code should use `Icod.Host`,
-> `Icod.Processes`, `Icod.Terminal`, and `Icod.Timing` respectively. Terminal
-> database and curses functionality is maintained separately in `Icod.TermInfo`
-> and `Icod.DCurses`. `ObservationFidelity` remains in CommandFramework because
-> it describes consumer semantic fidelity rather than a factual host observation.
+> **2.0.0 is a breaking release.** Deprecated compatibility surfaces maintained
+> only for migration have been removed. The package now contains only APIs owned
+> by the command-neutral framework itself.
 
 ## Why use it?
 
@@ -26,26 +22,23 @@ A nontrivial CLI may need to answer questions such as:
 - Is this option a clustered short option, an abbreviated long option, an operand, or a syntax error?
 - Can I process an arbitrarily large NUL-delimited record without buffering the whole record?
 - Can I preserve malformed input bytes while still making Unicode-aware width or matching decisions?
-- Does this platform support the filesystem or process operation I need, or only an approximation?
-- How do I launch a child with an exact argument vector, controlled environment, redirected streams, cancellation, timeout, process-group behavior, and deterministic failure reporting?
-- Is output attached to a terminal? How wide is it? Does it support color? What terminal-control operations are actually available?
+- Does this platform support the filesystem operation I need, or only an approximation?
 - How do I implement GNU/POSIX BRE or ERE semantics when `System.Text.RegularExpressions` intentionally implements a different regular-expression language and matching model?
 - How do I create a temporary file or directory without introducing a predictable-name race?
-- How do I distinguish an unavailable host fact from a meaningless value such as zero?
 
 `Icod.CommandFramework` exists to make those problems reusable infrastructure rather than something every command has to solve again.
 
 ### The design priorities are deliberate
 
-**Deterministic behavior.** Expected syntax, platform, I/O, and process failures are represented through stable results and diagnostics instead of being left to incidental exception text.
+**Deterministic behavior.** Expected syntax, platform, and I/O failures are represented through stable results and diagnostics instead of being left to incidental exception text.
 
 **Byte fidelity.** Many Unix tools operate on bytes and records, not merely .NET strings. The framework contains byte-preserving readers, record models, delimiters, and matching surfaces for programs that cannot silently normalize their input.
 
 **Bounded streaming.** Large files, pipes, and records should not require whole-input buffering. Streaming and segmented APIs are used where input size may be unbounded.
 
-**Cross-platform honesty.** Windows, Linux, and macOS do not expose identical filesystem, process, signal, identity, and terminal semantics. The framework prefers explicit capability and fidelity models over pretending that unlike operations are identical.
+**Cross-platform honesty.** Windows, Linux, and macOS do not expose identical filesystem, identity, security-context, and locale semantics. The framework prefers explicit capability and result models over pretending that unlike operations are identical.
 
-**Testability.** Streams, clocks, resource providers, process services, terminal services, filesystem services, locale behavior, and similar environmental boundaries are exposed through reusable contracts so command logic can be tested without depending on process-global state.
+**Testability.** Streams, filesystem services, locale behavior, and similar environmental boundaries are exposed through reusable contracts so command logic can be tested without depending on global console or environment state.
 
 **Mechanism, not command policy.** The framework provides reusable primitives. Individual commands still own their option combinations, command-specific grammar, help text, presentation, business rules, and compatibility policy.
 
@@ -61,7 +54,7 @@ The package is organized into focused namespaces. Most areas also contain a loca
 | `Icod.CommandFramework.IO` | Input operands and the conventional `-` standard-input marker, byte/token readers, delimited readers and writers, bounded stream operations, pathname expansion, text/byte adaptation, and temporary spooling. |
 | `Icod.CommandFramework.Records` | Byte-preserving record models and readers/writers, including segmented processing for records too large to materialize as one buffer. |
 | `Icod.CommandFramework.FileSystem` | Filesystem capability discovery, metadata, POSIX mode vocabulary, traversal, mutation, recursive mutation, and transactional replacement through reusable system/provider boundaries. |
-| `Icod.CommandFramework.Platform` | Cross-platform feature/result contracts, user/group/process identity services, security-context capability checks, and SELinux integration where the host provides it. |
+| `Icod.CommandFramework.Platform` | Cross-platform feature/result contracts, user/group and current-identity services, security-context capability checks, and SELinux integration where available. |
 | `Icod.CommandFramework.Text` | Byte-preserving text units and logical lines, malformed-encoding policy, locale classification, Unicode display width, display-column tracking, and explicit/recurring tab-stop models. |
 | `Icod.CommandFramework.RegularExpressions` | Fully managed GNU Basic, GNU Extended, and GNU Emacs regular-expression profiles with POSIX/GNU leftmost-longest matching, captures, locale-aware character classes, cancellation/resource limits, and exact byte-coordinate matching. |
 | `Icod.CommandFramework.Temporary` | Cryptographically strong temporary-name generation, exclusive file/directory creation, template handling, collision reporting, and disposable temporary workspaces. |
@@ -125,7 +118,7 @@ See [`src/Temporary/README.md`](src/Temporary/README.md).
 It is **not**:
 
 - a command-dispatch or dependency-injection framework;
-- a shell, shell parser, or subprocess scripting language;
+- a shell, shell parser, or external-command scripting language;
 - a replacement for command-specific option validation or help generation;
 - an implementation of GNU Coreutils;
 - a license to delegate work to installed native utilities;
@@ -139,13 +132,13 @@ The library supplies mechanisms that can be shared safely. Programs built on it 
 
 - cross-platform command-line utilities;
 - Unix/POSIX-compatible tools in managed code;
-- file, text, archive, process, or terminal utilities;
+- file, text, archive, and data-processing utilities;
 - applications that consume large streams or byte-delimited data;
-- testable CLI engines that should not read directly from process-global console/environment state;
+- testable CLI engines that should not read directly from global console/environment state;
 - tools that need explicit platform capability reporting rather than optimistic emulation;
 - software that needs GNU/POSIX regular-expression behavior rather than .NET regex behavior.
 
-For a small application that only needs a few switches and writes ordinary text to `Console.Out`, a smaller CLI package may be a better fit. This framework earns its keep when platform behavior, byte fidelity, process control, streaming, or Unix compatibility become part of the program's contract.
+For a small application that only needs a few switches and writes ordinary text to `Console.Out`, a smaller CLI package may be a better fit. This framework earns its keep when platform behavior, byte fidelity, streaming, or Unix compatibility become part of the program's contract.
 
 ## Platform and target framework
 
@@ -160,15 +153,13 @@ The repository CI builds and tests on:
 - Ubuntu Linux
 - macOS
 
-Some capabilities are naturally platform-specific. For example, SELinux support requires Linux and a usable `libselinux`, while signal, process-group, terminal-control, filesystem-metadata, and identity behavior varies by host. Platform-specific features are exposed through capability/provider contracts so consumers can handle those differences explicitly.
+Some capabilities are naturally platform-specific. For example, SELinux support requires Linux and a usable `libselinux`, while filesystem-metadata, identity, security-context, and locale behavior varies by operating system. Platform-specific features are exposed through capability/provider contracts so consumers can handle those differences explicitly.
 
 ## Package dependency
 
 `Icod.CommandFramework` depends on:
 
 - `Icod.Path` — canonical and platform-aware path infrastructure.
-
-Command-suite-specific packages are deliberately **not** dependencies of the framework.
 
 ## Installation
 
@@ -190,12 +181,12 @@ Then import only the namespaces needed by the command or library you are buildin
 
 The framework follows a few rules that are especially important for command-line software:
 
-1. **Do not hide observable behavior.** Byte offsets, record termination, platform support, approximation, and process failures are often part of a command's public contract.
-2. **Do not turn every expected failure into an exception.** Ordinary races, unsupported operations, parse failures, and process results should be representable as controlled data.
+1. **Do not hide observable behavior.** Byte offsets, record termination, platform support, and approximation are often part of a command's public contract.
+2. **Do not turn every expected failure into an exception.** Ordinary races, unsupported operations, and parse failures should be representable as controlled data.
 3. **Do not make commands depend on one another.** Reusable infrastructure belongs below command suites; suite-specific policy belongs above it.
-4. **Do not shell out to solve portability.** Native APIs may be used when necessary, but the framework is not implemented by invoking the host's copy of the command being reimplemented.
+4. **Do not shell out to solve portability.** Native APIs may be used when necessary, but the framework is not implemented by invoking the operating system's native copy of the command being reimplemented.
 5. **Keep environmental dependencies injectable.** Doing so makes both portability and testing substantially easier.
-6. **Prefer bounded algorithms for unbounded input.** Pipes, files, records, and child output can be arbitrarily large.
+6. **Prefer bounded algorithms for unbounded input.** Pipes, files, and records can be arbitrarily large.
 7. **Be explicit when semantics differ by platform.** A controlled `Unsupported` result is often safer than a misleading approximation.
 
 These rules grew out of implementing real command suites whose behavior is observable in scripts, pipelines, CI systems, and compatibility tests.
@@ -210,16 +201,12 @@ src/
     Delimiters/
     Diagnostics/
     FileSystem/
-    Host/
     IO/
     Platform/
-    Processes/
     Records/
     RegularExpressions/
     Temporary/
-    Terminal/
     Text/
-    Time/
 tests/
     CommandFramework.Tests/
 ```
@@ -238,7 +225,7 @@ Release builds treat compiler warnings as errors except for missing XML document
 
 The framework was extracted from the shared infrastructure developed for `Icod.CoreUtils`, a managed C# implementation of GNU Coreutils plus related Unix utilities. During that work, functionality used by multiple command families was deliberately separated from command-specific engines.
 
-That history matters because these APIs were not designed only from hypothetical abstractions: they were exercised against concrete requirements involving GNU-style option parsing, byte-oriented pipelines, filesystem edge cases, POSIX process behavior, terminal handling, regular-expression compatibility, and cross-platform tests.
+That history matters because these APIs were not designed only from hypothetical abstractions: they were exercised against concrete requirements involving GNU-style option parsing, byte-oriented pipelines, filesystem edge cases, regular-expression compatibility, and cross-platform tests.
 
 The standalone package exists so that infrastructure can now be used independently.
 
