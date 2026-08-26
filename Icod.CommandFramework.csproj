@@ -18,7 +18,7 @@
 		<PackageVersion>2.0.0</PackageVersion>
 		<PackageReleaseNotes>Breaking 2.0.0 release: remove deprecated compatibility surfaces and legacy migration residue, leaving only command-neutral infrastructure owned by Icod.CommandFramework.</PackageReleaseNotes>
 		<Authors>Timothy J. Bruce</Authors>
-		<Description>Cross-platform .NET command infrastructure for argument parsing, diagnostics, byte-oriented streaming, filesystem operations, records, regular expressions, temporary storage, and text.</Description>
+		<Description>Cross-platform .NET infrastructure for Unix-style command-line tools, including argument parsing, diagnostics, byte-oriented streaming, filesystem operations, records, GNU/POSIX regular expressions, temporary storage, and Unicode text.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
@@ -27,7 +27,7 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<Deterministic>true</Deterministic>
-		<PackageTags>command-line;cli;command-framework;argument-parsing;option-parsing;diagnostics;console;cross-platform;posix;gnu;filesystem;file-io;streaming;records;regular-expressions;regex;temporary-files;text;unicode;cancellation;dotnet;csharp</PackageTags>
+		<PackageTags>command-line;cli;command-framework;command-line-parser;argument-parsing;option-parsing;getopt;unix;posix;gnu;filesystem;file-io;streaming;byte-streaming;records;regular-expressions;regex;gnu-regex;posix-regex;temporary-files;unicode;text;bre;ere</PackageTags>
 		<RepositoryUrl>https://github.com/uniblab/Icod.CommandFramework</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageIcon>icon.png</PackageIcon>
