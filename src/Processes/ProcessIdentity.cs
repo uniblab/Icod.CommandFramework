@@ -3,6 +3,7 @@ namespace Icod.CommandFramework.Processes;
 /// <summary>
 /// Identifies a process instance with an optional token that protects against PID reuse.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessIdentity : IEquatable<ProcessIdentity> {
 	/// <summary>Gets the operating-system process identifier.</summary>
 	public int ProcessId {
@@ -68,6 +69,7 @@ public sealed class ProcessIdentity : IEquatable<ProcessIdentity> {
 /// <summary>
 /// Contains an opaque, provider-specific value used to distinguish reused process identifiers.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessReuseToken : IEquatable<ProcessReuseToken> {
 	/// <summary>Gets the token scheme.</summary>
 	public string Scheme {

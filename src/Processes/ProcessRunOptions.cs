@@ -5,6 +5,7 @@ using System.Text;
 /// <summary>
 /// Identifies how a canceled or timed-out process execution handles a live child.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public enum ProcessCancellationPolicy {
 	/// <summary>Terminate the child and, where supported, its descendants.</summary>
 	KillProcessTree,
@@ -17,6 +18,7 @@ public enum ProcessCancellationPolicy {
 /// <summary>
 /// Configures asynchronous child-process execution.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessRunOptions {
 	private ProcessCancellationPolicy _cancellationPolicy = ProcessCancellationPolicy.KillProcessTree;
 

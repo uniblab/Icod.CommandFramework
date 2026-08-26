@@ -9,6 +9,7 @@ using Icod.Timing;
 /// <summary>
 /// Provides the compatibility facade for shared child-process execution.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public static class ProcessRunner {
 	/// <summary>Runs a child process asynchronously through the system executor.</summary>
 	public static Task<ProcessResult> RunAsync(
@@ -23,6 +24,7 @@ public static class ProcessRunner {
 /// <summary>
 /// Executes child processes without shell quoting, blocking waits, or redirected-stream deadlocks.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class SystemProcessExecutor : IProcessExecutor {
 	private static readonly object PosixSpawnWorkingDirectorySync = new();
 	private static readonly TimeSpan PosixWaitPollInterval = TimeSpan.FromMilliseconds( 15 );

@@ -6,6 +6,7 @@ using System.Text;
 /// Specifies the supported GNU filename-quoting styles used by directory
 /// listing presentation.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public enum FileNameQuotingStyle {
 	/// <summary>Emit the value without quoting.</summary>
 	Literal,
@@ -42,6 +43,7 @@ public enum FileNameQuotingStyle {
 /// Specifies how literal control characters are presented before or during
 /// filename quoting.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public enum ControlCharacterPresentation {
 	/// <summary>Preserve control characters as supplied.</summary>
 	Preserve,
@@ -56,6 +58,7 @@ public enum ControlCharacterPresentation {
 /// <summary>
 /// Represents resolved filename-quoting and control-character policy.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class FileNamePresentationPolicy {
 	/// <summary>
 	/// Initializes filename-presentation policy.
@@ -227,6 +230,7 @@ public sealed class FileNamePresentationPolicy {
 /// Formats filenames according to a resolved quoting and control-character
 /// policy.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public static class FileNamePresenter {
 	/// <summary>
 	/// Formats one filename.

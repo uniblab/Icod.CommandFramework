@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 /// <summary>
 /// Identifies a signal disposition requested specifically for a newly launched child process.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public enum ProcessSignalLaunchDisposition {
 	/// <summary>Reset the signal to its platform default disposition.</summary>
 	Default,
@@ -15,6 +16,7 @@ public enum ProcessSignalLaunchDisposition {
 /// <summary>
 /// Describes the requested launch-time state of one signal.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessSignalLaunchDirective {
 	/// <summary>Gets whether the signal should be blocked or unblocked, or <see langword="null"/> when its mask state is unchanged.</summary>
 	public bool? Blocked {
@@ -54,6 +56,7 @@ public sealed class ProcessSignalLaunchDirective {
 /// <summary>
 /// Collects launch-time signal disposition and mask changes without changing the calling process permanently.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessLaunchSignalPolicy {
 	private readonly Dictionary<int, ProcessSignalLaunchDirective> _directives = new();
 

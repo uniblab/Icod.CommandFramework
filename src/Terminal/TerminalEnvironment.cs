@@ -4,6 +4,7 @@ namespace Icod.CommandFramework.Terminal;
 /// Captures the process-environment inputs used by directory-listing and
 /// <c>dircolors</c> presentation policy.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class TerminalEnvironmentSnapshot {
 	/// <summary>
 	/// Initializes a terminal-environment snapshot.

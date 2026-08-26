@@ -3,6 +3,7 @@ namespace Icod.CommandFramework.Processes;
 /// <summary>
 /// Describes the outcome of a process-control operation without requiring platform exceptions at command boundaries.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public enum ProcessOperationStatus {
 	/// <summary>The operation completed successfully.</summary>
 	Succeeded,
@@ -27,6 +28,7 @@ public enum ProcessOperationStatus {
 /// <summary>
 /// Contains the controlled outcome of an operation that does not return a value.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessOperationResult {
 	/// <summary>Gets an optional native error number.</summary>
 	public int? NativeErrorCode {
@@ -98,6 +100,7 @@ public sealed class ProcessOperationResult {
 /// Contains the controlled outcome and value of a process-control operation.
 /// </summary>
 /// <typeparam name="T">The successful result type.</typeparam>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessOperationResult<T> {
 	/// <summary>Gets an optional native error number.</summary>
 	public int? NativeErrorCode {

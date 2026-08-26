@@ -6,6 +6,7 @@ using System.Security;
 /// Identifies one of the process standard streams for terminal presentation
 /// decisions.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public enum TerminalStreamKind {
 	/// <summary>The process standard-input stream.</summary>
 	StandardInput,
@@ -21,6 +22,7 @@ public enum TerminalStreamKind {
 /// Describes the result of determining whether a standard stream is attached
 /// to a terminal.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public enum TerminalProbeStatus {
 	/// <summary>The stream is attached to a terminal.</summary>
 	Terminal,
@@ -38,6 +40,7 @@ public enum TerminalProbeStatus {
 /// <summary>
 /// Identifies the source used for one resolved terminal dimension.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public enum TerminalDimensionSource {
 	/// <summary>The value came from the process environment.</summary>
 	Environment,
@@ -52,6 +55,7 @@ public enum TerminalDimensionSource {
 /// <summary>
 /// Represents a positive terminal width and height.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public readonly record struct TerminalDimensions {
 	/// <summary>
 	/// Initializes terminal dimensions.
@@ -95,6 +99,7 @@ public readonly record struct TerminalDimensions {
 /// <summary>
 /// Describes the raw host observation for one standard stream.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class TerminalDeviceObservation {
 	private TerminalDeviceObservation(
 		TerminalProbeStatus status,
@@ -202,6 +207,7 @@ public sealed class TerminalDeviceObservation {
 /// Supplies terminal attachment and geometry observations for standard
 /// streams.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public interface ITerminalDeviceProvider {
 	/// <summary>
 	/// Observes one process standard stream.
@@ -216,6 +222,7 @@ public interface ITerminalDeviceProvider {
 /// <summary>
 /// Supplies environment-variable values to presentation policy.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public interface IEnvironmentVariableProvider {
 	/// <summary>
 	/// Gets one environment-variable value.
@@ -230,6 +237,7 @@ public interface IEnvironmentVariableProvider {
 /// <summary>
 /// Reads environment variables from the current process.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class SystemEnvironmentVariableProvider : IEnvironmentVariableProvider {
 	/// <summary>Gets the reusable system environment provider.</summary>
 	public static SystemEnvironmentVariableProvider Instance {
@@ -252,6 +260,7 @@ public sealed class SystemEnvironmentVariableProvider : IEnvironmentVariableProv
 /// Observes terminal attachment and dimensions through the managed console
 /// APIs while converting unsupported and failed probes into controlled results.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class SystemTerminalDeviceProvider : ITerminalDeviceProvider {
 	/// <summary>Gets the reusable system terminal provider.</summary>
 	public static SystemTerminalDeviceProvider Instance {

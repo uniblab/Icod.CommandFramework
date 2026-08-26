@@ -3,6 +3,7 @@ namespace Icod.CommandFramework.Host;
 /// <summary>
 /// Identifies a host or process capability exposed by the processor provider.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public enum HostResourceCapabilityKind {
 	/// <summary>Native or stable host identifier retrieval.</summary>
 	HostIdentifier = 0,
@@ -27,6 +28,7 @@ public enum HostResourceCapabilityKind {
 /// <summary>
 /// Summarizes one capability and the provider state observed for it.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public sealed record HostResourceCapability {
 	/// <summary>Initializes a capability report.</summary>
 	/// <param name="kind">The capability kind.</param>
@@ -61,6 +63,7 @@ public sealed record HostResourceCapability {
 /// <summary>
 /// Identifies the namespace used by processor-selection identifiers.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public enum ProcessorSelectionIdentifierKind {
 	/// <summary>The identifiers are zero-based logical-processor indices.</summary>
 	LogicalProcessorIndex = 0,
@@ -71,6 +74,7 @@ public enum ProcessorSelectionIdentifierKind {
 /// <summary>
 /// Describes the processors selected for the current process.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public sealed record ProcessorAffinityDescriptor {
 	/// <summary>Initializes an affinity descriptor.</summary>
 	/// <param name="processorIdentifiers">The selected processor identifiers.</param>
@@ -113,6 +117,7 @@ public sealed record ProcessorAffinityDescriptor {
 /// <summary>
 /// Describes a hard processor-time quota as a fractional processor capacity.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public sealed record ProcessorQuotaDescriptor {
 	/// <summary>Initializes a processor quota.</summary>
 	/// <param name="processorLimit">The fractional processor capacity made available.</param>
@@ -167,6 +172,7 @@ public sealed record ProcessorQuotaDescriptor {
 /// <summary>
 /// Describes optional processor package, core, logical-processor, and NUMA facts.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public sealed record ProcessorTopologyDescriptor {
 	/// <summary>Initializes a topology descriptor.</summary>
 	/// <param name="packages">The processor-package count.</param>
@@ -201,6 +207,7 @@ public sealed record ProcessorTopologyDescriptor {
 /// <summary>
 /// Collects processor-resource facts for the host and current process.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public sealed record ProcessorResourceSnapshot {
 	/// <summary>Initializes a processor-resource snapshot.</summary>
 	/// <param name="configuredProcessorCount">The configured processor count.</param>
@@ -297,6 +304,7 @@ public sealed record ProcessorResourceSnapshot {
 /// Collects the host identifier and processor-resource observations made at one
 /// point in time.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public sealed record HostResourceSnapshot {
 	/// <summary>Initializes a combined host-resource snapshot.</summary>
 	/// <param name="hostIdentifier">The host-identifier observation.</param>

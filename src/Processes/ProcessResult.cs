@@ -3,6 +3,7 @@ namespace Icod.CommandFramework.Processes;
 /// <summary>
 /// Contains the result of asynchronous process execution.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessResult {
 	/// <summary>Gets the monotonic elapsed execution duration.</summary>
 	public TimeSpan Elapsed {

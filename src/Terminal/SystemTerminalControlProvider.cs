@@ -4,6 +4,7 @@ namespace Icod.CommandFramework.Terminal;
 /// Selects the native terminal-control provider for the current operating
 /// system and exposes controlled unsupported results on other platforms.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class SystemTerminalControlProvider : ITerminalControlProvider {
 	private readonly ITerminalControlProvider provider;
 

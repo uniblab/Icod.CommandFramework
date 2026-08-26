@@ -11,6 +11,7 @@ using System.Runtime.Versioning;
 /// Reads host identifiers and processor-resource facts from managed and narrow
 /// native operating-system providers.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public sealed class SystemHostResourceProvider : IHostResourceProvider {
 	private const int LinuxConfiguredProcessors = 83;
 	private const int LinuxOnlineProcessors = 84;

@@ -3,6 +3,7 @@ namespace Icod.CommandFramework.Processes;
 /// Identifies process-control capabilities exposed by a provider on the current host.
 /// </summary>
 [Flags]
+[Obsolete("Use the Icod.Processes package instead.")]
 public enum ProcessControlCapabilities {
 	/// <summary>No optional capabilities are available.</summary>
 	None = 0,

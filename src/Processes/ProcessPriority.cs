@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 /// <summary>
 /// Contains an observed portable nice value and whether it approximates a native priority class.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessPriorityValue {
 	/// <summary>Gets whether the value is an approximation.</summary>
 	public bool IsApproximation {
@@ -36,6 +37,7 @@ public sealed class ProcessPriorityValue {
 /// <summary>
 /// Reads, sets, and adjusts process priorities through an injectable provider.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public interface IProcessPriorityProvider {
 	/// <summary>Gets capabilities available from this provider.</summary>
 	ProcessControlCapabilities Capabilities {
@@ -63,6 +65,7 @@ public interface IProcessPriorityProvider {
 /// <summary>
 /// Provides POSIX nice-value operations and documented Windows priority-class substitutions.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class SystemProcessPriorityProvider : IProcessPriorityProvider {
 	private const int PriorityProcess = 0;
 	private const int PriorityProcessGroup = 1;

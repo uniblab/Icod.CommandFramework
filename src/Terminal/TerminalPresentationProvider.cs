@@ -3,6 +3,7 @@ namespace Icod.CommandFramework.Terminal;
 /// <summary>
 /// Configures deterministic terminal-dimension fallbacks.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class TerminalPresentationOptions {
 	/// <summary>Gets or initializes the fallback width in columns.</summary>
 	public int FallbackWidth {
@@ -41,6 +42,7 @@ public sealed class TerminalPresentationOptions {
 /// <summary>
 /// Represents the resolved presentation capabilities for one standard stream.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class TerminalPresentationSnapshot {
 	/// <summary>
 	/// Initializes a resolved terminal-presentation snapshot.
@@ -117,6 +119,7 @@ public sealed class TerminalPresentationSnapshot {
 /// Resolves terminal attachment, dimensions, and environment inputs through
 /// injectable providers and deterministic fallback policy.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class TerminalPresentationProvider {
 	private readonly ITerminalDeviceProvider deviceProvider;
 	private readonly IEnvironmentVariableProvider environmentProvider;

@@ -4,6 +4,7 @@ namespace Icod.CommandFramework.Processes;
 /// <summary>
 /// Resolves executable names according to an explicit environment and working directory.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public interface IExecutableLocator {
 	/// <summary>Finds an executable or returns a controlled unsuccessful result.</summary>
 	ProcessOperationResult<string> Locate(
@@ -16,6 +17,7 @@ public interface IExecutableLocator {
 /// <summary>
 /// Provides platform-aware executable lookup without invoking a command shell.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class SystemExecutableLocator : IExecutableLocator {
 	/// <summary>Gets the shared system executable locator.</summary>
 	public static SystemExecutableLocator Instance {

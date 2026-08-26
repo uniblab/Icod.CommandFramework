@@ -3,6 +3,7 @@ namespace Icod.CommandFramework.Terminal;
 /// <summary>
 /// Specifies when terminal color should be emitted.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public enum TerminalColorMode {
 	/// <summary>Never emit terminal color sequences.</summary>
 	Never,
@@ -17,6 +18,7 @@ public enum TerminalColorMode {
 /// <summary>
 /// Describes the color depth inferred from terminal and environment inputs.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public enum TerminalColorCapability {
 	/// <summary>No color capability is available.</summary>
 	None,
@@ -34,6 +36,7 @@ public enum TerminalColorCapability {
 /// <summary>
 /// Represents a resolved terminal-color decision.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public readonly record struct TerminalColorDecision {
 	/// <summary>
 	/// Initializes a color decision.
@@ -73,6 +76,7 @@ public readonly record struct TerminalColorDecision {
 /// Resolves GNU-style never, auto, and always color policy from terminal and
 /// environment observations.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public static class TerminalColorPolicy {
 	/// <summary>
 	/// Resolves a color decision.

@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 /// <summary>
 /// Reads and changes priorities using POSIX process, process-group, and user selector semantics.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public interface IProcessPrioritySelectorProvider {
 	/// <summary>Gets the process-control capabilities exposed by this provider.</summary>
 	ProcessControlCapabilities Capabilities { get; }
@@ -35,6 +36,7 @@ public interface IProcessPrioritySelectorProvider {
 /// <summary>
 /// Supplies POSIX priority selectors and controlled Windows process-priority substitutions.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class SystemProcessPrioritySelectorProvider : IProcessPrioritySelectorProvider {
 	private const int PriorityProcess = 0;
 	private const int PriorityProcessGroup = 1;

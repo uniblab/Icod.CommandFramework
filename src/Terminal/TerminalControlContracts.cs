@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 /// <summary>
 /// Identifies the availability of one terminal-control operation.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public enum TerminalControlStatus {
 	/// <summary>The requested operation completed and returned a value.</summary>
 	Available,
@@ -22,6 +23,7 @@ public enum TerminalControlStatus {
 /// <summary>
 /// Identifies the native terminal model represented by a snapshot.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public enum TerminalPlatformKind {
 	/// <summary>A POSIX <c>termios</c> terminal.</summary>
 	PosixTermios,
@@ -33,6 +35,7 @@ public enum TerminalPlatformKind {
 /// <summary>
 /// Identifies the kind of endpoint supplied to a terminal-control provider.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public enum TerminalEndpointKind {
 	/// <summary>An existing process file descriptor.</summary>
 	FileDescriptor,
@@ -44,6 +47,7 @@ public enum TerminalEndpointKind {
 /// <summary>
 /// Identifies how terminal mode changes are applied.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public enum TerminalModeApplyTiming {
 	/// <summary>Apply the settings immediately.</summary>
 	Immediately,
@@ -58,6 +62,7 @@ public enum TerminalModeApplyTiming {
 /// <summary>
 /// Identifies the direction of a Windows console mode.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public enum TerminalConsoleDirection {
 	/// <summary>The mode belongs to a console input handle.</summary>
 	Input,
@@ -70,6 +75,7 @@ public enum TerminalConsoleDirection {
 /// Describes terminal-control capabilities exposed for one endpoint.
 /// </summary>
 [Flags]
+[Obsolete("Use the Icod.Terminal package instead.")]
 public enum TerminalControlCapabilities {
 	/// <summary>No terminal-control capability is available.</summary>
 	None = 0,
@@ -100,6 +106,7 @@ public enum TerminalControlCapabilities {
 /// Identifies a file descriptor or named terminal device without transferring
 /// ownership of an existing descriptor to the provider.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class TerminalEndpoint {
 	private TerminalEndpoint(
 		TerminalEndpointKind kind,
@@ -189,6 +196,7 @@ public sealed class TerminalEndpoint {
 /// Represents a controlled result from a terminal query.
 /// </summary>
 /// <typeparam name="T">The available value type.</typeparam>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class TerminalControlResult<T> {
 	private TerminalControlResult(
 		TerminalControlStatus status,
@@ -320,6 +328,7 @@ public sealed class TerminalControlResult<T> {
 /// <summary>
 /// Represents the outcome of changing terminal state.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class TerminalControlMutationResult {
 	private TerminalControlMutationResult(
 		TerminalControlStatus status,
@@ -426,6 +435,7 @@ public sealed class TerminalControlMutationResult {
 /// <summary>
 /// Describes attachment, pathname, platform, and capabilities for one endpoint.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class TerminalEndpointObservation {
 	/// <summary>
 	/// Initializes an endpoint observation.
@@ -523,6 +533,7 @@ public sealed class TerminalEndpointObservation {
 /// <summary>
 /// Represents one native speed code and its reported baud rate.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public readonly record struct TerminalSpeed {
 	/// <summary>
 	/// Initializes a terminal speed observation.
@@ -551,6 +562,7 @@ public readonly record struct TerminalSpeed {
 /// <summary>
 /// Represents a complete POSIX terminal mode or Windows console mode.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public sealed class TerminalModeSnapshot {
 	private readonly ReadOnlyCollection<byte> controlCharacters;
 
@@ -840,6 +852,7 @@ public sealed class TerminalModeSnapshot {
 /// Supplies terminal attachment, identity, mode, and mutation operations for
 /// file descriptors and named devices.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public interface ITerminalControlProvider {
 	/// <summary>Observes terminal attachment and identity for an endpoint.</summary>
 	/// <param name="endpoint">The endpoint.</param>

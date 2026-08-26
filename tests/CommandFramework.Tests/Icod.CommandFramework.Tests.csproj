@@ -24,7 +24,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Icod.CommandFramework.csproj" />
-    <ProjectReference Include="..\ProcessTestHost\Icod.CommandFramework.ProcessTestHost.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ErrorReport>prompt</ErrorReport>

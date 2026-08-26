@@ -3,6 +3,7 @@ namespace Icod.CommandFramework.Processes;
 /// <summary>
 /// Identifies the kind of operating-system process target.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public enum ProcessTargetKind {
 	/// <summary>A single process.</summary>
 	Process,
@@ -15,6 +16,7 @@ public enum ProcessTargetKind {
 /// <summary>
 /// Models a process, process group, or session target without overloading integer sign conventions.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessTarget {
 	/// <summary>Gets the process identity when the target is a protected single process.</summary>
 	public ProcessIdentity? Identity {
