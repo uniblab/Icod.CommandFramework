@@ -2,6 +2,14 @@
 
 This repository overlay implements the standalone shape for `Icod.CommandFramework` and records the source/test ownership boundary used for the extraction from `Icod.CoreUtils`.
 
+> [!NOTE]
+> This document is a historical record of the original G2 extraction boundary.
+> Beginning with `Icod.CommandFramework` 2.0.0, the factual `Host`, `Processes`,
+> `Terminal`, and `Time` compatibility surfaces described below are no longer
+> part of this package. Their maintained implementations live in `Icod.Host`,
+> `Icod.Processes`, `Icod.Terminal`, and `Icod.Timing` respectively.
+> `ObservationFidelity` remains in `Icod.CommandFramework.Host`.
+
 ## Standalone repository shape
 
 ```text
