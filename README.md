@@ -8,6 +8,15 @@ It is intended for applications that need more than a thin wrapper around `Syste
 
 The library originated as the command-neutral infrastructure developed while porting GNU Coreutils and related Unix utilities to C#. It is now a standalone package so unrelated command suites and applications can reuse the same tested foundation without depending on `Icod.CoreUtils`.
 
+> [!IMPORTANT]
+> The historical `Icod.CommandFramework.Host`, `Icod.CommandFramework.Processes`,
+> `Icod.CommandFramework.Terminal`, and `Icod.CommandFramework.Time` APIs are
+> compatibility-only and deprecated. New code should use `Icod.Host`,
+> `Icod.Processes`, `Icod.Terminal`, and `Icod.Timing` respectively. Terminal
+> database and curses functionality is maintained separately in `Icod.TermInfo`
+> and `Icod.DCurses`. `ObservationFidelity` remains in CommandFramework because
+> it describes consumer semantic fidelity rather than a factual host observation.
+
 ## Why use it?
 
 .NET already has excellent general-purpose APIs, but command-line utilities often need contracts that the BCL intentionally does not provide as a single coherent layer.
@@ -245,10 +254,7 @@ src/
     Time/
 tests/
     CommandFramework.Tests/
-    ProcessTestHost/
 ```
-
-`ProcessTestHost` is repository-local test infrastructure used to exercise child-process behavior; it is not part of the package API.
 
 ## Building and testing
 

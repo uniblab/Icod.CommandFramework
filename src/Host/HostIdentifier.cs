@@ -7,6 +7,7 @@ using System.Text;
 /// Represents one normalized 32-bit host identifier and the kind of source from
 /// which it was obtained.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public sealed record HostIdentifier {
 	/// <summary>
 	/// Initializes a normalized host identifier.
@@ -35,6 +36,7 @@ public sealed record HostIdentifier {
 /// <summary>
 /// Supplies deterministic normalization for native and textual host identifiers.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public static class HostIdentifierNormalizer {
 	private const uint FnvOffsetBasis = 2166136261;
 	private const uint FnvPrime = 16777619;

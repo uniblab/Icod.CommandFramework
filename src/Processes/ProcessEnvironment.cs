@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 /// <summary>
 /// Represents an immutable child-process environment.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessEnvironment {
 	private readonly IReadOnlyDictionary<string, string> _variables;
 
@@ -37,6 +38,7 @@ public sealed class ProcessEnvironment {
 /// <summary>
 /// Constructs child-process environments with explicit inheritance, replacement, and removal semantics.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessEnvironmentBuilder {
 	/// <summary>Gets the host-appropriate environment-variable name comparer.</summary>
 	internal static StringComparer VariableNameComparer => OperatingSystem.IsWindows()

@@ -3,6 +3,7 @@ namespace Icod.CommandFramework.Processes;
 /// <summary>
 /// Identifies why a process operation ended.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public enum ProcessTerminationKind {
 	/// <summary>The process exited normally.</summary>
 	Exited,
@@ -23,6 +24,7 @@ public enum ProcessTerminationKind {
 /// <summary>
 /// Identifies the portable class of a child-process launch failure.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public enum ProcessLaunchFailureKind {
 	/// <summary>The failure cannot be classified more specifically.</summary>
 	Unknown,
@@ -37,6 +39,7 @@ public enum ProcessLaunchFailureKind {
 /// <summary>
 /// Describes child exit, signal termination, timeout, cancellation, or launch failure in a portable form.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessTermination {
 	/// <summary>Gets the portable launch-failure class, when applicable.</summary>
 	public ProcessLaunchFailureKind? LaunchFailureKind {

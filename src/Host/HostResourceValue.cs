@@ -4,6 +4,7 @@ namespace Icod.CommandFramework.Host;
 /// Identifies whether one host-resource value is available and, when it is not,
 /// why the provider could not supply it.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public enum HostResourceAvailability {
 	/// <summary>The provider could not obtain the value for this observation.</summary>
 	Unavailable = 0,
@@ -18,6 +19,7 @@ public enum HostResourceAvailability {
 /// <summary>
 /// Identifies the source from which a host-resource value was obtained.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public enum HostResourceProvenance {
 	/// <summary>The provider did not identify a source.</summary>
 	Unknown = 0,
@@ -52,6 +54,7 @@ public enum HostResourceProvenance {
 /// provenance, and diagnostic information.
 /// </summary>
 /// <typeparam name="T">The observed value type.</typeparam>
+[Obsolete("Use the Icod.Host package instead.")]
 public readonly record struct HostResourceValue<T> {
 	private HostResourceValue(
 		HostResourceAvailability availability,

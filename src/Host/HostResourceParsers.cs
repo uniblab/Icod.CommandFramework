@@ -7,6 +7,7 @@ using System.Numerics;
 /// Provides deterministic parsers used by platform host-resource providers and
 /// their tests.
 /// </summary>
+[Obsolete("Use the Icod.Host package instead.")]
 public static class HostResourceParsers {
 	private const int MaximumLogicalProcessorId = 1_048_575;
 

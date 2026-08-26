@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 /// <summary>
 /// Observes process identity, liveness, and termination through injectable contracts.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public interface IProcessInspector {
 	/// <summary>Gets capabilities available from this provider.</summary>
 	ProcessControlCapabilities Capabilities {
@@ -34,6 +35,7 @@ public interface IProcessInspector {
 /// <summary>
 /// Provides cross-platform process observation using BCL process handles and controlled native probes.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class SystemProcessInspector : IProcessInspector {
 	/// <summary>Gets the shared system process inspector.</summary>
 	public static SystemProcessInspector Instance {

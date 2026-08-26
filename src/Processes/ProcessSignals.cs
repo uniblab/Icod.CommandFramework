@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 /// <summary>
 /// Describes a portable or host-specific signal number and canonical name.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessSignal : IEquatable<ProcessSignal> {
 	/// <summary>Gets the canonical signal name without the SIG prefix.</summary>
 	public string Name {
@@ -60,6 +61,7 @@ public sealed class ProcessSignal : IEquatable<ProcessSignal> {
 /// <summary>
 /// Describes an observed signal disposition.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public enum ProcessSignalDisposition {
 	/// <summary>The default signal action is installed.</summary>
 	Default,
@@ -74,6 +76,7 @@ public enum ProcessSignalDisposition {
 /// <summary>
 /// Parses, lists, translates, observes, and delivers process signals.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public interface IProcessSignalProvider {
 	/// <summary>Gets capabilities available from this provider.</summary>
 	ProcessControlCapabilities Capabilities {
@@ -111,6 +114,7 @@ public interface IProcessSignalProvider {
 /// <summary>
 /// Observes the blocked-mask state of process signals where the host exposes it.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public interface IProcessSignalMaskProvider {
 	/// <summary>Observes whether a signal is blocked for the identified process.</summary>
 	ProcessOperationResult<bool> ObserveBlocked(
@@ -122,6 +126,7 @@ public interface IProcessSignalMaskProvider {
 /// <summary>
 /// Supplies the portable signal catalog used by process-control commands.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public static class ProcessSignalCatalog {
 	private static readonly ProcessSignal[] LinuxSignals = [
 		new( 0, "0" ),
@@ -394,6 +399,7 @@ public static class ProcessSignalCatalog {
 /// <summary>
 /// Provides host signal operations and controlled Windows substitutions.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class SystemProcessSignalProvider : IProcessSignalProvider, IProcessSignalMaskProvider {
 	private readonly IProcessInspector _inspector;
 

@@ -6,8 +6,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Icod.CommandFramework", "Ic
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{8EE1445B-C68E-42B6-9D79-9EDDC9DCCFB7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Icod.CommandFramework.ProcessTestHost", "tests\ProcessTestHost\Icod.CommandFramework.ProcessTestHost.csproj", "{7E4D1C94-94F5-46CF-9EA7-0BB80290294E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Icod.CommandFramework.Tests", "tests\CommandFramework.Tests\Icod.CommandFramework.Tests.csproj", "{D9C09FE2-8EAD-D4BF-2C9A-11B661450566}"
 EndProject
 Global
@@ -23,12 +21,6 @@ Global
 		{2FBA1C1E-341D-4BA7-A806-B39194836E80}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2FBA1C1E-341D-4BA7-A806-B39194836E80}.Staging|Any CPU.ActiveCfg = Staging|Any CPU
 		{2FBA1C1E-341D-4BA7-A806-B39194836E80}.Staging|Any CPU.Build.0 = Staging|Any CPU
-		{7E4D1C94-94F5-46CF-9EA7-0BB80290294E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7E4D1C94-94F5-46CF-9EA7-0BB80290294E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7E4D1C94-94F5-46CF-9EA7-0BB80290294E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7E4D1C94-94F5-46CF-9EA7-0BB80290294E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7E4D1C94-94F5-46CF-9EA7-0BB80290294E}.Staging|Any CPU.ActiveCfg = Staging|Any CPU
-		{7E4D1C94-94F5-46CF-9EA7-0BB80290294E}.Staging|Any CPU.Build.0 = Staging|Any CPU
 		{D9C09FE2-8EAD-D4BF-2C9A-11B661450566}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D9C09FE2-8EAD-D4BF-2C9A-11B661450566}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9C09FE2-8EAD-D4BF-2C9A-11B661450566}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -40,7 +32,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{7E4D1C94-94F5-46CF-9EA7-0BB80290294E} = {8EE1445B-C68E-42B6-9D79-9EDDC9DCCFB7}
 		{D9C09FE2-8EAD-D4BF-2C9A-11B661450566} = {8EE1445B-C68E-42B6-9D79-9EDDC9DCCFB7}
 	EndGlobalSection
 EndGlobal

@@ -7,6 +7,7 @@ using System.Text;
 /// Serializes and restores complete terminal-mode snapshots without applying
 /// command policy or touching a terminal endpoint.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public static class TerminalModeCodec {
 	private const string WindowsInputPrefix = "win32-v1-input:";
 	private const string WindowsOutputPrefix = "win32-v1-output:";
@@ -213,6 +214,7 @@ public static class TerminalModeCodec {
 /// Formats POSIX terminal control characters using GNU-compatible visible
 /// notation without assigning semantic names to native array positions.
 /// </summary>
+[Obsolete("Use the Icod.Terminal package instead.")]
 public static class TerminalControlCharacterFormatter {
 	/// <summary>
 	/// Formats one native control-character byte.

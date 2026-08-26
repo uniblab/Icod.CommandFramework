@@ -3,6 +3,7 @@ namespace Icod.CommandFramework.Processes;
 /// <summary>
 /// Identifies the kind of target accepted by POSIX-style priority operations.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public enum ProcessPriorityTargetKind {
 	/// <summary>A process identifier, where zero denotes the calling process.</summary>
 	Process,
@@ -16,6 +17,7 @@ public enum ProcessPriorityTargetKind {
 /// Models the nonnegative selector used by <c>getpriority</c> and <c>setpriority</c>
 /// without leaking native selector constants into commands.
 /// </summary>
+[Obsolete("Use the Icod.Processes package instead.")]
 public sealed class ProcessPriorityTarget {
 	/// <summary>Gets a protected process identity when one is available.</summary>
 	public ProcessIdentity? Identity {
