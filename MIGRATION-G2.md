@@ -1,14 +1,8 @@
 # Completion Gate G2 — Icod.CommandFramework extraction
 
-This repository overlay implements the standalone shape for `Icod.CommandFramework` and records the source/test ownership boundary used for the extraction from `Icod.CoreUtils`.
+This document records the retained standalone ownership boundary for `Icod.CommandFramework` after the original extraction from `Icod.CoreUtils`.
 
-> [!NOTE]
-> This document is a historical record of the original G2 extraction boundary.
-> Beginning with `Icod.CommandFramework` 2.0.0, the factual `Host`, `Processes`,
-> `Terminal`, and `Time` compatibility surfaces described below are no longer
-> part of this package. Their maintained implementations live in `Icod.Host`,
-> `Icod.Processes`, `Icod.Terminal`, and `Icod.Timing` respectively.
-> `ObservationFidelity` remains in `Icod.CommandFramework.Host`.
+Beginning with 2.0.0, one-time compatibility material and migration-only scaffolding are no longer part of the repository. The current tree contains only infrastructure that remains owned and maintained by `Icod.CommandFramework`.
 
 ## Standalone repository shape
 
@@ -20,115 +14,81 @@ Icod.CommandFramework/
 ├── README.md
 ├── icon.png
 ├── src/
-├── tests/
-│   ├── CommandFramework.Tests/
-│   │   └── Icod.CommandFramework.Tests.csproj
-│   └── ProcessTestHost/
-│       └── Icod.CommandFramework.ProcessTestHost.csproj
-└── tools/
-    ├── framework-source-manifest.txt
-    ├── framework-test-manifest.txt
-    ├── HISTORY-IMPORT.md
-    └── migrate-from-coreutils.ps1
+└── tests/
+    └── CommandFramework.Tests/
+        └── Icod.CommandFramework.Tests.csproj
 ```
 
-The root project deliberately disables default compile items and explicitly compiles `src/**/*.cs`; this allows the single package project to live beside the solution while `tests/` remains beneath the repository root.
+The root project deliberately disables default compile items and explicitly compiles `src/**/*.cs`; this allows the package project to live beside the solution while `tests/` remains beneath the repository root.
 
-## G2 production ownership boundary
+## Current production ownership boundary
 
-The following source areas move as complete command-neutral areas:
+The following source areas remain complete command-neutral framework areas:
 
 - `CommandLine`
 - `Delimiters`
 - `Diagnostics`
-- `Host`
 - `IO`
-- `Processes`
 - `Records`
 - `RegularExpressions`
 - `Temporary`
-- `Terminal`
+- `Text`
 
-The following areas are split more narrowly:
+The following lower-level areas are also retained:
 
-- `Text`: all current text primitives except `TabStop*.cs`.
-- `Time`: `MonotonicClock.cs` and `PeriodicScheduler.cs`.
-- `Platform`: `PlatformCapabilities.cs`, `PlatformFeature.cs`, and `PlatformOperationResult.cs`.
-- `FileSystem`: the root capability/operation contracts plus `Metadata`, `Mutation`, `RecursiveMutation`, `Traversal`, and `TransactionalReplacement`.
-- `FileSystem/Modes`: only `PosixFileMode.cs`, because the mutation/transaction layers need the neutral POSIX mode vocabulary. The GNU mode-expression/parser policy remains in CoreUtils.
+- `Platform`: cross-platform capability/result contracts, identity services, security-context support, and SELinux integration.
+- `FileSystem`: capability and operation contracts together with `Metadata`, `Modes`, `Mutation`, `RecursiveMutation`, `Traversal`, and `TransactionalReplacement`.
 
-`RecursiveMutation` is part of the framework boundary because it is infrastructure used by the transactional replacement layer and its design keeps command-specific recursion/overwrite policy with callers.
+These areas belong in the framework because they provide reusable mechanism rather than command-family policy.
 
-## Deliberately retained in Icod.CoreUtils.Shared
+## Ownership rule
 
-At this gate, the extraction does **not** move command-family or suite-specific policy merely because it currently resides in `Shared`. In particular, the importer leaves behind:
+Command-family and suite-specific policy remains outside `Icod.CommandFramework`. A feature belongs here only when its semantics are command-neutral and independently reusable by unrelated consumers.
 
-- `BinaryFormatting`
-- `Checksums`
-- `Codecs`
-- `DirectoryListing`
-- `Escapes`
-- `Formatting`
-- `Numerics`
-- `Ordering`
-- `Ranges`
-- `SharedUtils`
-- GNU date/time parsing and formatting helpers not represented by the two neutral scheduling primitives above
-- platform helpers outside the capability surface selected above
-- `FileSystem/CopyMove`
-- `FileSystem/Ownership`
-- `FileSystem/Usage`
-- GNU mode expressions/parser and the system creation-mask provider in `FileSystem/Modes`
-- `Text/TabStop*`
-
-These can be revisited only when an independent suite consumer demonstrates that they belong below the suite layer.
+That boundary is intentionally stricter in 2.0.0 than it was during the original extraction. Historical migration convenience is no longer a reason to retain an API.
 
 ## Tests
 
-The old `Shared.Tests` project is split rather than copied wholesale. Tests move when the production API they exercise moves. The resulting test assembly is `Icod.CommandFramework.Tests`.
+`Icod.CommandFramework.Tests` contains tests only for production APIs that remain owned by this repository. Tests under `src` mirror the production subsystem whose behavior they exercise.
 
-The repository also contains `Icod.CommandFramework.ProcessTestHost`, a small executable used by process-runner tests. It is test infrastructure, is not packed, and does not become part of the public package API.
-
-The exact selected paths are recorded in `tools/framework-test-manifest.txt`.
+The test project references the package project directly and is not packed.
 
 ## Namespace and assembly migration
 
-The importer rewrites:
+The original extraction normalized the shared source and test namespaces:
 
 - `Icod.CoreUtils.Shared` → `Icod.CommandFramework`
 - `Icod.CoreUtils.Shared.Tests` → `Icod.CommandFramework.Tests`
-- `Icod.CoreUtils.ProcessTestHost` → `Icod.CommandFramework.ProcessTestHost`
 - corresponding `.dll` assembly-name strings
 
-It then fails if migrated C# still contains `Icod.CoreUtils`, or if framework production source contains a dependency on `Icod.DiffUtils`, `Icod.ProcPs`, or `Icod.LineEditor`.
+Current production source must not depend on suite-specific libraries such as `Icod.DiffUtils`, `Icod.ProcPs`, or `Icod.LineEditor`.
 
 ## Package metadata
 
 The package follows the established `Icod.Path` conventions:
 
 - `net10.0`, C# 13
-- `1.0.0-WIP1` prerelease starting point
+- `2.0.0`
 - LGPL-3.0-or-later
-- repository metadata
 - deterministic builds
 - XML documentation
 - symbol package (`snupkg`)
 - package README and icon
-- SourceLink-compatible repository publishing metadata
+- repository publishing metadata
 - dependency on published `Icod.Path` `1.0.0`
 
 The package/repository description is:
 
-> Cross-platform .NET command infrastructure for argument parsing, diagnostics, streams, filesystem, processes, terminals, temporary storage, and text.
+> Cross-platform .NET command infrastructure for argument parsing, diagnostics, byte-oriented streaming, filesystem operations, records, regular expressions, temporary storage, and text.
 
-## Running the extraction
+## Current development workflow
 
-From the `Icod.CommandFramework` checkout, with a sibling or otherwise available `Icod.CoreUtils` checkout:
+The one-time importer used to create the standalone repository is no longer part of the current tree. Development now occurs directly in this repository.
 
-```powershell
-./tools/migrate-from-coreutils.ps1 -CoreUtilsRoot ../Icod.CoreUtils -Validate
+Validate changes with the normal solution workflow:
+
+```sh
+dotnet restore Icod.CommandFramework.sln
+dotnet build Icod.CommandFramework.sln -c Release
+dotnet test Icod.CommandFramework.sln -c Release
 ```
-
-`-Validate` restores once, builds and tests Debug/Staging/Release, and packs the Release package into `artifacts/`.
-
-After a successful standalone build, update `Icod.CoreUtils` to replace the project reference with the published/pre-release package, then run its complete supported-OS CI matrix before declaring G2 complete.

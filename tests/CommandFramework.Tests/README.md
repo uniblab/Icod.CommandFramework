@@ -3,13 +3,8 @@
 `Icod.CommandFramework.Tests` verifies only APIs and mechanisms that remain
 owned by `Icod.CommandFramework`.
 
-Beginning with 2.0.0, the former timing, factual-host, process, and terminal
-compatibility APIs are no longer present in this package. Their tests belong to
-`Icod.Timing`, `Icod.Host`, `Icod.Processes`, and `Icod.Terminal`; terminal
-database and curses tests belong to `Icod.TermInfo` and `Icod.DCurses`.
-
-`ObservationFidelity` remains consumer semantic policy owned by
-`Icod.CommandFramework`, so its test remains under `src/Host`.
+Only tests for production subsystems retained by the 2.0.0 package remain in
+this repository.
 
 ## Layout
 

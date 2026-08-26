@@ -16,7 +16,7 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackageVersion>2.0.0</PackageVersion>
-		<PackageReleaseNotes>Breaking 2.0.0 release: remove the deprecated Host, Processes, Terminal, and Time compatibility APIs in favor of Icod.Host, Icod.Processes, Icod.Terminal, and Icod.Timing; retain ObservationFidelity; remove the Icod.Timing dependency.</PackageReleaseNotes>
+		<PackageReleaseNotes>Breaking 2.0.0 release: remove deprecated compatibility surfaces and legacy migration residue, leaving only command-neutral infrastructure owned by Icod.CommandFramework.</PackageReleaseNotes>
 		<Authors>Timothy J. Bruce</Authors>
 		<Description>Cross-platform .NET command infrastructure for argument parsing, diagnostics, byte-oriented streaming, filesystem operations, records, regular expressions, temporary storage, and text.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
