@@ -12,11 +12,11 @@
 		<AssemblyName>Icod.CommandFramework</AssemblyName>
 		<RootNamespace>Icod.CommandFramework</RootNamespace>
 		<Configurations>Debug;Release;Staging</Configurations>
-		<Version>2.1.0-alpha.1</Version>
+		<Version>2.1.0-alpha.2</Version>
 	</PropertyGroup>
 	<PropertyGroup>
-		<PackageVersion>2.1.0-alpha.1</PackageVersion>
-		<PackageReleaseNotes>CF-G01: adopt Icod.Path 1.1.0 pathname decomposition as the grammar authority for pathname patterns and establish the 2.1 globbing-consolidation foundation.</PackageReleaseNotes>
+		<PackageVersion>2.1.0-alpha.2</PackageVersion>
+		<PackageReleaseNotes>CF-G02: establish the traversal pathname expander as the canonical engine, add collection-oriented operand expansion with file/directory selection and structured issues, and make default match ordering deterministic.</PackageReleaseNotes>
 		<Authors>Timothy J. Bruce</Authors>
 		<Description>Cross-platform .NET infrastructure for Unix-style command-line tools, including argument parsing, diagnostics, byte-oriented streaming, filesystem operations, records, GNU/POSIX regular expressions, temporary storage, and Unicode text.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
