@@ -262,6 +262,14 @@ That history matters because these APIs were not designed only from hypothetical
 
 The standalone package exists so that infrastructure can now be used independently.
 
+## Authors
+
+Timothy J. Bruce <uniblab@hotmail.com>.
+
+## Copyright
+
+Copyright (c) 2026 Timothy J. Bruce
+
 ## License
 
 Licensed under **LGPL-3.0-or-later**. See [`LICENSE`](LICENSE).
