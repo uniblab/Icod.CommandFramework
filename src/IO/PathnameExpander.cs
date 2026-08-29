@@ -1,18 +1,35 @@
-using Path = global::System.IO.Path;
-namespace Icod.CommandFramework.IO;
+using CanonicalLeadingPeriodPolicy =
+	Icod.CommandFramework.FileSystem.Traversal.LeadingPeriodPolicy;
+using CanonicalPathnameExpander =
+	Icod.CommandFramework.FileSystem.Traversal.PathnameExpander;
+using CanonicalPathnameExpansionMatchOrder =
+	Icod.CommandFramework.FileSystem.Traversal.PathnameExpansionMatchOrder;
+using CanonicalPathnameExpansionOptions =
+	Icod.CommandFramework.FileSystem.Traversal.PathnameExpansionOptions;
+using CanonicalPathnameOperandExpansionOptions =
+	Icod.CommandFramework.FileSystem.Traversal.PathnameOperandExpansionOptions;
+using CanonicalPathnamePatternOptions =
+	Icod.CommandFramework.FileSystem.Traversal.PathnamePatternOptions;
+using CanonicalSymbolicLinkTraversalMode =
+	Icod.CommandFramework.FileSystem.Traversal.SymbolicLinkTraversalMode;
+using CanonicalSystemReadOnlyFileSystemProvider =
+	Icod.CommandFramework.FileSystem.Traversal.SystemReadOnlyFileSystemProvider;
+using CanonicalUnmatchedPathnamePatternBehavior =
+	Icod.CommandFramework.FileSystem.Traversal.UnmatchedPathnamePatternBehavior;
 
-using System.IO.Enumeration;
+namespace Icod.CommandFramework.IO;
 
 /// <summary>
 /// Expands pathname operands containing <c>*</c>, <c>?</c>, and recursive
 /// <c>**</c> path segments.
 /// </summary>
 /// <remarks>
-/// A single asterisk or question mark never crosses a directory separator.
-/// A segment consisting of two asterisks matches zero or more directory
-/// levels. Results are returned in deterministic ordinal order within each
-/// operand. Unmatched patterns are preserved by default, matching the common
-/// shell behavior when nullglob is disabled.
+/// This compatibility surface delegates wildcard traversal to the canonical
+/// <see cref="Icod.CommandFramework.FileSystem.Traversal.PathnameExpander"/>
+/// engine. Its historical public contract remains synchronous: a single
+/// asterisk or question mark never crosses a directory separator, a segment
+/// consisting of two asterisks matches zero or more directory levels, results
+/// are deterministic, and unmatched patterns are preserved by default.
 /// </remarks>
 public static class PathnameExpander {
 
@@ -34,6 +51,9 @@ public static class PathnameExpander {
 			return Array.Empty<string>();
 		}
 
+		var expander = new CanonicalPathnameExpander(
+			CanonicalSystemReadOnlyFileSystemProvider.Instance
+		);
 		var output = new List<string>();
 		foreach ( var operand in operands ) {
 			ArgumentNullException.ThrowIfNull(
@@ -52,6 +72,7 @@ public static class PathnameExpander {
 			}
 
 			var matches = ExpandOne(
+				expander,
 				operand,
 				options
 			);
@@ -88,305 +109,143 @@ public static class PathnameExpander {
 	}
 
 	private static IReadOnlyList<string> ExpandOne(
+		CanonicalPathnameExpander expander,
 		string operand,
 		PathnameExpansionOptions options
 	) {
+		ArgumentNullException.ThrowIfNull(
+			expander
+		);
+		ArgumentNullException.ThrowIfNull(
+			operand
+		);
+		ArgumentNullException.ThrowIfNull(
+			options
+		);
+
 		var normalized = NormalizeSeparators(
 			operand
 		);
-		var rooted = System.IO.Path.IsPathRooted(
+		var canonicalPattern = QuoteCharacterClasses(
 			normalized
 		);
-		var root = System.IO.Path.GetPathRoot(
-			normalized
-		) ?? string.Empty;
-		var remainder = rooted
-			? normalized.Substring(
-				root.Length
-			)
-			: normalized
+		var expansionOptions = new CanonicalPathnameOperandExpansionOptions {
+			ExpansionOptions = new CanonicalPathnameExpansionOptions {
+				BaseDirectory = options.BaseDirectory,
+				PatternOptions = new CanonicalPathnamePatternOptions {
+					LeadingPeriodPolicy =
+						CanonicalLeadingPeriodPolicy.WildcardMayMatch,
+					BackslashEscapes = false
+				},
+				UnmatchedPatternBehavior =
+					CanonicalUnmatchedPathnamePatternBehavior.ReturnNoMatches,
+				MatchOrder = OperatingSystem.IsWindows()
+					? CanonicalPathnameExpansionMatchOrder.OrdinalIgnoreCase
+					: CanonicalPathnameExpansionMatchOrder.Ordinal,
+				SymbolicLinkMode = ResolveSymbolicLinkMode(
+					normalized,
+					options
+				)
+			},
+			IncludeFiles = options.IncludeFiles,
+			IncludeDirectories = options.IncludeDirectories
+		};
+
+		var result = Task.Run(
+			async () => await expander.ExpandOperandsAsync(
+				new[] {
+					canonicalPattern
+				},
+				expansionOptions
+			).ConfigureAwait( false )
+		).GetAwaiter().GetResult();
+
+		return result.Operands;
+	}
+
+	private static CanonicalSymbolicLinkTraversalMode ResolveSymbolicLinkMode(
+		string normalizedPattern,
+		PathnameExpansionOptions options
+	) {
+		ArgumentNullException.ThrowIfNull(
+			normalizedPattern
+		);
+		ArgumentNullException.ThrowIfNull(
+			options
+		);
+		if ( options.FollowDirectorySymlinks ) {
+			return CanonicalSymbolicLinkTraversalMode.Always;
+		}
+		return ContainsRecursiveSegment(
+			normalizedPattern
+		)
+			? CanonicalSymbolicLinkTraversalMode.RootsOnly
+			: CanonicalSymbolicLinkTraversalMode.Always
 		;
-		var segments = remainder.Split(
+	}
+
+	private static bool ContainsRecursiveSegment(
+		string value
+	) {
+		ArgumentNullException.ThrowIfNull(
+			value
+		);
+		return value.Split(
 			System.IO.Path.DirectorySeparatorChar,
 			StringSplitOptions.RemoveEmptyEntries
+		).Any(
+			static segment => "**" == segment
 		);
-		if ( 0 == segments.Length ) {
-			return Array.Empty<string>();
-		}
+	}
 
-		var firstWildcard = Array.FindIndex(
-			segments,
-			ContainsWildcard
+	private static string QuoteCharacterClasses(
+		string value
+	) {
+		ArgumentNullException.ThrowIfNull(
+			value
 		);
-		if ( firstWildcard < 0 ) {
-			return Array.Empty<string>();
-		}
-
-		var baseDirectory = System.IO.Path.GetFullPath(
-			options.BaseDirectory
+		var root = System.IO.Path.GetPathRoot(
+			value
+		) ?? string.Empty;
+		var builder = new System.Text.StringBuilder(
+			value.Length
 		);
-		var searchRoot = rooted
-			? root
-			: baseDirectory
-		;
+		builder.Append(
+			root
+		);
 		for (
-			var index = 0;
-			index < firstWildcard;
+			var index = root.Length;
+			index < value.Length;
 			index++
 		) {
-			searchRoot = System.IO.Path.Combine(
-				searchRoot,
-				segments[ index ]
-			);
-		}
-		if ( !Directory.Exists( searchRoot ) ) {
-			return Array.Empty<string>();
-		}
-
-		var matches = new List<string>();
-		MatchSegments(
-			searchRoot,
-			segments,
-			firstWildcard,
-			options,
-			matches
-		);
-
-		var comparer = OperatingSystem.IsWindows()
-			? StringComparer.OrdinalIgnoreCase
-			: StringComparer.Ordinal
-		;
-		matches.Sort(
-			comparer
-		);
-
-		if ( rooted ) {
-			return matches;
-		}
-
-		var preserveDotPrefix = operand.StartsWith(
-			string.Concat(
-				".",
-				System.IO.Path.DirectorySeparatorChar
-			),
-			StringComparison.Ordinal
-		) || operand.StartsWith(
-			"./",
-			StringComparison.Ordinal
-		);
-		return matches.Select(
-			match => {
-				var relative = System.IO.Path.GetRelativePath(
-					baseDirectory,
-					match
-				);
-				return preserveDotPrefix
-					? System.IO.Path.Combine(
-						".",
-						relative
-					)
-					: relative
-				;
-			}
-		).ToArray();
-	}
-
-	private static void MatchSegments(
-		string currentPath,
-		IReadOnlyList<string> segments,
-		int segmentIndex,
-		PathnameExpansionOptions options,
-		ICollection<string> matches
-	) {
-		if ( segmentIndex == segments.Count ) {
-			if (
-				options.IncludeFiles
-				&& File.Exists( currentPath )
-			) {
-				matches.Add(
-					System.IO.Path.GetFullPath(
-						currentPath
-					)
-				);
-			} else if (
-				options.IncludeDirectories
-				&& Directory.Exists( currentPath )
-			) {
-				matches.Add(
-					System.IO.Path.GetFullPath(
-						currentPath
-					)
-				);
-			}
-			return;
-		}
-
-		var segment = segments[ segmentIndex ];
-		if ( "**" == segment ) {
-			MatchSegments(
-				currentPath,
-				segments,
-				segmentIndex + 1,
-				options,
-				matches
-			);
-			foreach ( var entry in EnumerateEntries( currentPath ) ) {
-				if ( File.Exists( entry ) ) {
-					if (
-						segmentIndex == segments.Count - 1
-						&& options.IncludeFiles
-					) {
-						matches.Add(
-							System.IO.Path.GetFullPath(
-								entry
-							)
-						);
-					}
-					continue;
-				}
-				if ( !Directory.Exists( entry ) ) {
-					continue;
-				}
-				if (
-					segmentIndex == segments.Count - 1
-					&& options.IncludeDirectories
-				) {
-					matches.Add(
-						System.IO.Path.GetFullPath(
-							entry
-						)
+			var character = value[ index ];
+			switch ( character ) {
+				case '[':
+					builder.Append(
+						"[[]"
 					);
-				}
-				if (
-					!options.FollowDirectorySymlinks
-					&& IsDirectorySymlink(
-						entry
-					)
-				) {
-					continue;
-				}
-				MatchSegments(
-					entry,
-					segments,
-					segmentIndex,
-					options,
-					matches
-				);
+					break;
+				case ']':
+					builder.Append(
+						"[]]"
+					);
+					break;
+				default:
+					builder.Append(
+						character
+					);
+					break;
 			}
-			return;
 		}
-
-		var lastSegment = segmentIndex == segments.Count - 1;
-		if ( !ContainsWildcard( segment ) ) {
-			var candidate = System.IO.Path.Combine(
-				currentPath,
-				segment
-			);
-			if (
-				lastSegment
-				|| Directory.Exists(
-					candidate
-				)
-			) {
-				MatchSegments(
-					candidate,
-					segments,
-					segmentIndex + 1,
-					options,
-					matches
-				);
-			}
-			return;
-		}
-
-		foreach ( var entry in EnumerateEntries( currentPath ) ) {
-			var name = System.IO.Path.GetFileName(
-				entry
-			);
-			if (
-				!FileSystemName.MatchesSimpleExpression(
-					segment,
-					name,
-					ignoreCase: OperatingSystem.IsWindows()
-				)
-			) {
-				continue;
-			}
-			if (
-				!lastSegment
-				&& !Directory.Exists(
-					entry
-				)
-			) {
-				continue;
-			}
-			MatchSegments(
-				entry,
-				segments,
-				segmentIndex + 1,
-				options,
-				matches
-			);
-		}
-	}
-
-	private static IEnumerable<string> EnumerateEntries(
-		string directory
-	) {
-		try {
-			return Directory.EnumerateFileSystemEntries(
-				directory,
-				"*",
-				new EnumerationOptions {
-					AttributesToSkip = 0,
-					IgnoreInaccessible = true,
-					RecurseSubdirectories = false,
-					ReturnSpecialDirectories = false
-				}
-			).ToArray();
-		} catch (
-			Exception ex
-		) when (
-			ex is IOException
-				or UnauthorizedAccessException
-				or DirectoryNotFoundException
-		) {
-			return Array.Empty<string>();
-		}
-	}
-
-	private static IEnumerable<string> EnumerateDirectories(
-		string directory
-	) {
-		return EnumerateEntries(
-			directory
-		).Where(
-			Directory.Exists
-		);
-	}
-
-	private static bool IsDirectorySymlink(
-		string path
-	) {
-		try {
-			return 0 != (
-				File.GetAttributes(
-					path
-				) & FileAttributes.ReparsePoint
-			);
-		} catch (
-			Exception ex
-		) when (
-			ex is IOException
-				or UnauthorizedAccessException
-		) {
-			return true;
-		}
+		return builder.ToString();
 	}
 
 	private static string NormalizeSeparators(
 		string value
 	) {
+		ArgumentNullException.ThrowIfNull(
+			value
+		);
 		if ( System.IO.Path.DirectorySeparatorChar == '\\' ) {
 			return value.Replace(
 				'/',
