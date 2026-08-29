@@ -286,6 +286,130 @@ public sealed class PathnameExpanderCompatibilityTests {
 		);
 	}
 
+	/// <summary>
+	/// Verifies that recursive double-star expansion follows directory links
+	/// only when the legacy option requests it.
+	/// </summary>
+	[Fact]
+	public void RecursiveDoubleStarHonorsLegacyFollowDirectorySymlinksOption() {
+		using var workspace = new PathnameExpansionWorkspace();
+		workspace.CreateDirectory(
+			"root"
+		);
+		workspace.CreateFile(
+			System.IO.Path.Combine(
+				"target",
+				"inside.txt"
+			)
+		);
+		if (
+			!workspace.TryCreateDirectorySymbolicLink(
+				System.IO.Path.Combine(
+					"root",
+					"link"
+				),
+				"target"
+			)
+		) {
+			return;
+		}
+
+		var pattern = System.IO.Path.Combine(
+			"root",
+			"**",
+			"inside.txt"
+		);
+		var withoutFollowing = PathnameExpander.Expand(
+			new[] {
+				pattern
+			},
+			new PathnameExpansionOptions {
+				BaseDirectory = workspace.Path,
+				FollowDirectorySymlinks = false,
+				PreserveUnmatchedPatterns = false
+			}
+		);
+		Assert.Empty(
+			withoutFollowing
+		);
+
+		var withFollowing = PathnameExpander.Expand(
+			new[] {
+				pattern
+			},
+			new PathnameExpansionOptions {
+				BaseDirectory = workspace.Path,
+				FollowDirectorySymlinks = true,
+				PreserveUnmatchedPatterns = false
+			}
+		);
+		Assert.Equal(
+			new[] {
+				System.IO.Path.Combine(
+					"root",
+					"link",
+					"inside.txt"
+				)
+			},
+			withFollowing
+		);
+	}
+
+	/// <summary>
+	/// Verifies the historical behavior that finite wildcard expansion follows
+	/// an intermediate directory link independently of the recursive-link flag.
+	/// </summary>
+	[Fact]
+	public void FiniteWildcardPreservesHistoricalDirectorySymlinkTraversal() {
+		using var workspace = new PathnameExpansionWorkspace();
+		workspace.CreateDirectory(
+			"root"
+		);
+		workspace.CreateFile(
+			System.IO.Path.Combine(
+				"target",
+				"inside.txt"
+			)
+		);
+		if (
+			!workspace.TryCreateDirectorySymbolicLink(
+				System.IO.Path.Combine(
+					"root",
+					"link"
+				),
+				"target"
+			)
+		) {
+			return;
+		}
+
+		var result = PathnameExpander.Expand(
+			new[] {
+				System.IO.Path.Combine(
+					"root",
+					"l*",
+					"inside.txt"
+				)
+			},
+			new PathnameExpansionOptions {
+				BaseDirectory = workspace.Path,
+				FollowDirectorySymlinks = false,
+				PreserveUnmatchedPatterns = false
+			}
+		);
+
+		Assert.Equal(
+			new[] {
+				System.IO.Path.Combine(
+					"root",
+					"link",
+					"inside.txt"
+				)
+			},
+			result
+		);
+	}
+
 	private sealed class PathnameExpansionWorkspace : IDisposable {
 		internal PathnameExpansionWorkspace() {
 			Path = System.IO.Path.Combine(
@@ -340,6 +464,48 @@ public sealed class PathnameExpanderCompatibilityTests {
 				path,
 				string.Empty
 			);
+		}
+
+		internal bool TryCreateDirectorySymbolicLink(
+			string linkRelativePath,
+			string targetRelativePath
+		) {
+			ArgumentException.ThrowIfNullOrEmpty(
+				linkRelativePath
+			);
+			ArgumentException.ThrowIfNullOrEmpty(
+				targetRelativePath
+			);
+			var linkPath = System.IO.Path.Combine(
+				Path,
+				linkRelativePath
+			);
+			var targetPath = System.IO.Path.Combine(
+				Path,
+				targetRelativePath
+			);
+			var directory = System.IO.Path.GetDirectoryName(
+				linkPath
+			);
+			if ( !string.IsNullOrEmpty( directory ) ) {
+				Directory.CreateDirectory(
+					directory
+				);
+			}
+			try {
+				Directory.CreateSymbolicLink(
+					linkPath,
+					targetPath
+				);
+				return true;
+			} catch ( Exception exception ) when (
+				exception is IOException
+				or UnauthorizedAccessException
+				or PlatformNotSupportedException
+				or NotSupportedException
+			) {
+				return false;
+			}
 		}
 
 		public void Dispose() {

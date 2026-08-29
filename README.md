@@ -8,10 +8,18 @@ It is intended for applications that need more than a thin wrapper around `Syste
 
 The library originated as the command-neutral infrastructure developed while porting GNU Coreutils and related Unix utilities to C#. It is now a standalone package so unrelated command suites and applications can reuse the same tested foundation without depending on `Icod.CoreUtils`.
 
+> [!NOTE]
+> **2.1.0 adds canonical pathname globbing.** `FileSystem.Traversal.PathnameExpander`
+> now provides the authoritative expansion engine, including `*`, `?`, recursive
+> `**`, character classes, deterministic ordering, structured expansion issues,
+> and command-oriented `ExpandOperandsAsync`. Pathname grammar comes from
+> `Icod.Path 1.1.0`, while the synchronous `IO.PathnameExpander` remains available
+> as a compatibility facade.
+>
 > [!IMPORTANT]
-> **2.0.0 is a breaking release.** Deprecated compatibility surfaces maintained
-> only for migration have been removed. The package now contains only APIs owned
-> by the command-neutral framework itself.
+> **2.0.0 was a breaking release.** Deprecated compatibility surfaces maintained
+> only for migration were removed. The package contains only APIs owned by the
+> command-neutral framework itself.
 
 ## Why use it?
 
