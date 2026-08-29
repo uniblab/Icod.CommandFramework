@@ -1,3 +1,5 @@
+using Icod.Path;
+
 namespace Icod.CommandFramework.FileSystem.Traversal;
 
 /// <summary>
@@ -43,8 +45,15 @@ public sealed class PathnameExpansionOptions {
 	public UnmatchedPathnamePatternBehavior UnmatchedPatternBehavior { get; init; } =
 		UnmatchedPathnamePatternBehavior.PreserveAsLiteral;
 
-	/// <summary>Gets or initializes match ordering within each directory.</summary>
-	public PathnameExpansionMatchOrder MatchOrder { get; init; } = PathnameExpansionMatchOrder.Provider;
+	/// <summary>
+	/// Gets or initializes match ordering within each directory. The default is
+	/// deterministic host pathname ordering.
+	/// </summary>
+	public PathnameExpansionMatchOrder MatchOrder { get; init; } =
+		PathPlatformSemantics.Host.PathComparison == StringComparison.Ordinal
+			? PathnameExpansionMatchOrder.Ordinal
+			: PathnameExpansionMatchOrder.OrdinalIgnoreCase
+	;
 
 	/// <summary>
 	/// Gets or initializes which links may be followed while resolving intermediate pattern segments.

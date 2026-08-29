@@ -97,6 +97,23 @@ public sealed class PathnamePatternTests {
 	}
 
 	/// <summary>
+	/// Verifies POSIX absolute-root decomposition through Icod.Path on Unix-like hosts.
+	/// </summary>
+	[Fact]
+	public void PreservesPosixAbsoluteRootThroughIcodPathOnUnixLikeHosts() {
+		if ( OperatingSystem.IsWindows() ) {
+			return;
+		}
+
+		var pattern = PathnamePattern.Parse( "/root/**/*.txt" );
+
+		Assert.True( pattern.IsMatch( "/root/file.txt" ) );
+		Assert.True( pattern.IsMatch( "/root/one/two/file.txt" ) );
+		Assert.False( pattern.IsMatch( "root/file.txt" ) );
+		Assert.False( pattern.IsMatch( "/other/file.txt" ) );
+	}
+
+	/// <summary>
 	/// Verifies that recursive wildcard matching does not consume a protected leading-period segment.
 	/// </summary>
 	[Fact]
@@ -127,7 +144,7 @@ public sealed class PathnamePatternTests {
 
 
 	/// <summary>
-	/// Verifies drive, UNC, and device roots through the Windows pathname parser.
+	/// Verifies drive, current-volume, UNC, and device roots through Icod.Path.
 	/// </summary>
 	[Fact]
 	public void PreservesWindowsRootKindsWhenRunningOnWindows() {
@@ -137,8 +154,11 @@ public sealed class PathnamePatternTests {
 
 		Assert.True( PathnamePattern.Parse( @"C:\root\*.txt" ).IsMatch( @"C:\root\file.txt" ) );
 		Assert.False( PathnamePattern.Parse( @"C:\root\*.txt" ).IsMatch( @"D:\root\file.txt" ) );
+		Assert.True( PathnamePattern.Parse( @"C:/root/*.txt" ).IsMatch( @"c:\root\file.txt" ) );
+		Assert.True( PathnamePattern.Parse( @"\root\*.txt" ).IsMatch( @"\root\file.txt" ) );
 		Assert.True( PathnamePattern.Parse( @"\\server\share\*.txt" ).IsMatch( @"\\server\share\file.txt" ) );
 		Assert.True( PathnamePattern.Parse( @"\\?\C:\root\*.txt" ).IsMatch( @"\\?\C:\root\file.txt" ) );
+		Assert.True( PathnamePattern.Parse( @"\\?\UNC\server\share\*.txt" ).IsMatch( @"\\?\UNC\server\share\file.txt" ) );
 	}
 
 	/// <summary>
@@ -153,5 +173,17 @@ public sealed class PathnamePatternTests {
 		var options = new PathnamePatternOptions { BackslashEscapes = true };
 		Assert.True( PathnamePatternMatcher.IsSegmentMatch( @"a\*b", "a*b", options ) );
 		Assert.False( PathnamePatternMatcher.IsSegmentMatch( @"a\*b", "axxb", options ) );
+	}
+
+	/// <summary>
+	/// Verifies that the historical empty relative pattern remains matchable.
+	/// </summary>
+	[Fact]
+	public void PreservesEmptyPatternCompatibility() {
+		var pattern = PathnamePattern.Parse( string.Empty );
+
+		Assert.False( pattern.HasMetacharacters );
+		Assert.True( pattern.IsMatch( string.Empty ) );
+		Assert.False( pattern.IsMatch( "file.txt" ) );
 	}
 }

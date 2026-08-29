@@ -8,10 +8,18 @@ It is intended for applications that need more than a thin wrapper around `Syste
 
 The library originated as the command-neutral infrastructure developed while porting GNU Coreutils and related Unix utilities to C#. It is now a standalone package so unrelated command suites and applications can reuse the same tested foundation without depending on `Icod.CoreUtils`.
 
+> [!NOTE]
+> **2.1.0 adds canonical pathname globbing.** `FileSystem.Traversal.PathnameExpander`
+> now provides the authoritative expansion engine, including `*`, `?`, recursive
+> `**`, character classes, deterministic ordering, structured expansion issues,
+> and command-oriented `ExpandOperandsAsync`. Pathname grammar comes from
+> `Icod.Path 1.1.0`, while the synchronous `IO.PathnameExpander` remains available
+> as a compatibility facade.
+>
 > [!IMPORTANT]
-> **2.0.0 is a breaking release.** Deprecated compatibility surfaces maintained
-> only for migration have been removed. The package now contains only APIs owned
-> by the command-neutral framework itself.
+> **2.0.0 was a breaking release.** Deprecated compatibility surfaces maintained
+> only for migration were removed. The package contains only APIs owned by the
+> command-neutral framework itself.
 
 ## Why use it?
 
@@ -51,9 +59,9 @@ The package is organized into focused namespaces. Most areas also contain a loca
 | `Icod.CommandFramework.CommandLine` | GNU/POSIX-style option parsing: short options, clustered short options, long options and abbreviations, option values, operand ordering, source positions, rewrite rules, and structured parse errors. |
 | `Icod.CommandFramework.Diagnostics` | Command execution context, standard streams, cancellation, command results, exit-code conventions, and consistent program-name-prefixed diagnostics. |
 | `Icod.CommandFramework.Delimiters` | Byte delimiters and separators, repeating separator cycles, and incremental multibyte delimiter matching across buffer boundaries. |
-| `Icod.CommandFramework.IO` | Input operands and the conventional `-` standard-input marker, byte/token readers, delimited readers and writers, bounded stream operations, pathname expansion, text/byte adaptation, and temporary spooling. |
+| `Icod.CommandFramework.IO` | Input operands and the conventional `-` standard-input marker, byte/token readers, delimited readers and writers, bounded stream operations, the legacy synchronous pathname-expansion facade, text/byte adaptation, and temporary spooling. |
 | `Icod.CommandFramework.Records` | Byte-preserving record models and readers/writers, including segmented processing for records too large to materialize as one buffer. |
-| `Icod.CommandFramework.FileSystem` | Filesystem capability discovery, metadata, POSIX mode vocabulary, traversal, mutation, recursive mutation, and transactional replacement through reusable system/provider boundaries. |
+| `Icod.CommandFramework.FileSystem` | Filesystem capability discovery, metadata, canonical pathname-pattern expansion and traversal, POSIX mode vocabulary, mutation, recursive mutation, and transactional replacement through reusable system/provider boundaries. |
 | `Icod.CommandFramework.Platform` | Cross-platform feature/result contracts, user/group and current-identity services, security-context capability checks, and SELinux integration where available. |
 | `Icod.CommandFramework.Text` | Byte-preserving text units and logical lines, malformed-encoding policy, locale classification, Unicode display width, display-column tracking, and explicit/recurring tab-stop models. |
 | `Icod.CommandFramework.RegularExpressions` | Fully managed GNU Basic, GNU Extended, and GNU Emacs regular-expression profiles with POSIX/GNU leftmost-longest matching, captures, locale-aware character classes, cancellation/resource limits, and exact byte-coordinate matching. |
@@ -81,7 +89,32 @@ Portable command-line tools need more than `File.Copy` and `Directory.EnumerateF
 
 The intent is to separate **what the platform can do** from **what a command chooses to do**. A copy, remove, archive, or install command can build its own policy on top of the common mechanics rather than embedding that policy in the framework.
 
-Canonical-path resolution is intentionally maintained in the separate `Icod.Path` package and is referenced by `Icod.CommandFramework`.
+Canonical-path resolution and pathname grammar are intentionally maintained in the separate `Icod.Path` package and are referenced by `Icod.CommandFramework`.
+
+#### Pathname patterns and glob expansion
+
+The canonical globbing API is `Icod.CommandFramework.FileSystem.Traversal.PathnameExpander`. `PathnamePattern` supplies matching without filesystem enumeration, `ExpandAsync` exposes provenance-preserving expansion events, and `ExpandOperandsAsync` supplies the ordered pathname collection most command implementations need.
+
+The canonical pattern grammar is segment-aware:
+
+- `*` matches zero or more characters within one pathname segment.
+- `?` matches exactly one character within one pathname segment.
+- `**` is recursive only when the complete segment is exactly `**`; it matches zero or more pathname segments.
+- `[abc]`, `[a-z]`, `[!a-z]`, and `[^a-z]` are character classes in the canonical traversal API.
+- An unterminated or otherwise unparseable character class is treated as literal text rather than guessed into another pattern.
+- By default, wildcard tokens do not match a leading `.` unless the segment explicitly begins with a literal period. `LeadingPeriodPolicy` can opt into wildcard matching.
+- Host pathname case rules are used by default: ordinal case-insensitive on Windows and ordinal case-sensitive elsewhere.
+- On Unix-like hosts, backslash can quote a following metacharacter by default. On Windows it is a pathname separator.
+
+Path roots, separators, volume identity, and component decomposition come from `Icod.Path`; wildcard meaning, matching, filesystem enumeration, recursive traversal, ordering, link policy, and unmatched-pattern policy remain owned by `Icod.CommandFramework`.
+
+Expansion defaults are intentionally conservative and deterministic. Unmatched patterns are preserved as literal operands, wildcard-discovered directory links are not followed, filesystem boundaries may be crossed unless disabled, and matches are ordered deterministically according to host pathname comparison. `PathnameExpansionOptions` exposes the corresponding policies explicitly, including provider-order opt-out, depth and per-directory resource limits, error continuation, and filesystem boundaries.
+
+`ExpandOperandsAsync` retains literal operand spellings even when file/directory filtering is enabled. This allows command code to preserve conventional operands such as `-` and to decide for itself whether a literal pathname must exist. Non-root expansion events remain available through `PathnameOperandExpansionResult.Issues`.
+
+`Icod.CommandFramework.IO.PathnameExpander` remains as a synchronous compatibility facade for existing consumers. Its intentionally narrower historical grammar recognizes `*`, `?`, and segment-level `**`; bracket expressions remain literal through that legacy surface. New pathname-expansion code should prefer `FileSystem.Traversal`.
+
+See [`src/FileSystem/Traversal/README.md`](src/FileSystem/Traversal/README.md).
 
 ### Text and display width
 
@@ -159,7 +192,7 @@ Some capabilities are naturally platform-specific. For example, SELinux support 
 
 `Icod.CommandFramework` depends on:
 
-- `Icod.Path` — canonical and platform-aware path infrastructure.
+- `Icod.Path 1.1.0` — canonical-path services plus platform-aware pathname grammar and decomposition used by the globbing layer.
 
 ## Installation
 
@@ -228,6 +261,14 @@ The framework was extracted from the shared infrastructure developed for `Icod.C
 That history matters because these APIs were not designed only from hypothetical abstractions: they were exercised against concrete requirements involving GNU-style option parsing, byte-oriented pipelines, filesystem edge cases, regular-expression compatibility, and cross-platform tests.
 
 The standalone package exists so that infrastructure can now be used independently.
+
+## Authors
+
+Timothy J. Bruce <uniblab@hotmail.com>.
+
+## Copyright
+
+Copyright (c) 2026 Timothy J. Bruce
 
 ## License
 

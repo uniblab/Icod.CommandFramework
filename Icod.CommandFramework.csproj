@@ -12,11 +12,11 @@
 		<AssemblyName>Icod.CommandFramework</AssemblyName>
 		<RootNamespace>Icod.CommandFramework</RootNamespace>
 		<Configurations>Debug;Release;Staging</Configurations>
-		<Version>2.0.0</Version>
+		<Version>2.1.0</Version>
 	</PropertyGroup>
 	<PropertyGroup>
-		<PackageVersion>2.0.0</PackageVersion>
-		<PackageReleaseNotes>Breaking 2.0.0 release: remove deprecated compatibility surfaces and legacy migration residue, leaving only command-neutral infrastructure owned by Icod.CommandFramework.</PackageReleaseNotes>
+		<PackageVersion>2.1.0</PackageVersion>
+		<PackageReleaseNotes>2.1.0 consolidates pathname expansion around FileSystem.Traversal.PathnameExpander; adds command-oriented ExpandOperandsAsync, deterministic host ordering, *, ?, recursive **, character classes, leading-period, unmatched-pattern, link, boundary, resource-limit, and structured-error policies; uses Icod.Path 1.1.0 for pathname grammar; and retains IO.PathnameExpander as a synchronous compatibility facade.</PackageReleaseNotes>
 		<Authors>Timothy J. Bruce</Authors>
 		<Description>Cross-platform .NET infrastructure for Unix-style command-line tools, including argument parsing, diagnostics, byte-oriented streaming, filesystem operations, records, GNU/POSIX regular expressions, temporary storage, and Unicode text.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -27,7 +27,7 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<Deterministic>true</Deterministic>
-		<PackageTags>command-line;cli;command-framework;command-line-parser;argument-parsing;option-parsing;getopt;unix;posix;gnu;filesystem;file-io;streaming;byte-streaming;records;regular-expressions;regex;gnu-regex;posix-regex;temporary-files;unicode;text;bre;ere</PackageTags>
+		<PackageTags>command-line;cli;command-framework;command-line-parser;argument-parsing;option-parsing;getopt;unix;posix;gnu;filesystem;file-io;streaming;byte-streaming;records;regular-expressions;regex;gnu-regex;posix-regex;temporary-files;unicode;text;bre;ere;globbing;wildcards;pathname-expansion</PackageTags>
 		<RepositoryUrl>https://github.com/uniblab/Icod.CommandFramework</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageIcon>icon.png</PackageIcon>
@@ -93,6 +93,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Icod.Path" Version="1.0.0" />
+		<PackageReference Include="Icod.Path" Version="1.1.0" />
 	</ItemGroup>
 </Project>

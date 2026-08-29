@@ -7,7 +7,7 @@ namespace Icod.CommandFramework.FileSystem.Traversal;
 /// <summary>
 /// Expands eligible pathname operands over an injectable one-level filesystem provider.
 /// </summary>
-public sealed class PathnameExpander {
+public sealed partial class PathnameExpander {
 	private readonly IReadOnlyFileSystemProvider _provider;
 
 	/// <summary>

@@ -1,3 +1,5 @@
+using Icod.Path;
+
 namespace Icod.CommandFramework.FileSystem.Traversal;
 
 /// <summary>
@@ -58,7 +60,7 @@ public sealed class PathnamePatternOptions {
 	/// Gets or initializes whether a backslash quotes the following metacharacter inside a segment.
 	/// The default is enabled on Unix-like hosts and disabled on Windows, where backslash is a pathname separator.
 	/// </summary>
-	public bool BackslashEscapes { get; init; } = !OperatingSystem.IsWindows();
+	public bool BackslashEscapes { get; init; } = PathPlatformKind.Windows != PathPlatformSemantics.Host.Kind;
 
 
 	/// <summary>
@@ -89,6 +91,6 @@ public sealed class PathnamePatternOptions {
 	internal bool ResolveCaseSensitive() => CaseSensitivity switch {
 		PathCaseSensitivity.Sensitive => true,
 		PathCaseSensitivity.Insensitive => false,
-		_ => !OperatingSystem.IsWindows()
+		_ => PathPlatformSemantics.Host.PathComparison == StringComparison.Ordinal
 	};
 }
