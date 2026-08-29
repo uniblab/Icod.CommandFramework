@@ -1,5 +1,5 @@
-using Path = global::System.IO.Path;
 using System.Collections.ObjectModel;
+using Icod.Path;
 
 namespace Icod.CommandFramework.FileSystem.Traversal;
 
@@ -70,26 +70,35 @@ public sealed class PathnamePattern {
 		options ??= PathnamePatternOptions.Default;
 		options.Validate();
 
-		string root;
+		if ( 0 == pattern.Length ) {
+			return new PathnamePattern(
+				pattern,
+				options,
+				string.Empty,
+				Array.Empty<PathPatternSegment>(),
+				requiresDirectory: false
+			);
+		}
+
+		PathSyntaxParts syntax;
 		try {
-			root = System.IO.Path.GetPathRoot( pattern ) ?? string.Empty;
-		} catch ( Exception exception ) when (
-			exception is ArgumentException
-			or NotSupportedException
-			or PathTooLongException
-		) {
+			syntax = PathSyntaxParser.Parse(
+				pattern,
+				PathPlatformSemantics.Host
+			);
+		} catch ( ArgumentException exception ) {
 			throw new ArgumentException( "The pathname pattern has an invalid platform root.", nameof( pattern ), exception );
 		}
 
-		var remainder = pattern[root.Length..];
-		var separators = GetSeparators();
-		var requiresDirectory = pattern.Length > root.Length && separators.Contains( pattern[^1] );
-		var rawSegments = remainder.Split( separators, StringSplitOptions.RemoveEmptyEntries );
-		var segments = new List<PathPatternSegment>( rawSegments.Length );
-		foreach ( var rawSegment in rawSegments ) {
+		var requiresDirectory = syntax.Components.Count > 0
+			&& PathPlatformSemantics.Host.IsDirectorySeparator( pattern[^1] );
+		var segments = new List<PathPatternSegment>(
+			syntax.Components.Count
+		);
+		foreach ( var rawSegment in syntax.Components ) {
 			segments.Add( ParseSegment( rawSegment, options ) );
 		}
-		return new PathnamePattern( pattern, options, root, segments, requiresDirectory );
+		return new PathnamePattern( pattern, options, syntax.RootPath, segments, requiresDirectory );
 	}
 
 	/// <summary>
@@ -121,14 +130,21 @@ public sealed class PathnamePattern {
 		ArgumentNullException.ThrowIfNull( path );
 
 		string pathRoot;
-		try {
-			pathRoot = System.IO.Path.GetPathRoot( path ) ?? string.Empty;
-		} catch ( Exception exception ) when (
-			exception is ArgumentException
-			or NotSupportedException
-			or PathTooLongException
-		) {
-			return false;
+		List<string> pathSegments;
+		if ( 0 == path.Length ) {
+			pathRoot = string.Empty;
+			pathSegments = new List<string>();
+		} else {
+			try {
+				var syntax = PathSyntaxParser.Parse(
+					path,
+					PathPlatformSemantics.Host
+				);
+				pathRoot = syntax.RootPath;
+				pathSegments = syntax.Components.ToList();
+			} catch ( ArgumentException ) {
+				return false;
+			}
 		}
 
 		if ( (Root.Length == 0) != (pathRoot.Length == 0) ) {
@@ -138,8 +154,6 @@ public sealed class PathnamePattern {
 			return false;
 		}
 
-		var remainder = path[pathRoot.Length..];
-		var pathSegments = remainder.Split( GetSeparators(), StringSplitOptions.RemoveEmptyEntries ).ToList();
 		IReadOnlyList<PathPatternSegment> matchingSegments = _segments;
 		if ( HasMetacharacters ) {
 			pathSegments.RemoveAll( static segment => segment == "." );
@@ -374,16 +388,7 @@ public sealed class PathnamePattern {
 		string second,
 		PathnamePatternOptions options
 	) {
-		var normalizedFirst = NormalizeRoot( first );
-		var normalizedSecond = NormalizeRoot( second );
-		return string.Equals( normalizedFirst, normalizedSecond, options.ResolveStringComparison() );
-	}
-
-	private static string NormalizeRoot( string root ) {
-		if ( System.IO.Path.AltDirectorySeparatorChar == System.IO.Path.DirectorySeparatorChar ) {
-			return root;
-		}
-		return root.Replace( System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar );
+		return string.Equals( first, second, options.ResolveStringComparison() );
 	}
 
 	private static bool CharactersEqual(
@@ -393,10 +398,6 @@ public sealed class PathnamePattern {
 	) => options.ResolveCaseSensitive()
 		? first == second
 		: char.ToUpperInvariant( first ) == char.ToUpperInvariant( second );
-
-	private static char[] GetSeparators() => System.IO.Path.AltDirectorySeparatorChar == System.IO.Path.DirectorySeparatorChar
-		? new[] { System.IO.Path.DirectorySeparatorChar }
-		: new[] { System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar };
 }
 
 /// <summary>

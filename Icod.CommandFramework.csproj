@@ -12,11 +12,11 @@
 		<AssemblyName>Icod.CommandFramework</AssemblyName>
 		<RootNamespace>Icod.CommandFramework</RootNamespace>
 		<Configurations>Debug;Release;Staging</Configurations>
-		<Version>2.0.0</Version>
+		<Version>2.1.0-alpha.1</Version>
 	</PropertyGroup>
 	<PropertyGroup>
-		<PackageVersion>2.0.0</PackageVersion>
-		<PackageReleaseNotes>Breaking 2.0.0 release: remove deprecated compatibility surfaces and legacy migration residue, leaving only command-neutral infrastructure owned by Icod.CommandFramework.</PackageReleaseNotes>
+		<PackageVersion>2.1.0-alpha.1</PackageVersion>
+		<PackageReleaseNotes>CF-G01: adopt Icod.Path 1.1.0 pathname decomposition as the grammar authority for pathname patterns and establish the 2.1 globbing-consolidation foundation.</PackageReleaseNotes>
 		<Authors>Timothy J. Bruce</Authors>
 		<Description>Cross-platform .NET infrastructure for Unix-style command-line tools, including argument parsing, diagnostics, byte-oriented streaming, filesystem operations, records, GNU/POSIX regular expressions, temporary storage, and Unicode text.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -93,6 +93,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Icod.Path" Version="1.0.0" />
+		<PackageReference Include="Icod.Path" Version="1.1.0" />
 	</ItemGroup>
 </Project>
