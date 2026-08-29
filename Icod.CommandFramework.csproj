@@ -12,11 +12,11 @@
 		<AssemblyName>Icod.CommandFramework</AssemblyName>
 		<RootNamespace>Icod.CommandFramework</RootNamespace>
 		<Configurations>Debug;Release;Staging</Configurations>
-		<Version>2.1.0-alpha.3</Version>
+		<Version>2.1.0-alpha.4</Version>
 	</PropertyGroup>
 	<PropertyGroup>
-		<PackageVersion>2.1.0-alpha.3</PackageVersion>
-		<PackageReleaseNotes>CF-G03: replace the legacy IO pathname-expansion walker with a compatibility facade over the canonical traversal expander while preserving its public API and legacy wildcard contract.</PackageReleaseNotes>
+		<PackageVersion>2.1.0-alpha.4</PackageVersion>
+		<PackageReleaseNotes>CF-G04: harden and document the canonical pathname-pattern and glob-expansion contract, including wildcard, character-class, hidden-entry, ordering, filtering, cancellation, and legacy-facade boundaries.</PackageReleaseNotes>
 		<Authors>Timothy J. Bruce</Authors>
 		<Description>Cross-platform .NET infrastructure for Unix-style command-line tools, including argument parsing, diagnostics, byte-oriented streaming, filesystem operations, records, GNU/POSIX regular expressions, temporary storage, and Unicode text.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -27,7 +27,7 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<Deterministic>true</Deterministic>
-		<PackageTags>command-line;cli;command-framework;command-line-parser;argument-parsing;option-parsing;getopt;unix;posix;gnu;filesystem;file-io;streaming;byte-streaming;records;regular-expressions;regex;gnu-regex;posix-regex;temporary-files;unicode;text;bre;ere</PackageTags>
+		<PackageTags>command-line;cli;command-framework;command-line-parser;argument-parsing;option-parsing;getopt;unix;posix;gnu;filesystem;file-io;streaming;byte-streaming;records;regular-expressions;regex;gnu-regex;posix-regex;temporary-files;unicode;text;bre;ere;globbing;wildcards;pathname-expansion</PackageTags>
 		<RepositoryUrl>https://github.com/uniblab/Icod.CommandFramework</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageIcon>icon.png</PackageIcon>

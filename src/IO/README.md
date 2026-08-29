@@ -8,9 +8,17 @@ The `Icod.CommandFramework.IO` namespace contains reusable streaming, record, to
 - Read and write delimited text or byte records incrementally.
 - Read byte tokens incrementally using an explicit set of separator bytes.
 - Open file operands while preserving the conventional `-` standard-input marker.
-- Expand `*`, `?`, and recursive `**` pathname patterns under explicit policies.
+- Preserve the synchronous compatibility facade for `*`, `?`, and recursive `**` pathname expansion.
 - Copy, compare, skip, and limit streams with bounded memory use.
 - Spool data when an operation requires replay without assuming seekable input.
+
+## Pathname expansion compatibility surface
+
+`Icod.CommandFramework.IO.PathnameExpander` is retained for existing consumers that need its synchronous collection API. Its public wildcard contract remains deliberately narrow: `*` and `?` match within one segment, `**` is recursive only as a complete segment, bracket expressions are literal, unmatched patterns are preserved by default, and `-` passes through unchanged.
+
+The implementation delegates filesystem traversal to `Icod.CommandFramework.FileSystem.Traversal.PathnameExpander`; it no longer owns a second directory walker. New code should use the traversal namespace directly, especially when it needs character classes, structured no-match/error/cycle/boundary events, explicit link policy, resource limits, or cancellation.
+
+See [`../FileSystem/Traversal/README.md`](../FileSystem/Traversal/README.md).
 
 ## Design notes
 
