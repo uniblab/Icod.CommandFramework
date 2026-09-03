@@ -14,17 +14,25 @@ Import-Module (Join-Path $PSScriptRoot 'RepositoryTools.psm1') -Force
 $solutionPath = Get-RepositorySolution -RepositoryRoot $repositoryRoot -AllowMissing
 $hasSolution = $null -ne $solutionPath
 $hasExecutables = $false
+$portableSolutionPath = ''
 
 if ($hasSolution) {
     $projects = @(Get-SolutionProjects -SolutionPath $solutionPath -RepositoryRoot $repositoryRoot)
     $executables = @(Get-ExecutableProjects -ProjectPaths $projects -Configuration $Configuration)
     $hasExecutables = 0 -lt $executables.Count
+    $portableSolutionPath = [System.IO.Path]::GetRelativePath(
+        $repositoryRoot,
+        $solutionPath
+    ).Replace(
+        [System.IO.Path]::DirectorySeparatorChar,
+        '/'
+    )
 }
 
 $result = [ordered]@{
     RepositoryRoot = $repositoryRoot
     HasSolution = $hasSolution
-    SolutionPath = if ($hasSolution) { $solutionPath } else { '' }
+    SolutionPath = $portableSolutionPath
     HasExecutables = $hasExecutables
 }
 
