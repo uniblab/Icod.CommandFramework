@@ -95,13 +95,13 @@ public sealed class LiteralPrefixRegularExpressionTests {
 
 	[Fact]
 	public void StructuredPrefixSearchContinuesAfterFalseCandidate() {
-		var expression = CompileBasic( "TAR.*GET" );
-		var result = expression.Match( "xxTAR-nope xxTAR-middle-GETyy" );
+		var expression = CompileBasic( "TAR[[:digit:]]GET" );
+		var result = expression.Match( "xxTARx-nope xxTAR1GETyy" );
 
 		Assert.True( result.IsSuccess );
 		Assert.True( result.IsMatch );
-		Assert.Equal( 13, result.Match!.Index );
-		Assert.Equal( "TAR-middle-GET", result.Match.Value );
+		Assert.Equal( 14, result.Match!.Index );
+		Assert.Equal( "TAR1GET", result.Match.Value );
 	}
 
 	[Fact]
