@@ -3,8 +3,9 @@
 **Tranche:** R2.1 — conservative start-position acceleration  
 **Candidate 1 measurement head:** `e4212f3ce0d81aaef70c59b78b7bd2fc01fa1777`  
 **Candidate 2 implementation head:** `cc17fb83dc10ae587c767c116cdc5c09d53c7dc8`  
+**Candidate 2 measurement head:** `ddc21907da3f18e2d3eb6d0ccec0e3174b1da798`  
 **Reference baseline:** `2.1.0` at `460732c9f0cacb194bc6cd97c71612c492603eb6`  
-**Status:** Candidate 1 physically validated; Candidate 2 removes duplicate decode and awaits CI/physical confirmation
+**Status:** physically validated
 
 ## Candidate 1 physical result
 
@@ -55,15 +56,24 @@ For eligible unanchored plain literals it now:
 
 `RequireMatchAtStart=true` still bypasses the accelerator and uses the untouched general matcher. Finite `MaximumMatchStates` still disables the accelerator so resource-limit state accounting remains exactly compatible with 2.1.0.
 
-## Expected Candidate 2 outcome
+## Candidate 2 physical confirmation
 
-Candidate 2 should preserve Candidate 1's large miss improvements while removing the extra decode on successful matches.
+The focused physical comparison retained the same host, `InProcess` mode, 9-workload filter, two-pass ABBA order, and 30-second cooldown discipline. Allocation remained the strongest signal.
 
-Expected allocation behavior:
+Two-pass medians were:
 
-- `bre-literal-80-start` should return close to the original anchored allocation floor rather than Candidate 1's regression;
-- `bre-literal-4k-middle` should drop further because only one source decode remains;
-- `bre-literal-256k-end` should move much closer to the ~4.5 MiB anchored byte-mode floor; and
-- complete-miss cases should remain essentially unchanged from Candidate 1 because they already performed only one decode.
+| Scenario | 2.1.0 mean | Candidate 2 mean | Time change | 2.1.0 allocated | Candidate 2 allocated | Allocation change |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `bre-literal-256k-end` | 31.20 ms | 2.93 ms | -90.6% | 116.51 MiB | 4.51 MiB | -96.1% |
+| `bre-literal-256k-miss` | 33.65 ms | 3.01 ms | -91.1% | 116.51 MiB | 4.51 MiB | -96.1% |
+| `bre-literal-4k-middle` | 246.09 µs | 28.36 µs | -88.5% | 971.13 KiB | 72.42 KiB | -92.5% |
+| `bre-literal-80-start` | 1.40 µs | 0.67 µs | -51.8% | 4.31 KiB | 1.80 KiB | -58.2% |
+| `bre-long-literal-256k-miss` | 34.13 ms | 3.20 ms | -90.6% | 116.51 MiB | 4.51 MiB | -96.1% |
+| `bre-one-char-4k-miss` | 191.84 µs | 36.63 µs | -80.9% | 584.67 KiB | 72.37 KiB | -87.6% |
+| `bre-utf8-4k-middle` | 131.52 µs | 18.80 µs | -85.7% | 505.06 KiB | 54.44 KiB | -89.2% |
+| `ere-literal-256k-miss` | 37.19 ms | 3.39 ms | -90.9% | 116.51 MiB | 4.51 MiB | -96.1% |
+| `ere-utf8-256k-miss` | 23.79 ms | 2.27 ms | -90.5% | 59.38 MiB | 3.39 MiB | -94.3% |
 
-No broader AST-prefix inference is added in Candidate 2. Structured expressions such as `TARGET.*foo`, groups, alternation, assertions, repetition, classes, and backreferences continue through the existing matcher.
+Candidate 2 therefore removes Candidate 1's duplicate-decode penalty on successful literals while preserving the large complete-miss improvements. In particular, `bre-literal-80-start` falls below the 2.1.0 allocation level and the 256 KiB end-hit case reaches the same ~4.5 MiB byte-mode floor as complete misses.
+
+No broader AST-prefix inference is part of Candidate 2. That broader but still conservative inference is evaluated separately as Candidate 3.
