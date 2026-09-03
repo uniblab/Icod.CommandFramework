@@ -67,11 +67,12 @@ foreach ($report in $reports) {
             continue
         }
         $mean = [string]$meanProperty.Value
-        if (
-            -not [string]::IsNullOrWhiteSpace($mean)
-            -and $mean -ne 'NA'
-            -and $mean -ne '?'
-        ) {
+        $hasMeasuredMean = (
+            (-not [string]::IsNullOrWhiteSpace($mean)) -and
+            ($mean -ne 'NA') -and
+            ($mean -ne '?')
+        )
+        if ($hasMeasuredMean) {
             $measuredRow = $true
             break
         }
