@@ -4,7 +4,7 @@
 **Target release:** `2.2.0`  
 **Consumer driver:** `Icod.Grep 1.6.0` T6 performance work  
 **Theme:** reduce managed BRE/ERE search cost and allocation without changing regex semantics  
-**Status:** R2.0 benchmark foundation implemented and cross-platform validated — physical `2.1.0` reference baseline pending
+**Status:** R2.0 physical benchmark baseline complete — R2.1 start-position acceleration in progress
 
 ## 1. Why 2.2.0 exists
 
@@ -70,7 +70,7 @@ Hosted CI benchmark execution is diagnostic/smoke evidence only. Narrow quantita
 
 ## 4. R2.0 — Direct regex benchmark foundation
 
-**Implementation status:** code-side complete and validated. Quantitative physical-reference baseline collection remains the R2.0 exit gate.
+**Implementation status:** complete. The code-side harness and the quantitative physical-reference baseline are both closed.
 
 The implemented non-packable project is `benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj`. It uses only public CommandFramework regular-expression APIs, remains outside `Icod.CommandFramework.sln`, and does not change production regex source.
 
@@ -84,7 +84,7 @@ Implemented benchmark groups are:
 
 The deterministic smoke covers representative hits, misses, one-character search, byte and valid UTF-8 inputs, malformed UTF-8 Preserve/Replace behavior, malformed UTF-8 Throw behavior, and all structural scenarios.
 
-PR CI now builds and runs the existing 468-test CommandFramework suite plus the regex benchmark build/smoke on Windows, Linux, and macOS. Windows additionally runs the pinned-`2.1.0` comparison collector under Windows PowerShell 5.1 in `-Smoke` mode. Canonical workflow run `33696871818` passed on exact implementation head `df32f285aadf08ad7142b6dd07ae6961791e39fd`.
+PR CI builds and runs the existing 468-test CommandFramework suite plus the regex benchmark build/smoke on Windows, Linux, and macOS. Windows additionally exercises the pinned-`2.1.0` comparison collector under Windows PowerShell 5.1 and validates a real BenchmarkDotNet execution path.
 
 The collector `benchmarks/Collect-RegexReferenceComparison.ps1`:
 
@@ -96,71 +96,50 @@ The collector `benchmarks/Collect-RegexReferenceComparison.ps1`:
 6. waits 30 seconds between variants by default;
 7. records each pass independently with BenchmarkDotNet artifacts and reproducibility metadata;
 8. records the sibling `Icod.Grep/hardware_inventory.txt` SHA-256 when available, without copying its contents; and
-9. has a Windows-PowerShell-safe `-Smoke` mode exercised by PR CI.
+9. uses BenchmarkDotNet in-process mode for physical collection so the authoritative path is not dependent on generated-project behavior from a particular .NET SDK patch level.
 
-### Required benchmark dimensions
+### R2.0 physical-reference result
 
-#### Literal search
+The retained physical series is documented in
+[`Icod.CommandFramework-2.2.0-R2.0-Reference-Baseline-Report.md`](Icod.CommandFramework-2.2.0-R2.0-Reference-Baseline-Report.md).
 
-Measure BRE and ERE equivalents for:
+Collection identity:
 
-- one-character literal;
-- short literal (`TARGET`);
-- longer literal sequence;
-- hit at start;
-- hit near middle;
-- hit near end;
-- complete miss; and
-- repeated/dense hits where appropriate.
+- baseline: `460732c9f0cacb194bc6cd97c71612c492603eb6`;
+- infrastructure candidate: `c002701cd980e9772b74952075546ba147fcfa61`;
+- mode: BenchmarkDotNet `InProcess`;
+- two passes / ABBA ordering / 30-second cooldowns;
+- exact reference-hardware SHA-256 `d73c6e3314dc77d24dd2b28a51221d9b77b5cc6b9796ae00fe8c9c0d92821c9b`;
+- 32/32 workloads executed in every pass.
 
-Use input lengths approximately:
+The candidate contains no production regex optimization, so candidate-versus-baseline differences establish the measurement noise floor rather than a claimed speedup.
 
-- 80 bytes;
-- 4 KiB;
-- 256 KiB; and
-- at least one multi-MiB stress case where practical.
+Principal findings:
 
-#### Structural regex cases
+- allocation is extremely stable between baseline and infrastructure candidate; the worst observed allocation delta is about **0.03%**;
+- timing is noisier, with a roughly **9.5%** median two-pass spread across the combined baseline/candidate series;
+- large byte-mode anchored controls allocate about **18 bytes per input byte**, confirming linear decode/input materialization cost;
+- a 256 KiB unanchored BRE literal miss allocates about **116.5 MiB**, versus about **4.5 MiB** for the corresponding anchored control — approximately a **26×** allocation multiplier;
+- short and long 256 KiB literal misses allocate essentially the same amount, showing literal width is not the first-order allocation driver;
+- a repeated public `Match` workload over one 64 KiB record allocates about **101 MiB**, preserving the rationale for later prepared-input/decode reuse;
+- branching and capture/backreference structural workloads allocate materially more than simple deterministic cases; and
+- compilation cost is negligible for the observed Grep problem.
 
-Include representative:
+### R2.0 conclusion
 
-- alternation;
-- `*`, `+`, `?`, and bounded repetition as supported by syntax;
-- dot and bracket classes;
-- beginning/end assertions;
-- word-boundary assertions;
-- captures;
-- backreferences; and
-- expressions that can match empty input.
+The physical series distinguishes the principal suspected contributors sufficiently to close the tranche:
 
-#### Encoding profiles
-
-Measure:
-
-- byte mode / Latin-1-preserving inputs;
-- valid UTF-8; and
-- malformed UTF-8 under each supported invalid-input policy where meaningful.
-
-### R2.0 measurements
-
-Capture at minimum:
-
-- mean/median elapsed time;
-- managed allocation per operation;
-- GC counts where useful; and
-- input length / scenario identity.
-
-Add deterministic smoke cases to ordinary PR CI so the benchmark project remains portable on Windows, Linux, and macOS without turning hosted timings into pass/fail thresholds.
-
-### R2.0 exit criterion
-
-The code-side measurement foundation is complete. R2.0 closes quantitatively after the physical Windows reference host collects the untouched `2.1.0` versus current `2.2.0` infrastructure series and the results distinguish the relative contribution of decode materialization, unanchored start scanning, deterministic state transitions, and branching/capture machinery.
-
-No production regex optimization begins before that physical-reference series is inspected.
+1. decode/materialization is linear and significant;
+2. unanchored start scanning is the largest directly isolated multiplier and therefore R2.1's first target;
+3. general deterministic/branching state machinery remains a separate R2.2 target;
+4. repeated public search keeps R2.3 justified after R2.1/R2.2 remeasurement; and
+5. compilation is not an optimization priority.
 
 ## 5. R2.1 — Conservative start-position acceleration
 
-The first likely implementation target is unanchored search.
+**Status:** in progress.
+
+The first implementation target is unanchored search.
 
 Today, `Search` can invoke the full expression at every possible decoded unit until a match is found. For expressions with a provable first literal or mandatory literal prefix, most of those start attempts are impossible.
 
@@ -174,6 +153,8 @@ Potential forms include:
 - fixed literal prefix;
 - anchored-at-input / anchored-at-line metadata; or
 - another immutable search-plan representation established at compile time.
+
+The R2.0 physical baseline provides a direct acceptance signal: the 256 KiB byte-mode BRE literal miss currently allocates about **116.5 MiB** per operation, roughly **26×** its anchored control. A correct literal-prefix acceleration should reduce this by an amount vastly larger than the ~0.03% allocation noise floor.
 
 ### Correctness rules
 
@@ -191,6 +172,12 @@ Examples:
 ### Success criterion
 
 Literal-hit/miss and long-record Grep BRE/ERE workloads should show a substantial reduction in complete expression start attempts and managed allocation, with zero behavioral change.
+
+Because elapsed-time measurement has meaningful physical-host variance, direct R2.1 acceptance emphasizes:
+
+- allocation reduction;
+- direct start-attempt reduction where observable in tests/benchmarks; and
+- timing improvements materially larger than the R2.0 noise floor before claiming a speedup.
 
 ## 6. R2.2 — Deterministic state-path allocation reduction
 
@@ -218,7 +205,9 @@ Do not mutate reusable shared state in a way that compromises recursion, backtra
 
 Each byte-oriented `Match` currently materializes a decoded `RegexInput`. Whether this remains a dominant cost after R2.1/R2.2 must be measured rather than assumed.
 
-If it remains significant, evaluate options such as:
+R2.0 confirms that the cost is real: large byte-mode anchored controls allocate about 18 bytes per input byte, and the repeated 64 KiB public-search workload allocates about 101 MiB. This is sufficient to keep R2.3 on the roadmap, but not sufficient to move it ahead of the much larger unanchored-start multiplier.
+
+If it remains significant after R2.1/R2.2, evaluate options such as:
 
 - internal prepared-input representation reused across repeated searches of the same record;
 - cheaper byte-mode representation that preserves source mapping without unnecessary Rune-oriented structures;
@@ -270,7 +259,7 @@ The production project now carries:
 - `<Version>2.2.0</Version>`
 - `<PackageVersion>2.2.0</PackageVersion>`
 
-with release notes describing the measurement-first managed regex performance work. Production matching code remains behaviorally unchanged during R2.0.
+with release notes describing the measurement-first managed regex performance work. R2.0 leaves production matching behavior unchanged from 2.1.0; production optimization begins in R2.1.
 
 Prerelease package identifiers used for cross-repository validation do not change the eventual stable API contract.
 
@@ -278,7 +267,7 @@ Prerelease package identifiers used for cross-repository validation do not chang
 
 Ordinary PR CI continues to build and test CommandFramework on Windows, Linux, and macOS.
 
-R2.0 additionally builds the non-packable benchmark project and runs its deterministic smoke on all three host families. Windows also validates the pinned-baseline comparison orchestration under Windows PowerShell 5.1. BenchmarkDotNet quantitative output from hosted runners is observational only.
+The benchmark project remains non-packable. CI runs deterministic smoke on all three host families and a real Windows BenchmarkDotNet exercise plus pinned-baseline collector orchestration. Hosted timings remain observational only.
 
 Performance changes do not weaken Release warnings-as-errors or any existing package validation.
 
@@ -286,7 +275,7 @@ Performance changes do not weaken Release warnings-as-errors or any existing pac
 
 `Icod.CommandFramework 2.2.0` is complete when:
 
-- the direct regex benchmark suite exists and has a retained `2.1.0` baseline;
+- the direct regex benchmark suite exists and has a retained `2.1.0` physical baseline;
 - the principal managed BRE/ERE allocation hotspot has been materially reduced on measured workloads;
 - improvements are attributable to specific engine changes rather than benchmark noise;
 - all existing regex semantics and diagnostics remain green;
@@ -295,15 +284,16 @@ Performance changes do not weaken Release warnings-as-errors or any existing pac
 - Grep's focused physical-reference measurements confirm the shared-engine improvement survives real command use; and
 - documentation/release notes explain the performance work without promising unsupported universal percentages.
 
-## 13. Initial execution order
+## 13. Execution order
 
-The planned implementation order is:
+The current execution order is:
 
-1. **R2.0 — direct benchmark foundation / untouched 2.1.0 baseline** — code-side complete; physical baseline pending
-2. **R2.1 — conservative start-position acceleration**
+1. **R2.0 — direct benchmark foundation / untouched 2.1.0 baseline** — complete
+2. **R2.1 — conservative start-position acceleration** — in progress
 3. **R2.2 — deterministic state-path allocation reduction**
-4. **R2.3 — decode/prepared-input investigation, if measurements still justify it**
-5. **R2.4 — complex-pattern/resource-limit closure**
-6. **R2.5 — prerelease package and Icod.Grep consumer validation**
+4. **Remeasure direct CommandFramework workloads**
+5. **R2.3 — decode/prepared-input investigation, if measurements still justify it**
+6. **R2.4 — complex-pattern/resource-limit closure**
+7. **R2.5 — prerelease package and Icod.Grep consumer validation**
 
-As with Grep T6, measurement may reorder later tranches after R2.0/R2.1. The tranche labels remain stable for history even if execution priority changes.
+As with Grep T6, measurement may reorder later tranches after R2.1/R2.2. The tranche labels remain stable for history even if execution priority changes.
