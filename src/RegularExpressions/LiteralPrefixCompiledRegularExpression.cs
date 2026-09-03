@@ -4,28 +4,31 @@ using System.Buffers;
 using System.Text;
 
 /// <summary>
-/// Accelerates unanchored searches for expressions whose complete pattern is a provable literal sequence.
+/// Accelerates unanchored searches when a required leading literal run can be proven conservatively.
 /// </summary>
 internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularExpression {
 	private readonly ICompiledRegularExpression inner;
 	private readonly Rune[] prefix;
+	private readonly bool completeLiteral;
 	private readonly RegularExpressionOptions options;
 	private readonly IRegularExpressionCharacterClassProvider characterClassProvider;
 
 	private LiteralPrefixCompiledRegularExpression(
 		ICompiledRegularExpression inner,
 		Rune[] prefix,
+		bool completeLiteral,
 		RegularExpressionOptions options,
 		IRegularExpressionCharacterClassProvider characterClassProvider
 	) {
 		this.inner = inner;
 		this.prefix = prefix;
+		this.completeLiteral = completeLiteral;
 		this.options = options;
 		this.characterClassProvider = characterClassProvider;
 	}
 
 	/// <summary>
-	/// Creates an accelerated wrapper when the pattern is provably a plain literal sequence.
+	/// Creates an accelerated wrapper when a required leading literal run can be proven safely.
 	/// </summary>
 	internal static ICompiledRegularExpression Create(
 		ICompiledRegularExpression inner,
@@ -38,16 +41,28 @@ internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularE
 		ArgumentNullException.ThrowIfNull( options );
 		ArgumentNullException.ThrowIfNull( characterClassProvider );
 
-		if ( int.MaxValue != options.MaximumMatchStates || 0 != inner.CaptureCount ) {
+		if ( int.MaxValue != options.MaximumMatchStates ) {
 			return inner;
 		}
 
-		var prefix = TryGetPlainLiteralPrefix( pattern );
-		return 0 == prefix.Length
+		var completePrefix = TryGetPlainLiteralPrefix( pattern );
+		if ( 0 < completePrefix.Length && 0 == inner.CaptureCount ) {
+			return new LiteralPrefixCompiledRegularExpression(
+				inner,
+				completePrefix,
+				true,
+				options,
+				characterClassProvider
+			);
+		}
+
+		var requiredPrefix = RequiredLiteralPrefixAnalyzer.Analyze( pattern );
+		return 0 == requiredPrefix.Length
 			? inner
 			: new LiteralPrefixCompiledRegularExpression(
 				inner,
-				prefix,
+				requiredPrefix,
+				false,
 				options,
 				characterClassProvider
 			);
@@ -82,25 +97,43 @@ internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularE
 			);
 		}
 
-		var candidate = FindNextCandidate(
-			decodedInput,
-			firstStart,
-			cancellationToken
-		);
-		if ( 0 > candidate ) {
-			return RegularExpressionMatchResult.Succeeded( null );
-		}
+		var candidateStart = firstStart;
+		while ( true ) {
+			var candidate = FindNextCandidate(
+				decodedInput,
+				candidateStart,
+				cancellationToken
+			);
+			if ( 0 > candidate ) {
+				return RegularExpressionMatchResult.Succeeded( null );
+			}
 
-		var matchStart = decodedInput.GetSourceIndex( candidate );
-		var matchEnd = decodedInput.GetSourceIndex( candidate + prefix.Length );
-		return RegularExpressionMatchResult.Succeeded(
-			new RegularExpressionMatch(
-				matchStart,
-				matchEnd - matchStart,
-				input[ matchStart..matchEnd ],
-				Array.Empty<RegularExpressionCapture>()
-			)
-		);
+			var matchStart = decodedInput.GetSourceIndex( candidate );
+			if ( completeLiteral ) {
+				var matchEnd = decodedInput.GetSourceIndex( candidate + prefix.Length );
+				return RegularExpressionMatchResult.Succeeded(
+					new RegularExpressionMatch(
+						matchStart,
+						matchEnd - matchStart,
+						input[ matchStart..matchEnd ],
+						Array.Empty<RegularExpressionCapture>()
+					)
+				);
+			}
+
+			var result = inner.Match(
+				input,
+				options with {
+					StartIndex = matchStart,
+					RequireMatchAtStart = true
+				},
+				cancellationToken
+			);
+			if ( !result.IsSuccess || result.IsMatch ) {
+				return result;
+			}
+			candidateStart = candidate + 1;
+		}
 	}
 
 	/// <inheritdoc/>
@@ -149,25 +182,44 @@ internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularE
 			);
 		}
 
-		var candidate = FindNextCandidate(
-			decodedInput,
-			firstStart,
-			cancellationToken
-		);
-		if ( 0 > candidate ) {
-			return RegularExpressionByteMatchResult.Succeeded( null );
-		}
+		var candidateStart = firstStart;
+		while ( true ) {
+			var candidate = FindNextCandidate(
+				decodedInput,
+				candidateStart,
+				cancellationToken
+			);
+			if ( 0 > candidate ) {
+				return RegularExpressionByteMatchResult.Succeeded( null );
+			}
 
-		var matchStart = decodedInput.GetSourceIndex( candidate );
-		var matchEnd = decodedInput.GetSourceIndex( candidate + prefix.Length );
-		return RegularExpressionByteMatchResult.Succeeded(
-			new RegularExpressionByteMatch(
-				matchStart,
-				matchEnd - matchStart,
-				input.Slice( matchStart, matchEnd - matchStart ),
-				Array.Empty<RegularExpressionByteCapture>()
-			)
-		);
+			var matchStart = decodedInput.GetSourceIndex( candidate );
+			if ( completeLiteral ) {
+				var matchEnd = decodedInput.GetSourceIndex( candidate + prefix.Length );
+				return RegularExpressionByteMatchResult.Succeeded(
+					new RegularExpressionByteMatch(
+						matchStart,
+						matchEnd - matchStart,
+						input.Slice( matchStart, matchEnd - matchStart ),
+						Array.Empty<RegularExpressionByteCapture>()
+					)
+				);
+			}
+
+			var result = inner.Match(
+				input,
+				inputOptions,
+				matchOptions with {
+					StartByteOffset = matchStart,
+					RequireMatchAtStart = true
+				},
+				cancellationToken
+			);
+			if ( !result.IsSuccess || result.IsMatch ) {
+				return result;
+			}
+			candidateStart = candidate + 1;
+		}
 	}
 
 	/// <inheritdoc/>
