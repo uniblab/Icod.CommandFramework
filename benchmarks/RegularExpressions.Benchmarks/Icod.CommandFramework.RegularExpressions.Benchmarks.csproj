@@ -10,6 +10,7 @@
 		<AssemblyName>Icod.CommandFramework.RegularExpressions.Benchmarks</AssemblyName>
 		<RootNamespace>Icod.CommandFramework.RegularExpressions.Benchmarks</RootNamespace>
 		<IsPackable>false</IsPackable>
+		<UseAppHost>false</UseAppHost>
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\Icod.CommandFramework.csproj" />
