@@ -38,7 +38,7 @@ internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularE
 		ArgumentNullException.ThrowIfNull( options );
 		ArgumentNullException.ThrowIfNull( characterClassProvider );
 
-		if ( int.MaxValue != options.MaximumMatchStates ) {
+		if ( int.MaxValue != options.MaximumMatchStates || 0 != inner.CaptureCount ) {
 			return inner;
 		}
 
@@ -91,13 +91,15 @@ internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularE
 			return RegularExpressionMatchResult.Succeeded( null );
 		}
 
-		return inner.Match(
-			input,
-			options with {
-				StartIndex = decodedInput.GetSourceIndex( candidate ),
-				RequireMatchAtStart = true
-			},
-			cancellationToken
+		var matchStart = decodedInput.GetSourceIndex( candidate );
+		var matchEnd = decodedInput.GetSourceIndex( candidate + prefix.Length );
+		return RegularExpressionMatchResult.Succeeded(
+			new RegularExpressionMatch(
+				matchStart,
+				matchEnd - matchStart,
+				input[ matchStart..matchEnd ],
+				Array.Empty<RegularExpressionCapture>()
+			)
 		);
 	}
 
@@ -156,14 +158,15 @@ internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularE
 			return RegularExpressionByteMatchResult.Succeeded( null );
 		}
 
-		return inner.Match(
-			input,
-			inputOptions,
-			matchOptions with {
-				StartByteOffset = decodedInput.GetSourceIndex( candidate ),
-				RequireMatchAtStart = true
-			},
-			cancellationToken
+		var matchStart = decodedInput.GetSourceIndex( candidate );
+		var matchEnd = decodedInput.GetSourceIndex( candidate + prefix.Length );
+		return RegularExpressionByteMatchResult.Succeeded(
+			new RegularExpressionByteMatch(
+				matchStart,
+				matchEnd - matchStart,
+				input.Slice( matchStart, matchEnd - matchStart ),
+				Array.Empty<RegularExpressionByteCapture>()
+			)
 		);
 	}
 
