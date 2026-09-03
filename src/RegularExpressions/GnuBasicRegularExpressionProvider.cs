@@ -42,15 +42,20 @@ public sealed class GnuBasicRegularExpressionProvider : IRegularExpressionProvid
 		if ( expression is null ) {
 			return RegularExpressionCompileResult.Failed( parseResult.Diagnostic! );
 		}
-		return RegularExpressionCompileResult.Succeeded(
-			new GnuBasicCompiledRegularExpression(
-				pattern,
-				expression,
-				parseResult.CaptureCount,
-				options,
-				characterClassProvider
-			)
+		ICompiledRegularExpression compiled = new GnuBasicCompiledRegularExpression(
+			pattern,
+			expression,
+			parseResult.CaptureCount,
+			options,
+			characterClassProvider
 		);
+		compiled = LiteralPrefixCompiledRegularExpression.Create(
+			compiled,
+			pattern,
+			options,
+			characterClassProvider
+		);
+		return RegularExpressionCompileResult.Succeeded( compiled );
 	}
 
 	/// <inheritdoc/>
