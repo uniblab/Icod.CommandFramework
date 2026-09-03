@@ -116,7 +116,7 @@ jobs:
           -c Release
           --no-restore
           -p:ContinuousIntegrationBuild=true
-      - name: Exercise BenchmarkDotNet generated harness
+      - name: Exercise physical BenchmarkDotNet mode
         if: runner.os == 'Windows'
         run: >-
           dotnet run
@@ -125,6 +125,7 @@ jobs:
           --no-build
           --no-restore
           --
+          --inProcess
           --job Dry
           --filter '*RegexCompileBenchmarks*'
       - name: Validate BenchmarkDotNet execution artifacts
