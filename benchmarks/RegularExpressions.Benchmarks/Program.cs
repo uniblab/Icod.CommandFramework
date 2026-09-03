@@ -24,7 +24,7 @@ internal static class Program {
 	}
 
 	private static int ValidateBenchmarkArtifacts() {
-		var artifactDirectory = Path.GetFullPath( "BenchmarkDotNet.Artifacts" );
+		var artifactDirectory = System.IO.Path.GetFullPath( "BenchmarkDotNet.Artifacts" );
 		if ( !Directory.Exists( artifactDirectory ) ) {
 			Console.Error.WriteLine(
 				"BenchmarkDotNet did not produce its artifact directory."
