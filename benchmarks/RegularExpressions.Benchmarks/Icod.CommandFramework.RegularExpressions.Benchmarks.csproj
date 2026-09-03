@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<LangVersion>13.0</LangVersion>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Configurations>Debug;Release;Staging</Configurations>
+		<AssemblyName>Icod.CommandFramework.RegularExpressions.Benchmarks</AssemblyName>
+		<RootNamespace>Icod.CommandFramework.RegularExpressions.Benchmarks</RootNamespace>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\Icod.CommandFramework.csproj" />
+		<PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+	</ItemGroup>
+</Project>

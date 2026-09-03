@@ -88,3 +88,27 @@ jobs:
           -ArtifactDirectory artifacts
           -Configuration '${{ env.CONFIGURATION }}'
           -AllowNoPackages
+      - name: Restore regex benchmark project
+        run: >-
+          dotnet restore
+          benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
+      - name: Build regex benchmark project
+        run: >-
+          dotnet build
+          benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
+          -c ${{ env.CONFIGURATION }}
+          --no-restore
+          -p:ContinuousIntegrationBuild=true
+      - name: Run deterministic regex benchmark smoke
+        run: >-
+          dotnet run
+          --project benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
+          -c ${{ env.CONFIGURATION }}
+          --no-build
+          --no-restore
+          --
+          --smoke
+      - name: Validate pinned 2.1.0 comparison orchestration
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: .\benchmarks\Collect-RegexReferenceComparison.ps1 -Smoke
