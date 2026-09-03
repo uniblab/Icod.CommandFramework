@@ -108,6 +108,23 @@ jobs:
           --no-restore
           --
           --smoke
+      - name: Exercise BenchmarkDotNet generated harness
+        if: runner.os == 'Windows'
+        run: >-
+          dotnet run
+          --project benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
+          -c ${{ env.CONFIGURATION }}
+          --no-build
+          --no-restore
+          --
+          --job Dry
+          --filter '*RegexCompileBenchmarks*'
+      - name: Validate BenchmarkDotNet execution artifacts
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: >-
+          ./benchmarks/Assert-BenchmarkDotNetRun.ps1
+          -ArtifactDirectory BenchmarkDotNet.Artifacts
       - name: Validate pinned 2.1.0 comparison orchestration
         if: runner.os == 'Windows'
         shell: powershell
