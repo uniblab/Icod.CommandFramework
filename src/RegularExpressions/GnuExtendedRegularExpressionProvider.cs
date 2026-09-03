@@ -45,15 +45,20 @@ public sealed class GnuExtendedRegularExpressionProvider : IRegularExpressionPro
 		if ( null == parseResult.Expression ) {
 			return RegularExpressionCompileResult.Failed( parseResult.Diagnostic! );
 		}
-		return RegularExpressionCompileResult.Succeeded(
-			new GnuBasicCompiledRegularExpression(
-				pattern,
-				parseResult.Expression,
-				parseResult.CaptureCount,
-				effective,
-				this.characterClassProvider
-			)
+		ICompiledRegularExpression compiled = new GnuBasicCompiledRegularExpression(
+			pattern,
+			parseResult.Expression,
+			parseResult.CaptureCount,
+			effective,
+			this.characterClassProvider
 		);
+		compiled = LiteralPrefixCompiledRegularExpression.Create(
+			compiled,
+			pattern,
+			effective,
+			this.characterClassProvider
+		);
+		return RegularExpressionCompileResult.Succeeded( compiled );
 	}
 
 	/// <inheritdoc/>
