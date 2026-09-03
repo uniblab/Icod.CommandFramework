@@ -12,6 +12,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $baselineCommit = '460732c9f0cacb194bc6cd97c71612c492603eb6'
+$benchmarkMode = 'InProcess'
 $repoRoot = (git rev-parse --show-toplevel).Trim()
 if (0 -ne $LASTEXITCODE -or [string]::IsNullOrWhiteSpace($repoRoot)) {
     throw 'Unable to resolve the repository root.'
@@ -122,7 +123,7 @@ try {
     $effectivePasses = if ($Smoke) { 1 } else { $Passes }
     $effectiveCooldownSeconds = if ($Smoke) { 0 } else { $CooldownSeconds }
     $totalRuns = 2 * $effectivePasses
-    Write-IcodProgressLine "Regex reference comparison starting. Filter='$Filter'; passes=$effectivePasses; runs=$totalRuns; cooldown=${effectiveCooldownSeconds}s."
+    Write-IcodProgressLine "Regex reference comparison starting. Filter='$Filter'; mode=$benchmarkMode; passes=$effectivePasses; runs=$totalRuns; cooldown=${effectiveCooldownSeconds}s."
 
     $outputRoot = [System.IO.Path]::GetFullPath((Join-Path $repoRoot $OutputDirectory))
     if (Test-Path -LiteralPath $outputRoot) {
@@ -232,7 +233,7 @@ try {
                         }
                         dotnet run --project benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj -c Release --no-build --no-restore -- --smoke | Out-Host
                     } else {
-                        dotnet run --project benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj -c Release --no-build --no-restore -- --filter $Filter | Out-Host
+                        dotnet run --project benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj -c Release --no-build --no-restore -- --inProcess --filter $Filter | Out-Host
                     }
                     if (0 -ne $LASTEXITCODE) {
                         throw "$passLabel benchmark run failed."
@@ -309,6 +310,7 @@ try {
             SchemaVersion = 1
             BaselineCommit = $baselineCommit
             CandidateCommit = $candidateCommit
+            BenchmarkMode = $benchmarkMode
             Filter = $Filter
             Smoke = [bool]$Smoke
             Passes = $effectivePasses
