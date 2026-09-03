@@ -94,6 +94,31 @@ public sealed class LiteralPrefixRegularExpressionTests {
 	}
 
 	[Fact]
+	public void StructuredPrefixSearchContinuesAfterFalseCandidate() {
+		var expression = CompileBasic( "TAR.*GET" );
+		var result = expression.Match( "xxTAR-nope xxTAR-middle-GETyy" );
+
+		Assert.True( result.IsSuccess );
+		Assert.True( result.IsMatch );
+		Assert.Equal( 13, result.Match!.Index );
+		Assert.Equal( "TAR-middle-GET", result.Match.Value );
+	}
+
+	[Fact]
+	public void AlternationDoesNotAssumeFirstBranchLiteralPrefix() {
+		var expression = Compile(
+			GnuRegularExpressionSyntax.Extended,
+			"TARGET|OTHER"
+		);
+		var result = expression.Match( "xxOTHERyy" );
+
+		Assert.True( result.IsSuccess );
+		Assert.True( result.IsMatch );
+		Assert.Equal( 2, result.Match!.Index );
+		Assert.Equal( "OTHER", result.Match.Value );
+	}
+
+	[Fact]
 	public void FiniteResourceLimitRetainsGeneralMatcherAccounting() {
 		var expression = CompileBasic(
 			"TARGET",
