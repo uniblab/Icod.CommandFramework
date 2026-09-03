@@ -13,11 +13,11 @@ if (-not (Test-Path -LiteralPath $ArtifactDirectory -PathType Container)) {
     throw "BenchmarkDotNet artifact directory '$ArtifactDirectory' does not exist."
 }
 
-$logs = @(
+[object[]]$logs = @(
     Get-ChildItem -LiteralPath $ArtifactDirectory -Recurse -Filter '*.log' -File |
         Sort-Object FullName
 )
-if (0 -eq $logs.Count) {
+if (0 -eq $logs.Length) {
     throw "BenchmarkDotNet produced no log files in '$ArtifactDirectory'."
 }
 
@@ -46,21 +46,20 @@ if (-not $positiveExecution) {
 }
 
 $resultDirectory = Join-Path $ArtifactDirectory 'results'
-$reports = if (Test-Path -LiteralPath $resultDirectory -PathType Container) {
-    @(
+[object[]]$reports = @()
+if (Test-Path -LiteralPath $resultDirectory -PathType Container) {
+    $reports = @(
         Get-ChildItem -LiteralPath $resultDirectory -Filter '*-report.csv' -File |
             Sort-Object Name
     )
-} else {
-    @()
 }
-if (0 -eq $reports.Count) {
+if (0 -eq $reports.Length) {
     throw "BenchmarkDotNet produced no CSV reports in '$resultDirectory'."
 }
 
 $measuredRow = $false
 foreach ($report in $reports) {
-    $rows = @(Import-Csv -LiteralPath $report.FullName)
+    [object[]]$rows = @(Import-Csv -LiteralPath $report.FullName)
     foreach ($row in $rows) {
         $meanProperty = $row.PSObject.Properties['Mean']
         if ($null -eq $meanProperty) {
