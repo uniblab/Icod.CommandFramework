@@ -108,12 +108,20 @@ jobs:
           --no-restore
           --
           --smoke
+      - name: Build optimized regex benchmark project
+        if: runner.os == 'Windows'
+        run: >-
+          dotnet build
+          benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
+          -c Release
+          --no-restore
+          -p:ContinuousIntegrationBuild=true
       - name: Exercise BenchmarkDotNet generated harness
         if: runner.os == 'Windows'
         run: >-
           dotnet run
           --project benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
-          -c ${{ env.CONFIGURATION }}
+          -c Release
           --no-build
           --no-restore
           --
