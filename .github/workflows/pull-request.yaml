@@ -188,6 +188,7 @@ jobs:
         run: >-
           .\benchmarks\Collect-PreparedRegexComparison.ps1
           -Smoke
+          -AllowDirty
           -OutputDirectory artifacts/performance/regex-prepared-input-smoke
       - name: Validate pinned 2.1.0 comparison orchestration
         if: runner.os == 'Windows'
