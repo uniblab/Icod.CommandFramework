@@ -304,7 +304,6 @@ internal sealed class BracketRegexNode(
 					any = true;
 					break;
 				}
-			}
 		}
 		var matches = isNegated ? !any : any;
 		if ( isNegated
@@ -323,38 +322,82 @@ internal sealed class BracketRegexNode(
 /// Provides the sequence regex node implementation.
 /// </summary>
 internal sealed class SequenceRegexNode : RegexNode {
+	private readonly bool isSingleSuccessorNonCapturing;
 	private readonly IReadOnlyList<RegexNode> nodes;
 
 	/// <summary>
 	/// Initializes a new instance of the SequenceRegexNode class.
 	/// </summary>
 	internal SequenceRegexNode( IReadOnlyList<RegexNode> nodes ) {
+		ArgumentNullException.ThrowIfNull( nodes );
 		this.nodes = nodes;
+		this.isSingleSuccessorNonCapturing = IsSingleSuccessorNonCapturing( nodes );
 	}
 
 	/// <inheritdoc/>
 	internal override IEnumerable<RegexMatchState> Match( RegexMatchContext context, RegexMatchState state ) {
-		var current = new List<RegexMatchState> { state };
+		if (
+			this.isSingleSuccessorNonCapturing
+			&& int.MaxValue == context.Options.MaximumMatchStates
+		) {
+			var current = state;
+			foreach ( var node in nodes ) {
+				context.CancellationToken.ThrowIfCancellationRequested();
+				using var matches = node.Match( context, current ).GetEnumerator();
+				if ( !matches.MoveNext() ) {
+					yield break;
+				}
+				current = matches.Current;
+				if ( matches.MoveNext() ) {
+					throw new InvalidOperationException(
+						"A deterministic regular-expression node produced multiple successor states."
+					);
+				}
+			}
+			context.RegisterState();
+			yield return current;
+			yield break;
+		}
+
+		var currentStates = new List<RegexMatchState> { state };
 		foreach ( var node in nodes ) {
 			context.CancellationToken.ThrowIfCancellationRequested();
 			var next = new List<RegexMatchState>();
 			var seen = new HashSet<RegexMatchState>( RegexMatchStateComparer.Instance );
-			foreach ( var candidate in current ) {
+			foreach ( var candidate in currentStates ) {
 				foreach ( var result in node.Match( context, candidate ) ) {
 					if ( seen.Add( result ) ) {
 						next.Add( result );
 					}
 				}
 			}
-			current = next;
-			if ( 0 == current.Count ) {
+			currentStates = next;
+			if ( 0 == currentStates.Count ) {
 				yield break;
 			}
 		}
-		foreach ( var result in current ) {
+		foreach ( var result in currentStates ) {
 			context.RegisterState();
 			yield return result;
 		}
+	}
+
+	private static bool IsSingleSuccessorNonCapturing(
+		IReadOnlyList<RegexNode> candidateNodes
+	) {
+		foreach ( var node in candidateNodes ) {
+			if (
+				node is not EmptyRegexNode
+				and not LiteralRegexNode
+				and not DotRegexNode
+				and not AssertionRegexNode
+				and not CharacterClassRegexNode
+				and not BracketRegexNode
+			) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
 
@@ -380,7 +423,6 @@ internal sealed class AlternationRegexNode : RegexNode {
 				if ( results.Add( result ) ) {
 					yield return result;
 				}
-			}
 		}
 	}
 }
@@ -400,7 +442,6 @@ internal sealed class GroupRegexNode( int captureNumber, RegexNode expression ) 
 			if ( results.Add( captured ) ) {
 				context.RegisterState();
 				yield return captured;
-			}
 		}
 	}
 }
@@ -438,7 +479,7 @@ internal sealed class BackReferenceRegexNode( int captureNumber ) : RegexNode {
 					) )
 			) {
 				yield break;
-			}
+		}
 		}
 		context.RegisterState();
 		yield return state.WithPosition( state.Position + length );
@@ -515,11 +556,10 @@ internal sealed class RepeatRegexNode : RegexNode {
 					context.RegisterState();
 					yield return frame.State;
 				}
-			}
+		}
 		} finally {
 			while ( 0 < stack.Count ) {
 				stack.Pop().Children?.Dispose();
-			}
 		}
 	}
 
