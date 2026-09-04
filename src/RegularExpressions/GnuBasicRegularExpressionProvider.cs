@@ -55,6 +55,14 @@ public sealed class GnuBasicRegularExpressionProvider : IRegularExpressionProvid
 			options,
 			characterClassProvider
 		);
+		compiled = new PreparedCompiledRegularExpression(
+			compiled,
+			pattern,
+			expression,
+			parseResult.CaptureCount,
+			options,
+			characterClassProvider
+		);
 		return RegularExpressionCompileResult.Succeeded( compiled );
 	}
 
