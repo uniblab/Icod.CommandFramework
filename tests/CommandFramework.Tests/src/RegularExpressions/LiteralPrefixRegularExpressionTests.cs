@@ -84,6 +84,41 @@ public sealed class LiteralPrefixRegularExpressionTests {
 	}
 
 	[Fact]
+	public void RequireMatchAtStartLiteralMatchesAtNonzeroTextOffset() {
+		var expression = CompileBasic( "TARGET" );
+		var result = expression.Match(
+			"xxTARGETyy",
+			new RegularExpressionMatchOptions {
+				StartIndex = 2,
+				RequireMatchAtStart = true
+			}
+		);
+
+		Assert.True( result.IsSuccess );
+		Assert.True( result.IsMatch );
+		Assert.Equal( 2, result.Match!.Index );
+		Assert.Equal( "TARGET", result.Match.Value );
+	}
+
+	[Fact]
+	public void RequireMatchAtStartByteLiteralMatchesAtNonzeroByteOffset() {
+		var expression = CompileBasic( "TARGET" );
+		var input = Encoding.ASCII.GetBytes( "xxTARGETyy" );
+		var result = expression.Match(
+			input,
+			matchOptions: new RegularExpressionByteMatchOptions {
+				StartByteOffset = 2,
+				RequireMatchAtStart = true
+			}
+		);
+
+		Assert.True( result.IsSuccess );
+		Assert.True( result.IsMatch );
+		Assert.Equal( 2, result.Match!.ByteIndex );
+		Assert.Equal( 6, result.Match.ByteLength );
+	}
+
+	[Fact]
 	public void NonLiteralPatternFallsBackToGeneralMatcher() {
 		var expression = CompileBasic( "TAR.*GET" );
 		var result = expression.Match( "xxTAR-middle-GETyy" );
