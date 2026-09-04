@@ -30,7 +30,10 @@ public sealed class PreparedRegularExpressionTests {
 		var prepared = PreparedRegexInput.Prepare( source, ByteInputOptions );
 
 		var expected = expression.Match( source, ByteInputOptions );
-		var actual = matcher.MatchPrepared( prepared );
+		var actual = matcher.MatchPrepared(
+			prepared,
+			new RegularExpressionByteMatchOptions()
+		);
 
 		Assert.Equal( expected.IsSuccess, actual.IsSuccess );
 		Assert.Equal( expected.IsMatch, actual.IsMatch );
@@ -66,7 +69,10 @@ public sealed class PreparedRegularExpressionTests {
 		var prepared = PreparedRegexInput.Prepare( source, ByteInputOptions );
 		source[ 2 ] = (byte)'X';
 
-		var first = matcher.MatchPrepared( prepared );
+		var first = matcher.MatchPrepared(
+			prepared,
+			new RegularExpressionByteMatchOptions()
+		);
 		Assert.True( first.IsMatch );
 		Assert.Equal( "TARGET"u8.ToArray(), first.Match!.Value.ToArray() );
 
@@ -78,7 +84,10 @@ public sealed class PreparedRegularExpressionTests {
 		);
 		exposedResult.Array![ exposedResult.Offset ] = (byte)'X';
 
-		var second = matcher.MatchPrepared( prepared );
+		var second = matcher.MatchPrepared(
+			prepared,
+			new RegularExpressionByteMatchOptions()
+		);
 		Assert.True( second.IsMatch );
 		Assert.Equal( "TARGET"u8.ToArray(), second.Match!.Value.ToArray() );
 	}
@@ -193,7 +202,10 @@ public sealed class PreparedRegularExpressionTests {
 		var matcher = Assert.IsAssignableFrom<IPreparedCompiledRegularExpression>( expression );
 		var prepared = PreparedRegexInput.Prepare( "aaaaaaaaaaaaaaaa" );
 
-		var result = matcher.MatchPrepared( prepared );
+		var result = matcher.MatchPrepared(
+			prepared,
+			new RegularExpressionMatchOptions()
+		);
 
 		Assert.False( result.IsSuccess );
 		Assert.Equal(
