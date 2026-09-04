@@ -4,7 +4,7 @@
 **Target release:** `2.2.0`  
 **Consumer driver:** `Icod.Grep 1.6.0` T6 performance work  
 **Theme:** reduce managed BRE/ERE search cost and allocation without changing regex semantics  
-**Status:** R2.0 physical benchmark baseline complete — R2.1 start-position acceleration in progress
+**Status:** R2.1 complete — R2.2 deterministic state-path allocation reduction in progress
 
 ## 1. Why 2.2.0 exists
 
@@ -100,8 +100,7 @@ The collector `benchmarks/Collect-RegexReferenceComparison.ps1`:
 
 ### R2.0 physical-reference result
 
-The retained physical series is documented in
-[`Icod.CommandFramework-2.2.0-R2.0-Reference-Baseline-Report.md`](Icod.CommandFramework-2.2.0-R2.0-Reference-Baseline-Report.md).
+The retained physical series is documented in [`Icod.CommandFramework-2.2.0-R2.0-Reference-Baseline-Report.md`](Icod.CommandFramework-2.2.0-R2.0-Reference-Baseline-Report.md).
 
 Collection identity:
 
@@ -111,8 +110,6 @@ Collection identity:
 - two passes / ABBA ordering / 30-second cooldowns;
 - exact reference-hardware SHA-256 `d73c6e3314dc77d24dd2b28a51221d9b77b5cc6b9796ae00fe8c9c0d92821c9b`;
 - 32/32 workloads executed in every pass.
-
-The candidate contains no production regex optimization, so candidate-versus-baseline differences establish the measurement noise floor rather than a claimed speedup.
 
 Principal findings:
 
@@ -137,53 +134,53 @@ The physical series distinguishes the principal suspected contributors sufficien
 
 ## 5. R2.1 — Conservative start-position acceleration
 
-**Status:** in progress.
+**Status:** complete. Candidate 3 accepted.
 
-The first implementation target is unanchored search.
+R2.1 reduced the cost of unanchored search by proving where a match can begin before invoking the full state-machine matcher.
 
-Today, `Search` can invoke the full expression at every possible decoded unit until a match is found. For expressions with a provable first literal or mandatory literal prefix, most of those start attempts are impossible.
+### Candidate progression
 
-### Goal
+- **Candidate 1** accelerated only complete plain literals and demonstrated the expected collapse in repeated-start allocation, but decoded successful inputs twice.
+- **Candidate 2** retained complete-literal eligibility and constructed successful matches directly from the already-decoded candidate scan, removing the duplicate decode.
+- **Candidate 3** extended the same mechanism to conservatively provable required literal prefixes while preserving fallback to the unchanged general matcher whenever certainty is unavailable.
 
-Derive conservative search-start information from the already parsed AST and use it only when equivalence is provable.
+The retained evidence is documented in:
 
-Potential forms include:
+- [`Icod.CommandFramework-2.2.0-R2.1-Candidate-2.md`](Icod.CommandFramework-2.2.0-R2.1-Candidate-2.md); and
+- [`Icod.CommandFramework-2.2.0-R2.1-Candidate-3.md`](Icod.CommandFramework-2.2.0-R2.1-Candidate-3.md).
 
-- required first literal rune;
-- fixed literal prefix;
-- anchored-at-input / anchored-at-line metadata; or
-- another immutable search-plan representation established at compile time.
+### Physical acceptance result
 
-The R2.0 physical baseline provides a direct acceptance signal: the 256 KiB byte-mode BRE literal miss currently allocates about **116.5 MiB** per operation, roughly **26×** its anchored control. A correct literal-prefix acceleration should reduce this by an amount vastly larger than the ~0.03% allocation noise floor.
+Candidate 2's complete-literal path reduced representative allocation as follows:
 
-### Correctness rules
+- 256 KiB literal end-hit/miss: approximately **116.5 MiB → 4.5 MiB** (~96% lower);
+- 4 KiB middle hit: approximately **971 KiB → 72 KiB** (~92.5% lower);
+- 80-byte start hit: approximately **4.3 KiB → 1.8 KiB** (~58% lower).
 
-Acceleration must fall back to the existing general search whenever certainty is unavailable.
+Candidate 3 preserved those literal gains and then passed a dedicated structural-prefix gate. On `RegexStructuralBenchmarks`:
 
-Do **not** infer a mandatory prefix through constructs whose semantics make it optional or ambiguous without proof, including problematic alternation, optional repetition, backreferences, locale-sensitive constructs, or zero-length prefixes.
+- `ere-optional` (`TAR(GE)?T`) fell from about **1004.75 KiB to 148.89 KiB** allocated (**85.2% lower**) and from about **282.69 µs to 68.45 µs** mean time (**75.8% lower**);
+- `ere-repetition` (`TAR(GE)+T`) fell from about **1005.22 KiB to 149.36 KiB** allocated (**85.1% lower**) and from about **296.93 µs to 63.77 µs** mean time (**78.5% lower**).
 
-Examples:
+All eight unsupported structural controls retained exactly the same measured allocation as `2.1.0`. Inspection of `RequiredLiteralPrefixAnalyzer` confirms those cases execute the unchanged fallback path, so control timing movement is treated as physical-host variance rather than an optimization effect.
 
-- `TARGET` can safely require `T` and may safely require the complete literal prefix.
-- `TARGET.*foo` can safely use the `TARGET` prefix.
-- `T\(ARGET\)`, depending on syntax AST shape, may permit the same prefix if the capture itself does not make the text optional.
-- `T\?ARGET`, `\(TARGET\|OTHER\)`, or expressions beginning with arbitrary classes should use only metadata that is mathematically valid for every match, otherwise fall back.
+### R2.1 conclusion
 
-### Success criterion
+R2.1 is closed because the evidence establishes all of the intended properties:
 
-Literal-hit/miss and long-record Grep BRE/ERE workloads should show a substantial reduction in complete expression start attempts and managed allocation, with zero behavioral change.
-
-Because elapsed-time measurement has meaningful physical-host variance, direct R2.1 acceptance emphasizes:
-
-- allocation reduction;
-- direct start-attempt reduction where observable in tests/benchmarks; and
-- timing improvements materially larger than the R2.0 noise floor before claiming a speedup.
+1. the dominant repeated-start allocation for complete literals is materially reduced;
+2. successful complete literals no longer pay a duplicate-decode penalty;
+3. conservative structured prefixes receive the same start-position benefit;
+4. unsupported patterns fall back to the original matcher; and
+5. the full semantic/CI suite remains green across Windows, Linux, and macOS.
 
 ## 6. R2.2 — Deterministic state-path allocation reduction
 
-After start-position acceleration, profile what remains.
+**Status:** in progress.
 
-Simple literal sequences currently traverse the same general machinery needed for branching regex graphs. That machinery allocates states and collection objects even when there is at most one possible successor.
+After start-position acceleration, the next target is allocation inside the general matcher itself.
+
+Simple deterministic sequences still traverse machinery designed for branching regex graphs. In particular, deterministic node advancement creates new `RegexMatchState` objects and `SequenceRegexNode` builds candidate collections even when a path cannot branch or mutate captures.
 
 Investigate safe specializations for deterministic AST paths, such as:
 
@@ -199,15 +196,17 @@ Possible techniques include:
 - avoiding `List`/`HashSet` creation for a sequence stage known to have at most one candidate; and
 - lazily introducing the general candidate-set machinery only when the AST actually branches.
 
-Do not mutate reusable shared state in a way that compromises recursion, backtracking, captures, cancellation, resource counting, or thread safety.
+The first R2.2 candidate should remain deliberately narrow. Prefer a provably deterministic, capture-free sequence path over a broad rewrite of the state engine. Acceptance again emphasizes allocation reduction larger than the physical noise floor, complete semantic equivalence, and unchanged resource-accounting behavior whenever finite `MaximumMatchStates` is in force.
+
+Do not mutate reusable shared state in a way that compromises recursion, backtracking, captures, cancellation, resource counting, malformed-input handling, or thread safety.
 
 ## 7. R2.3 — Decode/prepared-input investigation
 
 Each byte-oriented `Match` currently materializes a decoded `RegexInput`. Whether this remains a dominant cost after R2.1/R2.2 must be measured rather than assumed.
 
-R2.0 confirms that the cost is real: large byte-mode anchored controls allocate about 18 bytes per input byte, and the repeated 64 KiB public-search workload allocates about 101 MiB. This is sufficient to keep R2.3 on the roadmap, but not sufficient to move it ahead of the much larger unanchored-start multiplier.
+R2.0 confirms that the cost is real: large byte-mode anchored controls allocate about 18 bytes per input byte, and the repeated 64 KiB public-search workload allocates about 101 MiB. This is sufficient to keep R2.3 on the roadmap, but not sufficient to move it ahead of the much larger unanchored-start multiplier and the remaining state-path costs.
 
-If it remains significant after R2.1/R2.2, evaluate options such as:
+If it remains significant after R2.2, evaluate options such as:
 
 - internal prepared-input representation reused across repeated searches of the same record;
 - cheaper byte-mode representation that preserves source mapping without unnecessary Rune-oriented structures;
@@ -254,12 +253,12 @@ Before declaring `Icod.CommandFramework 2.2.0` complete:
 
 `2.2.0` is appropriate because the release may add internal optimization structures and benchmark infrastructure while preserving source/binary behavioral compatibility for existing public consumers.
 
-The production project now carries:
+The production project carries:
 
 - `<Version>2.2.0</Version>`
 - `<PackageVersion>2.2.0</PackageVersion>`
 
-with release notes describing the measurement-first managed regex performance work. R2.0 leaves production matching behavior unchanged from 2.1.0; production optimization begins in R2.1.
+with release notes describing the measurement-first managed regex performance work.
 
 Prerelease package identifiers used for cross-repository validation do not change the eventual stable API contract.
 
@@ -289,11 +288,11 @@ Performance changes do not weaken Release warnings-as-errors or any existing pac
 The current execution order is:
 
 1. **R2.0 — direct benchmark foundation / untouched 2.1.0 baseline** — complete
-2. **R2.1 — conservative start-position acceleration** — in progress
-3. **R2.2 — deterministic state-path allocation reduction**
+2. **R2.1 — conservative start-position / required-prefix acceleration** — complete; Candidate 3 accepted
+3. **R2.2 — deterministic state-path allocation reduction** — in progress
 4. **Remeasure direct CommandFramework workloads**
 5. **R2.3 — decode/prepared-input investigation, if measurements still justify it**
 6. **R2.4 — complex-pattern/resource-limit closure**
 7. **R2.5 — prerelease package and Icod.Grep consumer validation**
 
-As with Grep T6, measurement may reorder later tranches after R2.1/R2.2. The tranche labels remain stable for history even if execution priority changes.
+As with Grep T6, measurement may reorder later tranches after R2.2. The tranche labels remain stable for history even if execution priority changes.
