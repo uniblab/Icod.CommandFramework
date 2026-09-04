@@ -30,7 +30,7 @@ foreach ($log in $logs) {
         '// Build Error:',
         'Declaring type must be unsealed.'
     )) {
-        if ($text.Contains($failureMarker, [System.StringComparison]::Ordinal)) {
+        if (0 -le $text.IndexOf($failureMarker, [System.StringComparison]::Ordinal)) {
             throw "BenchmarkDotNet failure marker '$failureMarker' was found in '$($log.FullName)'."
         }
     }
