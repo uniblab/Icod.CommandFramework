@@ -8,7 +8,7 @@ internal interface IPreparedCompiledRegularExpression {
 	/// Searches an already-prepared immutable string input.
 	/// </summary>
 	RegularExpressionMatchResult MatchPrepared(
-		RegexInput input,
+		PreparedRegexInput input,
 		RegularExpressionMatchOptions? options = null,
 		CancellationToken cancellationToken = default
 	);
@@ -17,7 +17,7 @@ internal interface IPreparedCompiledRegularExpression {
 	/// Searches an already-prepared immutable authoritative-byte input.
 	/// </summary>
 	RegularExpressionByteMatchResult MatchPrepared(
-		RegexInput input,
+		PreparedRegexInput input,
 		RegularExpressionByteMatchOptions? options = null,
 		CancellationToken cancellationToken = default
 	);
