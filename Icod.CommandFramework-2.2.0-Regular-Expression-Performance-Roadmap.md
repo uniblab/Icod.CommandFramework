@@ -4,7 +4,7 @@
 **Target release:** `2.2.0`  
 **Consumer driver:** `Icod.Grep 1.6.0` T6 performance work  
 **Theme:** reduce managed BRE/ERE search cost and allocation without changing regex semantics  
-**Status:** R2.1 complete — R2.2 deterministic state-path allocation reduction in progress
+**Status:** R2.1 and R2.2 complete — whole-suite remeasurement next
 
 ## 1. Why 2.2.0 exists
 
@@ -176,37 +176,71 @@ R2.1 is closed because the evidence establishes all of the intended properties:
 
 ## 6. R2.2 — Deterministic state-path allocation reduction
 
-**Status:** in progress.
+**Status:** complete. Candidate 3 accepted.
 
-After start-position acceleration, the next target is allocation inside the general matcher itself.
+R2.2 reduces allocation inside the general matcher by specializing only provably deterministic, non-capturing sequence paths.
 
-Simple deterministic sequences still traverse machinery designed for branching regex graphs. In particular, deterministic node advancement creates new `RegexMatchState` objects and `SequenceRegexNode` builds candidate collections even when a path cannot branch or mutate captures.
+### Candidate progression
 
-Investigate safe specializations for deterministic AST paths, such as:
+- **Candidate 1** extended the already-proven complete-literal specialization to anchored matching and identified a fixed deterministic state-machine cost of roughly 2.5 KiB per call on the measured short/medium shapes.
+- **Candidate 2** moved into `SequenceRegexNode`, carrying a single `RegexMatchState` through sequences whose direct children were proven single-successor and non-capturing. It produced substantial allocation reductions, including nested gains inside otherwise complex patterns, but two independent ABBA collections reproduced a roughly 35–42% timing regression on the unchanged-allocation `bre-bounded-repetition` fallback workload.
+- **Candidate 3** retained Candidate 2's eligibility proof while splitting the deterministic and general collection algorithms into separate iterator methods. `SequenceRegexNode.Match` became a small non-iterator dispatcher.
 
-- literal nodes/sequences;
-- simple assertions followed by deterministic nodes;
-- deterministic bracket/class sequences; and
-- sequence segments that cannot branch or capture.
+The retained evidence is documented in:
 
-Possible techniques include:
+- [`Icod.CommandFramework-2.2.0-R2.2-Candidate-1.md`](Icod.CommandFramework-2.2.0-R2.2-Candidate-1.md);
+- [`Icod.CommandFramework-2.2.0-R2.2-Candidate-2.md`](Icod.CommandFramework-2.2.0-R2.2-Candidate-2.md); and
+- [`Icod.CommandFramework-2.2.0-R2.2-Candidate-3.md`](Icod.CommandFramework-2.2.0-R2.2-Candidate-3.md).
 
-- immutable compile-time classification of deterministic nodes;
-- direct position advancement without allocating intermediate `RegexMatchState` objects when captures cannot change;
-- avoiding `List`/`HashSet` creation for a sequence stage known to have at most one candidate; and
-- lazily introducing the general candidate-set machinery only when the AST actually branches.
+### Accepted deterministic boundary
 
-The first R2.2 candidate should remain deliberately narrow. Prefer a provably deterministic, capture-free sequence path over a broad rewrite of the state engine. Acceptance again emphasizes allocation reduction larger than the physical noise floor, complete semantic equivalence, and unchanged resource-accounting behavior whenever finite `MaximumMatchStates` is in force.
+A sequence may use the optimized single-state path only when every direct child is one of:
 
-Do not mutate reusable shared state in a way that compromises recursion, backtracking, captures, cancellation, resource counting, malformed-input handling, or thread safety.
+- `EmptyRegexNode`;
+- `LiteralRegexNode`;
+- `DotRegexNode`;
+- `AssertionRegexNode`;
+- `CharacterClassRegexNode`; or
+- `BracketRegexNode`.
+
+The deterministic path is disabled whenever `MaximumMatchStates` is finite. Groups, alternation, repetition, backreferences, and future unproven node types therefore retain the general collection path at the containing sequence level. Nested deterministic child sequences may still optimize independently.
+
+### Physical acceptance result
+
+Candidate 3 passed canonical PR workflow `33859421589` and the authoritative physical `*RegexStructuralBenchmarks*` comparison on the same reference Windows host.
+
+Representative two-pass results versus `2.1.0` were:
+
+- `bre-alternation`: **39.6% lower allocation**, **32.9% lower mean time**;
+- `ere-alternation`: **39.6% lower allocation**, **40.0% lower mean time**;
+- `bre-word-boundary`: **51.3% lower allocation**, **38.1% lower mean time**;
+- `bre-capture-backreference`: **25.3% lower allocation**, **23.0% lower mean time**;
+- `ere-anchor`: **60.2% lower allocation**, **47.7% lower mean time**;
+- `ere-optional`: **85.2% lower allocation**, **81.9% lower mean time**;
+- `ere-repetition`: **85.2% lower allocation**, **79.8% lower mean time**.
+
+Most importantly, `bre-bounded-repetition` returned to the baseline envelope and measured **9.3% faster than 2.1.0** while retaining exactly **971.81 KiB** allocation. `bre-bracket-class` and `bre-empty-match` also retained exactly baseline allocation.
+
+### R2.2 conclusion
+
+R2.2 is closed because:
+
+1. deterministic sequence stages avoid per-stage `List<RegexMatchState>` / `HashSet<RegexMatchState>` allocation;
+2. the optimized path is restricted to a compile-time-safe single-successor, non-capturing node set;
+3. finite resource accounting remains on the general matcher;
+4. nested deterministic sequences may benefit without changing outer branching/capture semantics;
+5. Candidate 2's reproducible fallback timing regression is eliminated; and
+6. the full semantic/CI suite remains green across Windows, Linux, and macOS.
 
 ## 7. R2.3 — Decode/prepared-input investigation
 
 Each byte-oriented `Match` currently materializes a decoded `RegexInput`. Whether this remains a dominant cost after R2.1/R2.2 must be measured rather than assumed.
 
-R2.0 confirms that the cost is real: large byte-mode anchored controls allocate about 18 bytes per input byte, and the repeated 64 KiB public-search workload allocates about 101 MiB. This is sufficient to keep R2.3 on the roadmap, but not sufficient to move it ahead of the much larger unanchored-start multiplier and the remaining state-path costs.
+R2.0 confirms that the cost is real: large byte-mode anchored controls allocate about 18 bytes per input byte, and the repeated 64 KiB public-search workload allocates about 101 MiB. This is sufficient to keep R2.3 on the roadmap, but not sufficient to commit to implementation before the post-R2.2 whole-suite remeasurement.
 
-If it remains significant after R2.2, evaluate options such as:
+Before R2.3 implementation begins, rerun the complete direct benchmark suite against the pinned `2.1.0` baseline with both accepted optimization tranches in place. The whole-suite result should determine the new dominant residual cost.
+
+If decode/materialization remains significant after that remeasurement, evaluate options such as:
 
 - internal prepared-input representation reused across repeated searches of the same record;
 - cheaper byte-mode representation that preserves source mapping without unnecessary Rune-oriented structures;
@@ -289,10 +323,10 @@ The current execution order is:
 
 1. **R2.0 — direct benchmark foundation / untouched 2.1.0 baseline** — complete
 2. **R2.1 — conservative start-position / required-prefix acceleration** — complete; Candidate 3 accepted
-3. **R2.2 — deterministic state-path allocation reduction** — in progress
-4. **Remeasure direct CommandFramework workloads**
+3. **R2.2 — deterministic state-path allocation reduction** — complete; Candidate 3 accepted
+4. **Remeasure complete direct CommandFramework workloads** — next
 5. **R2.3 — decode/prepared-input investigation, if measurements still justify it**
 6. **R2.4 — complex-pattern/resource-limit closure**
 7. **R2.5 — prerelease package and Icod.Grep consumer validation**
 
-As with Grep T6, measurement may reorder later tranches after R2.2. The tranche labels remain stable for history even if execution priority changes.
+As with Grep T6, measurement may reorder later tranches after the whole-suite remeasurement. The tranche labels remain stable for history even if execution priority changes.
