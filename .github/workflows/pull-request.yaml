@@ -182,6 +182,13 @@ jobs:
         run: >-
           ./benchmarks/Assert-BenchmarkDotNetRun.ps1
           -ArtifactDirectory BenchmarkDotNet.PreparedArtifacts
+      - name: Validate prepared-input comparison orchestration
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: >-
+          .\benchmarks\Collect-PreparedRegexComparison.ps1
+          -Smoke
+          -OutputDirectory artifacts/performance/regex-prepared-input-smoke
       - name: Validate pinned 2.1.0 comparison orchestration
         if: runner.os == 'Windows'
         shell: powershell
