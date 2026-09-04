@@ -193,4 +193,4 @@ jobs:
       - name: Validate pinned 2.1.0 comparison orchestration
         if: runner.os == 'Windows'
         shell: powershell
-        run: .\benchmarks\Collect-RegexReferenceComparison.ps1 -Smoke
+        run: .\benchmarks\Collect-RegexReferenceComparison.ps1 -Smoke -AllowDirty
