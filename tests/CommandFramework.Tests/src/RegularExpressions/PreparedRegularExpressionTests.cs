@@ -111,8 +111,8 @@ public sealed class PreparedRegularExpressionTests {
 			Assert.True( result.IsMatch );
 			var expectedIndex = offsets[ index % offsets.Length ] switch {
 				0 => 0,
-				1 or 10 or 11 => 10,
-				20 => 20,
+				1 or 10 => 10,
+				11 or 20 => 20,
 				_ => throw new InvalidOperationException()
 			};
 			Assert.Equal( expectedIndex, result.Match!.ByteIndex );
