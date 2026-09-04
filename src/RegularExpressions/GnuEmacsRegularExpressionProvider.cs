@@ -42,12 +42,13 @@ public sealed class GnuEmacsRegularExpressionProvider : IRegularExpressionProvid
 			cancellationToken
 		);
 		var parseResult = parser.Parse();
-		if ( null == parseResult.Expression ) {
+		var expression = parseResult.Expression;
+		if ( null == expression ) {
 			return RegularExpressionCompileResult.Failed( parseResult.Diagnostic! );
 		}
 		ICompiledRegularExpression compiled = new GnuBasicCompiledRegularExpression(
 			pattern,
-			parseResult.Expression,
+			expression,
 			parseResult.CaptureCount,
 			effective,
 			this.characterClassProvider
@@ -55,6 +56,14 @@ public sealed class GnuEmacsRegularExpressionProvider : IRegularExpressionProvid
 		compiled = LiteralPrefixCompiledRegularExpression.Create(
 			compiled,
 			pattern,
+			effective,
+			this.characterClassProvider
+		);
+		compiled = new PreparedCompiledRegularExpression(
+			compiled,
+			pattern,
+			expression,
+			parseResult.CaptureCount,
 			effective,
 			this.characterClassProvider
 		);
