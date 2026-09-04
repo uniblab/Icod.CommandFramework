@@ -1,9 +1,10 @@
 # Icod.CommandFramework 2.2.0 — R2.1 Candidate 3
 
 **Tranche:** R2.1 — conservative required-prefix acceleration  
-**Candidate 3 measurement head:** `a66fc947daf58fca4f2725c015e6a4c00853e72e`  
+**Candidate 3 implementation head:** `a66fc947daf58fca4f2725c015e6a4c00853e72e`  
+**Candidate 3 structural measurement head:** `bcfb97b5eb28ae5dee4ef749f17464038912feab`  
 **Reference baseline:** `2.1.0` at `460732c9f0cacb194bc6cd97c71612c492603eb6`  
-**Status:** literal-regression gate passed; structured-prefix physical measurement pending
+**Status:** physically validated and accepted; R2.1 complete
 
 ## Candidate 3 scope
 
@@ -15,7 +16,7 @@ The analyzer does not infer through ambiguous alternation, opaque escapes, arbit
 
 ## Physical literal-regression gate
 
-The supplied physical comparison archive used:
+The first Candidate 3 physical comparison used:
 
 - baseline `460732c9f0cacb194bc6cd97c71612c492603eb6`;
 - candidate `a66fc947daf58fca4f2725c015e6a4c00853e72e`;
@@ -43,29 +44,62 @@ Candidate 3 preserves Candidate 2's allocation gains on every literal workload.
 
 Allocation is effectively unchanged relative to Candidate 2: observed differences are within approximately 0.1%, far below the magnitude of the R2.1 improvements and consistent with the established allocation-stability characteristics of the harness.
 
-Candidate-2-versus-Candidate-3 elapsed-time comparisons are not used to claim a regression or improvement because the physical timing spread is materially noisier than allocation. The correct conclusion from this run is narrower: Candidate 3 retains the proven literal-search optimization.
+Candidate-2-versus-Candidate-3 elapsed-time comparisons are not used to claim a regression or improvement because the physical timing spread is materially noisier than allocation. The conclusion from this first run is deliberately narrow: Candidate 3 retains the proven literal-search optimization.
 
-## Remaining Candidate 3 quantitative gate
+## Physical structured-prefix gate
 
-This archive does **not** directly quantify the new structured required-prefix path because `RegexLiteralSearchBenchmarks` contains only the direct-search scenarios.
-
-The next physical comparison should therefore use:
+The second physical comparison used the same frozen baseline, reference host, `InProcess` mode, two-pass ABBA discipline, and 30-second cooldowns, with:
 
 ```text
 *RegexStructuralBenchmarks*
 ```
 
-The existing catalog already provides useful Candidate 3 coverage:
+Collection identity:
 
-- `ere-repetition` — `TAR(GE)+T`; expected to exercise a provable leading literal prefix;
-- `ere-optional` — `TAR(GE)?T`; expected to exercise a provable leading literal prefix;
-- `bre-bounded-repetition` — conservative fallback control;
-- alternation, bracket-class, word-boundary, capture/backreference, anchored, and empty-match cases — semantic/fallback controls.
+- baseline `460732c9f0cacb194bc6cd97c71612c492603eb6`;
+- candidate `bcfb97b5eb28ae5dee4ef749f17464038912feab`;
+- hardware inventory SHA-256 `d73c6e3314dc77d24dd2b28a51221d9b77b5cc6b9796ae00fe8c9c0d92821c9b`;
+- BenchmarkDotNet `0.15.8` on .NET `10.0.11`;
+- 10/10 structural workloads executed in each pass.
 
-The structured comparison should retain the same pinned baseline, physical host, `InProcess` mode, two-pass ABBA ordering, and 30-second cooldown discipline.
+The two structured expressions for which Candidate 3 proves the required literal prefix `TAR` show a large, repeatable reduction:
 
-## Decision gate
+| Scenario | Pattern | 2.1.0 two-pass mean | Candidate 3 two-pass mean | Time reduction | 2.1.0 allocated | Candidate 3 allocated | Allocation reduction |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `ere-optional` | `TAR(GE)?T` | 282.69 µs | 68.45 µs | 75.8% | 1004.75 KiB | 148.89 KiB | 85.2% |
+| `ere-repetition` | `TAR(GE)+T` | 296.93 µs | 63.77 µs | 78.5% | 1005.22 KiB | 149.36 KiB | 85.1% |
 
-If the structured-prefix workloads show a clear reduction in allocation and/or elapsed time materially larger than the baseline noise floor, while fallback controls remain semantically stable, Candidate 3 can close R2.1 and the project can proceed to R2.2 deterministic state-path allocation reduction.
+These reductions are vastly larger than the R2.0 allocation noise floor and are present in both candidate passes.
 
-If the structured-prefix workloads do not improve materially, retain Candidate 2's complete-literal optimization and reconsider whether Candidate 3's added analyzer complexity is justified before moving forward.
+## Fallback-control result
+
+All eight non-target structural controls retained exactly the same measured allocation as `2.1.0`:
+
+| Scenario | 2.1.0 allocated | Candidate 3 allocated | Runtime eligibility |
+| --- | ---: | ---: | --- |
+| `bre-alternation` | 2508.53 KiB | 2508.53 KiB | fallback |
+| `bre-bounded-repetition` | 971.81 KiB | 971.81 KiB | fallback |
+| `bre-bracket-class` | 1258.51 KiB | 1258.51 KiB | fallback |
+| `bre-capture-backreference` | 1963.23 KiB | 1963.23 KiB | fallback |
+| `bre-empty-match` | 2.57 KiB | 2.57 KiB | fallback |
+| `bre-word-boundary` | 972.45 KiB | 972.45 KiB | fallback |
+| `ere-alternation` | 2508.54 KiB | 2508.54 KiB | fallback |
+| `ere-anchor` | 3.67 KiB | 3.67 KiB | fallback |
+
+Inspection of `RequiredLiteralPrefixAnalyzer` confirms these are genuine fallback controls rather than merely workloads that happened not to improve: alternation is rejected, escaped BRE bounded repetition is rejected, classes/assertions/groups at the start produce no prefix, anchors produce no prefix, and `a*` is rejected because the leading literal is optional.
+
+Elapsed-time values for several controls moved noticeably between passes, including in opposite directions. Because these controls execute the unchanged runtime path and their allocation is identical, those timing movements are treated as physical-host variance rather than optimization effects.
+
+## R2.1 decision
+
+Candidate 3 is accepted.
+
+The combined R2.1 evidence now establishes that:
+
+1. Candidate 2 removes the dominant repeated-start allocation for complete literals and removes Candidate 1's duplicate-decode penalty;
+2. Candidate 3 preserves those literal gains;
+3. Candidate 3 extends the improvement to conservatively provable structured prefixes with roughly 85% lower allocation on the measured ERE optional/repetition cases;
+4. unsupported structures continue through the unchanged general matcher; and
+5. the complete semantic/CI suite remains green on Windows, Linux, and macOS.
+
+R2.1 is therefore complete. The next tranche is **R2.2 — deterministic state-path allocation reduction**.
