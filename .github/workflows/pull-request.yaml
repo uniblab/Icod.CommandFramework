@@ -108,6 +108,26 @@ jobs:
           --no-restore
           --
           --smoke
+      - name: Restore prepared regex benchmark project
+        run: >-
+          dotnet restore
+          benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
+      - name: Build prepared regex benchmark project
+        run: >-
+          dotnet build
+          benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
+          -c ${{ env.CONFIGURATION }}
+          --no-restore
+          -p:ContinuousIntegrationBuild=true
+      - name: Run immutable prepared regex benchmark smoke
+        run: >-
+          dotnet run
+          --project benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
+          -c ${{ env.CONFIGURATION }}
+          --no-build
+          --no-restore
+          --
+          --smoke
       - name: Build optimized regex benchmark project
         if: runner.os == 'Windows'
         run: >-
@@ -128,6 +148,26 @@ jobs:
           --inProcess
           --job Dry
           --filter '*RegexCompileBenchmarks*'
+      - name: Build optimized prepared regex benchmark project
+        if: runner.os == 'Windows'
+        run: >-
+          dotnet build
+          benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
+          -c Release
+          --no-restore
+          -p:ContinuousIntegrationBuild=true
+      - name: Exercise prepared-input BenchmarkDotNet mode
+        if: runner.os == 'Windows'
+        run: >-
+          dotnet run
+          --project benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
+          -c Release
+          --no-build
+          --no-restore
+          --
+          --inProcess
+          --job Dry
+          --filter '*PreparedRegexInputBenchmarks*'
       - name: Validate BenchmarkDotNet execution artifacts
         if: runner.os == 'Windows'
         shell: pwsh
