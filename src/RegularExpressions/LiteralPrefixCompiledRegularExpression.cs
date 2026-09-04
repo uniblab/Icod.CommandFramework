@@ -4,7 +4,7 @@ using System.Buffers;
 using System.Text;
 
 /// <summary>
-/// Accelerates unanchored searches when a required leading literal run can be proven conservatively.
+/// Accelerates searches when a required leading literal run can be proven conservatively.
 /// </summary>
 internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularExpression {
 	private readonly ICompiledRegularExpression inner;
@@ -82,7 +82,7 @@ internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularE
 	) {
 		ArgumentNullException.ThrowIfNull( input );
 		options ??= new RegularExpressionMatchOptions();
-		if ( options.RequireMatchAtStart ) {
+		if ( options.RequireMatchAtStart && !completeLiteral ) {
 			return inner.Match( input, options, cancellationToken );
 		}
 
@@ -93,6 +93,22 @@ internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularE
 				new(
 					RegularExpressionDiagnosticCode.InvalidStartIndex,
 					"start index is outside the input or splits a surrogate pair"
+				)
+			);
+		}
+
+		if ( options.RequireMatchAtStart ) {
+			if ( !MatchesPrefixAt( decodedInput, firstStart, cancellationToken ) ) {
+				return RegularExpressionMatchResult.Succeeded( null );
+			}
+			var matchStart = decodedInput.GetSourceIndex( firstStart );
+			var matchEnd = decodedInput.GetSourceIndex( firstStart + prefix.Length );
+			return RegularExpressionMatchResult.Succeeded(
+				new RegularExpressionMatch(
+					matchStart,
+					matchEnd - matchStart,
+					input[ matchStart..matchEnd ],
+					Array.Empty<RegularExpressionCapture>()
 				)
 			);
 		}
@@ -158,7 +174,7 @@ internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularE
 		if ( !Enum.IsDefined( inputOptions.InvalidEncodingPolicy ) ) {
 			throw new ArgumentOutOfRangeException( nameof( inputOptions ) );
 		}
-		if ( matchOptions.RequireMatchAtStart ) {
+		if ( matchOptions.RequireMatchAtStart && !completeLiteral ) {
 			return inner.Match(
 				input,
 				inputOptions,
@@ -178,6 +194,22 @@ internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularE
 				new(
 					RegularExpressionDiagnosticCode.InvalidStartByteOffset,
 					"start byte offset is outside the input or splits a decoded UTF-8 unit"
+				)
+			);
+		}
+
+		if ( matchOptions.RequireMatchAtStart ) {
+			if ( !MatchesPrefixAt( decodedInput, firstStart, cancellationToken ) ) {
+				return RegularExpressionByteMatchResult.Succeeded( null );
+			}
+			var matchStart = decodedInput.GetSourceIndex( firstStart );
+			var matchEnd = decodedInput.GetSourceIndex( firstStart + prefix.Length );
+			return RegularExpressionByteMatchResult.Succeeded(
+				new RegularExpressionByteMatch(
+					matchStart,
+					matchEnd - matchStart,
+					input.Slice( matchStart, matchEnd - matchStart ),
+					Array.Empty<RegularExpressionByteCapture>()
 				)
 			);
 		}
@@ -232,6 +264,31 @@ internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularE
 		Match( input, inputOptions, matchOptions, cancellationToken )
 	);
 
+	private bool MatchesPrefixAt(
+		RegexInput input,
+		int start,
+		CancellationToken cancellationToken
+	) {
+		if ( prefix.Length > input.Length - start ) {
+			return false;
+		}
+		for ( var offset = 0; prefix.Length > offset; offset++ ) {
+			cancellationToken.ThrowIfCancellationRequested();
+			var position = start + offset;
+			if (
+				input.IsOpaque( position )
+				|| !characterClassProvider.AreCharactersEqual(
+					prefix[ offset ],
+					input[ position ],
+					this.options.IgnoreCase
+				)
+			) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private int FindNextCandidate(
 		RegexInput input,
 		int firstStart,
@@ -240,22 +297,7 @@ internal sealed class LiteralPrefixCompiledRegularExpression : ICompiledRegularE
 		var finalStart = input.Length - prefix.Length;
 		for ( var start = firstStart; finalStart >= start; start++ ) {
 			cancellationToken.ThrowIfCancellationRequested();
-			var matches = true;
-			for ( var offset = 0; prefix.Length > offset; offset++ ) {
-				var position = start + offset;
-				if (
-					input.IsOpaque( position )
-					|| !characterClassProvider.AreCharactersEqual(
-						prefix[ offset ],
-						input[ position ],
-						this.options.IgnoreCase
-					)
-				) {
-					matches = false;
-					break;
-				}
-			}
-			if ( matches ) {
+			if ( MatchesPrefixAt( input, start, cancellationToken ) ) {
 				return start;
 			}
 		}
