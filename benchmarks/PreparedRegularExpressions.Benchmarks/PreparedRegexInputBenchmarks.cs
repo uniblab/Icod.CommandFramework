@@ -8,7 +8,7 @@ using Icod.CommandFramework.Text;
 /// Measures the reuse ceiling from matching one immutable prepared input repeatedly.
 /// </summary>
 [MemoryDiagnoser]
-public sealed class PreparedRegexInputBenchmarks {
+public class PreparedRegexInputBenchmarks {
 	private readonly byte[] input;
 	private readonly RegularExpressionInputOptions inputOptions = new() {
 		DecodingMode = TextDecodingMode.Bytes
