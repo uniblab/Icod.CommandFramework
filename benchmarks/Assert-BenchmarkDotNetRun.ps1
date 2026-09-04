@@ -27,7 +27,8 @@ foreach ($log in $logs) {
     foreach ($failureMarker in @(
         'BenchmarkDotNet has failed to build the auto-generated boilerplate code.',
         'Benchmarks with issues:',
-        '// Build Error:'
+        '// Build Error:',
+        'Declaring type must be unsealed.'
     )) {
         if ($text.Contains($failureMarker, [System.StringComparison]::Ordinal)) {
             throw "BenchmarkDotNet failure marker '$failureMarker' was found in '$($log.FullName)'."
