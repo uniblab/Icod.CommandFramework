@@ -4,8 +4,10 @@
 **Candidate 2 implementation head:** `1d10f231de8519ce582d5189769dda78894a0380`  
 **Candidate 2 repaired measurement head:** `a49e1b82de555218dcbf687a267c1ab11537441c`  
 **Candidate 3 implementation head:** `fafcd39f94213a1e868d40bbbb7f0c08026203ba`  
+**Candidate 3 measurement head:** `af526793507d7bab307a3ed8cc87e8efbb33a4da`  
 **Reference baseline:** `2.1.0` at `460732c9f0cacb194bc6cd97c71612c492603eb6`  
-**Status:** implemented; canonical CI and physical validation pending
+**Canonical Staging validation:** workflow run `33859421589` — green  
+**Status:** physically validated and accepted; R2.2 complete
 
 ## Why Candidate 3 exists
 
@@ -16,9 +18,11 @@ Two independent two-pass ABBA structural comparisons reproduced the issue for `b
 - first collection: approximately 41.6% slower by two-pass mean;
 - independent confirmation: approximately 35.3% slower by two-pass mean.
 
-Because the workload is not eligible for deterministic sequence acceleration and its allocation is byte-for-byte unchanged, the leading hypothesis is code-generation/state-machine interference from placing both deterministic and general iterator logic in the same `SequenceRegexNode.Match` iterator.
+The second Candidate 2 confirmation also showed `bre-capture-backreference` about 14.4% slower despite an 18.8% allocation reduction.
 
-Candidate 2 therefore remains conceptually accepted but is not accepted as the final R2.2 implementation.
+Because bounded repetition is not eligible for deterministic sequence acceleration and its allocation was byte-for-byte unchanged, the leading hypothesis was code-generation/state-machine interference from placing both deterministic and general iterator logic in the same `SequenceRegexNode.Match` iterator.
+
+Candidate 2 therefore remains conceptually important but is superseded by Candidate 3 as the retained R2.2 implementation.
 
 ## Candidate 3 refinement
 
@@ -42,7 +46,7 @@ Match
 4. terminate when a stage produces no states; and
 5. register/yield the final states.
 
-This separation ensures an ineligible sequence no longer instantiates or executes the deterministic iterator state machine.
+This separation prevents an ineligible sequence from sharing the deterministic iterator state machine. It also removes the former outer `Match` iterator allocation entirely because `Match` now returns the selected child iterator directly.
 
 ## Eligibility remains unchanged
 
@@ -57,40 +61,73 @@ A sequence is deterministic only when every direct child is one of:
 
 The deterministic path is also disabled whenever `MaximumMatchStates` is finite.
 
-Groups, alternation, repetition, backreferences, and any future unproven node type therefore continue through `MatchGeneral` at the containing sequence level. Nested deterministic child sequences may still optimize independently, which explains Candidate 2's measured allocation reductions inside several structurally complex benchmarks.
+Groups, alternation, repetition, backreferences, and any future unproven node type therefore continue through `MatchGeneral` at the containing sequence level. Nested deterministic child sequences may still optimize independently.
 
-## Candidate 2 performance evidence retained
+## Physical acceptance collection
 
-Candidate 2's deterministic allocation gains were large and reproduced independently. Representative allocation reductions versus 2.1.0 included approximately:
+The authoritative Candidate 3 comparison used:
 
-- 29.4% for BRE and ERE alternation;
-- 38.1% for BRE word-boundary;
-- 58.6% for anchored ERE;
-- 18.8% for BRE capture/backreference; and
-- 85.2% for the R2.1 optional/repetition required-prefix workloads.
+- baseline `460732c9f0cacb194bc6cd97c71612c492603eb6`;
+- candidate `af526793507d7bab307a3ed8cc87e8efbb33a4da`;
+- BenchmarkDotNet `InProcess` mode;
+- filter `*RegexStructuralBenchmarks*`;
+- two passes in ABBA order;
+- 30-second cooldowns;
+- the same physical Windows reference laptop;
+- hardware inventory SHA-256 `d73c6e3314dc77d24dd2b28a51221d9b77b5cc6b9796ae00fe8c9c0d92821c9b`;
+- BenchmarkDotNet `0.15.8` on .NET `10.0.11`; and
+- all 10 structural workloads in every pass.
 
-`bre-bounded-repetition`, `bre-bracket-class`, and `bre-empty-match` retained baseline allocation, confirming their outer fallback behavior.
+Two-pass means were:
 
-Candidate 3 must preserve the useful allocation reductions while removing the bounded-repetition timing regression.
+| Scenario | 2.1.0 mean | Candidate 3 mean | Time change | 2.1.0 allocated | Candidate 3 allocated | Allocation change |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `bre-alternation` | 692.45 µs | 464.38 µs | -32.9% | 2508.53 KiB | 1514.47 KiB | -39.6% |
+| `bre-bounded-repetition` | 308.07 µs | 279.41 µs | -9.3% | 971.81 KiB | 971.81 KiB | 0.0% |
+| `bre-bracket-class` | 475.27 µs | 449.87 µs | -5.3% | 1258.51 KiB | 1258.51 KiB | 0.0% |
+| `bre-capture-backreference` | 639.46 µs | 492.36 µs | -23.0% | 1963.23 KiB | 1466.45 KiB | -25.3% |
+| `bre-empty-match` | 0.911 µs | 0.850 µs | -6.8% | 2.57 KiB | 2.57 KiB | 0.0% |
+| `bre-word-boundary` | 315.87 µs | 195.61 µs | -38.1% | 972.45 KiB | 473.60 KiB | -51.3% |
+| `ere-alternation` | 754.51 µs | 452.38 µs | -40.0% | 2508.54 KiB | 1514.47 KiB | -39.6% |
+| `ere-anchor` | 1.362 µs | 0.712 µs | -47.7% | 3.67 KiB | 1.46 KiB | -60.2% |
+| `ere-optional` | 315.31 µs | 57.07 µs | -81.9% | 1004.75 KiB | 148.22 KiB | -85.2% |
+| `ere-repetition` | 283.08 µs | 57.05 µs | -79.8% | 1005.22 KiB | 148.45 KiB | -85.2% |
 
-## Acceptance gate
+## Candidate 2 regression closure
 
-After canonical Staging CI is green, run the authoritative physical comparison:
+The primary acceptance question was `bre-bounded-repetition`.
 
-```powershell
-powershell .\\benchmarks\\Collect-RegexReferenceComparison.ps1 `
-    -Filter '*RegexStructuralBenchmarks*' `
-    -Passes 2 `
-    -CooldownSeconds 30
-```
+Candidate 2 had reproduced a roughly 35–42% slowdown across two independent collections while allocation remained exactly `971.81 KiB`. Candidate 3 instead measures **9.3% faster than 2.1.0**, with the same exact `971.81 KiB` allocation. The regression is therefore removed.
 
-Acceptance requires:
+The secondary concern, `bre-capture-backreference`, also closes cleanly. Candidate 2's confirmation had been about 14.4% slower; Candidate 3 is **23.0% faster than 2.1.0** while allocation falls **25.3%**.
 
-1. the deterministic allocation reductions remain materially larger than the R2.0 allocation noise floor;
-2. `bre-bounded-repetition` returns to the baseline timing envelope rather than reproducing the Candidate 2 ~35–42% slowdown;
-3. `bre-capture-backreference` is rechecked because Candidate 2 reduced its allocation but showed a smaller timing concern in one confirmation series;
-4. unchanged-allocation controls remain stable;
-5. finite `MaximumMatchStates`, cancellation, captures, alternation, repetition, assertions, malformed-input, and syntax-profile semantics remain green; and
-6. no new cross-platform CI regression is introduced.
+The other unchanged-allocation controls remain stable: bounded repetition, bracket class, and empty match retain exactly the baseline allocation. Their elapsed-time movements are all favorable and within a range that does not suggest a regression.
 
-If those conditions hold, Candidate 3 should replace Candidate 2 as the retained R2.2 implementation and R2.2 can then be evaluated for closure or one final narrowly targeted refinement.
+## Additional improvement from iterator isolation
+
+Candidate 3 does more than restore fallback timing. Because `SequenceRegexNode.Match` is no longer itself an iterator, it also removes an outer iterator allocation around both selected paths.
+
+Compared with Candidate 2's independent confirmation, Candidate 3 further reduces measured allocation for several nested deterministic cases:
+
+- BRE/ERE alternation: about `1770.66 KiB -> 1514.47 KiB`;
+- BRE word-boundary: about `601.70 KiB -> 473.60 KiB`;
+- BRE capture/backreference: about `1594.54 KiB -> 1466.45 KiB`;
+- anchored ERE: about `1.52 KiB -> 1.46 KiB`.
+
+The R2.1 optional/repetition workloads retain their approximately 85.2% allocation reductions.
+
+## R2.2 decision
+
+Candidate 3 is accepted and replaces Candidate 2 as the retained deterministic-sequence implementation.
+
+R2.2 is complete because:
+
+1. deterministic sequence stages no longer allocate per-stage `List<RegexMatchState>` / `HashSet<RegexMatchState>` collections;
+2. the optimization remains restricted to provably single-successor, non-capturing direct child nodes;
+3. finite `MaximumMatchStates` retains the general matcher and therefore the existing resource-accounting contract;
+4. nested deterministic sequences can benefit inside otherwise complex structures without changing the outer branching/capturing semantics;
+5. Candidate 2's reproducible fallback timing regression is eliminated;
+6. the physical allocation improvements are vastly larger than the R2.0 noise floor; and
+7. canonical Windows/Linux/macOS PR CI is green at workflow run `33859421589`.
+
+The next step is to **remeasure the direct CommandFramework benchmark suite with R2.1 and R2.2 both in place** before deciding whether R2.3 decode/prepared-input work remains the highest-value next target.
