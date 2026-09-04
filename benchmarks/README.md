@@ -60,10 +60,12 @@ A normal pinned-baseline-compatible run can be filtered, for example:
 dotnet run --project benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj -c Release -- --filter "*RegexLiteralSearchBenchmarks*"
 ```
 
-The R2.3 prepared-input reuse-ceiling run is:
+The authoritative R2.3 prepared-input reuse-ceiling collection is:
 
 ```powershell
-dotnet run --project benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj -c Release -- --inProcess
+powershell .\benchmarks\Collect-PreparedRegexComparison.ps1 `
+    -Passes 2 `
+    -CooldownSeconds 30
 ```
 
 For focused optimization work, prefer the smallest benchmark class/scenario that exercises the code being changed. Whole-suite runs are appropriate for baseline and tranche closure, not for every edit.
