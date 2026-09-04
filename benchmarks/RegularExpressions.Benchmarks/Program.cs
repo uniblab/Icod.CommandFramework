@@ -20,14 +20,31 @@ internal static class Program {
 
 		BenchmarkMetadata.WriteRequestedMetadata();
 		BenchmarkSwitcher.FromAssembly( typeof( Program ).Assembly ).Run( args );
-		return ValidateBenchmarkArtifacts();
+		return ValidateBenchmarkArtifacts( ResolveArtifactDirectory( args ) );
 	}
 
-	private static int ValidateBenchmarkArtifacts() {
-		var artifactDirectory = System.IO.Path.GetFullPath( "BenchmarkDotNet.Artifacts" );
+	private static string ResolveArtifactDirectory( string[] args ) {
+		var artifactIndex = Array.IndexOf( args, "--artifacts" );
+		if ( 0 > artifactIndex ) {
+			artifactIndex = Array.IndexOf( args, "-a" );
+		}
+		if ( 0 > artifactIndex ) {
+			return System.IO.Path.GetFullPath( "BenchmarkDotNet.Artifacts" );
+		}
+		if ( artifactIndex + 1 >= args.Length ) {
+			return String.Empty;
+		}
+		return System.IO.Path.GetFullPath( args[ artifactIndex + 1 ] );
+	}
+
+	private static int ValidateBenchmarkArtifacts( string artifactDirectory ) {
+		if ( String.IsNullOrWhiteSpace( artifactDirectory ) ) {
+			Console.Error.WriteLine( "BenchmarkDotNet --artifacts requires an output path." );
+			return 2;
+		}
 		if ( !Directory.Exists( artifactDirectory ) ) {
 			Console.Error.WriteLine(
-				"BenchmarkDotNet did not produce its artifact directory."
+				$"BenchmarkDotNet did not produce its artifact directory: {artifactDirectory}"
 			);
 			return 1;
 		}
@@ -48,7 +65,8 @@ internal static class Program {
 			foreach ( var marker in new[] {
 				"BenchmarkDotNet has failed to build the auto-generated boilerplate code.",
 				"Benchmarks with issues:",
-				"// Build Error:"
+				"// Build Error:",
+				"Declaring type must be unsealed."
 			} ) {
 				if ( text.Contains( marker, StringComparison.Ordinal ) ) {
 					Console.Error.WriteLine(
