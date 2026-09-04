@@ -9,7 +9,7 @@ internal static class Program {
 			return PreparedRegexInputBenchmarks.RunSmoke();
 		}
 
-		BenchmarkRunner.Run<PreparedRegexInputBenchmarks>();
+		BenchmarkSwitcher.FromAssembly( typeof( Program ).Assembly ).Run( args );
 		return 0;
 	}
 }
