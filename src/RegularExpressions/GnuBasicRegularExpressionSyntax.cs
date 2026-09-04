@@ -304,6 +304,7 @@ internal sealed class BracketRegexNode(
 					any = true;
 					break;
 				}
+			}
 		}
 		var matches = isNegated ? !any : any;
 		if ( isNegated
@@ -423,8 +424,8 @@ internal sealed class AlternationRegexNode : RegexNode {
 				if ( results.Add( result ) ) {
 					yield return result;
 				}
+			}
 		}
-	}
 }
 
 /// <summary>
@@ -442,8 +443,8 @@ internal sealed class GroupRegexNode( int captureNumber, RegexNode expression ) 
 			if ( results.Add( captured ) ) {
 				context.RegisterState();
 				yield return captured;
+			}
 		}
-	}
 }
 
 /// <summary>
@@ -479,7 +480,7 @@ internal sealed class BackReferenceRegexNode( int captureNumber ) : RegexNode {
 					) )
 			) {
 				yield break;
-		}
+			}
 		}
 		context.RegisterState();
 		yield return state.WithPosition( state.Position + length );
@@ -556,10 +557,11 @@ internal sealed class RepeatRegexNode : RegexNode {
 					context.RegisterState();
 					yield return frame.State;
 				}
-		}
+			}
 		} finally {
 			while ( 0 < stack.Count ) {
 				stack.Pop().Children?.Dispose();
+			}
 		}
 	}
 
