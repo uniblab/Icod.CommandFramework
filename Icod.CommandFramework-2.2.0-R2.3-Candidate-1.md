@@ -68,8 +68,11 @@ Additional tests cover:
 - concurrent reuse;
 - exact UTF-8 source boundaries and split-boundary rejection;
 - UTF-16 string coordinates;
-- malformed UTF-8 `Throw` behavior during preparation; and
-- finite `MaximumMatchStates` diagnostics.
+- malformed UTF-8 `PreserveBytes`, `Replace`, and `Throw` behavior;
+- finite `MaximumMatchStates` diagnostics;
+- cancellation during preparation and prepared matching;
+- rejection of text/byte prepared-input kind mismatches; and
+- prepared matching through GNU Basic, GNU Extended, and GNU Emacs providers.
 
 ## Candidate-only benchmark
 
@@ -80,7 +83,7 @@ Additional tests cover:
 
 The project is separate from the pinned-baseline benchmark harness because the `2.1.0` worktree cannot compile candidate-only internal types. The comparison is therefore within one candidate build on one process/host and measures the reuse ceiling directly.
 
-Deterministic smoke verifies both paths enumerate the same nonzero number of matches. PR CI builds and runs that smoke on Windows, Linux, and macOS and exercises a BenchmarkDotNet Dry job on Windows.
+Deterministic smoke verifies both paths enumerate the same nonzero number of matches. PR CI builds and runs that smoke on Windows, Linux, and macOS and exercises a separately validated BenchmarkDotNet Dry job on Windows. The original and prepared BenchmarkDotNet runs use independent artifact directories so stale or unrelated results cannot satisfy the wrong validation gate.
 
 ## Explicit non-goals
 
@@ -96,14 +99,18 @@ Candidate 1 does not:
 
 ## Acceptance gate
 
-After canonical CI is green, run on the physical reference host:
+After canonical CI is green, run the dedicated collector from a clean physical-reference worktree:
 
 ```powershell
-dotnet run `
-    --project benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj `
-    -c Release `
-    -- `
-    --inProcess
+powershell .\benchmarks\Collect-PreparedRegexComparison.ps1 `
+    -Passes 2 `
+    -CooldownSeconds 30
+```
+
+The collector validates each BenchmarkDotNet pass independently and records the candidate commit, pass sequence, hardware inventory SHA-256 when available, .NET SDK version, and collection time in `comparison.json` beneath:
+
+```text
+artifacts/performance/regex-prepared-input-candidate-1/
 ```
 
 Candidate 1 should be retained as the R2.3 foundation only if:
