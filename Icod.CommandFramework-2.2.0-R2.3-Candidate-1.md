@@ -2,7 +2,7 @@
 
 **Tranche:** R2.3 — immutable prepared-input investigation  
 **Post-R2.2 decision report:** `Icod.CommandFramework-2.2.0-Post-R2.2-Whole-Suite-Report.md`  
-**Status:** implementation and semantic/CI validation in progress; physical reuse-ceiling measurement pending
+**Status:** accepted as the R2.3 immutable prepared-input foundation
 
 ## Motivation
 
@@ -74,6 +74,8 @@ Additional tests cover:
 - rejection of text/byte prepared-input kind mismatches; and
 - prepared matching through GNU Basic, GNU Extended, and GNU Emacs providers.
 
+Canonical PR workflow **33884416156** is green at Candidate 1 validation head `b6c52f85feef7669504b3fc3f77e98a63d89821e`. It includes 502 tests on Windows, Linux, and macOS, both benchmark-project smokes, independent BenchmarkDotNet artifact validation, and both collector smokes.
+
 ## Candidate-only benchmark
 
 `benchmarks/PreparedRegularExpressions.Benchmarks` compares two methods over the same 64 KiB record:
@@ -83,9 +85,55 @@ Additional tests cover:
 
 The project is separate from the pinned-baseline benchmark harness because the `2.1.0` worktree cannot compile candidate-only internal types. The comparison is therefore within one candidate build on one process/host and measures the reuse ceiling directly.
 
-Deterministic smoke verifies both paths enumerate the same nonzero number of matches. PR CI builds and runs that smoke on Windows, Linux, and macOS and exercises a separately validated BenchmarkDotNet Dry job on Windows. The original and prepared BenchmarkDotNet runs use independent artifact directories so stale or unrelated results cannot satisfy the wrong validation gate.
+Deterministic smoke verifies both paths enumerate the same nonzero number of matches. The original and prepared BenchmarkDotNet runs use independent artifact directories so stale or unrelated results cannot satisfy the wrong validation gate.
 
-## Explicit non-goals
+## Physical reuse-ceiling measurement
+
+The authoritative physical collection was made from Candidate 1 commit `b6c52f85feef7669504b3fc3f77e98a63d89821e` using:
+
+```powershell
+powershell .\benchmarks\Collect-PreparedRegexComparison.ps1 `
+    -Passes 2 `
+    -CooldownSeconds 30
+```
+
+Collection metadata:
+
+- BenchmarkDotNet `0.15.8`;
+- InProcess toolchain;
+- .NET runtime `10.0.11`;
+- .NET SDK `10.0.400`;
+- Windows `10.0.26200.9168`;
+- AMD Ryzen 7 5700U, 16 logical / 8 physical cores;
+- concurrent workstation GC; and
+- hardware inventory SHA-256 `d73c6e3314dc77d24dd2b28a51221d9b77b5cc6b9796ae00fe8c9c0d92821c9b`.
+
+Both passes completed two executed benchmarks and produced validated result artifacts.
+
+| Pass | Public time | Prepared time | Time reduction | Public allocation | Prepared allocation | Allocation reduction |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 49.739 ms | 0.243 ms | 99.51% | 74,973.47 KiB | 9.06 KiB | 99.9879% |
+| 2 | 52.322 ms | 0.260 ms | 99.50% | 74,973.43 KiB | 9.06 KiB | 99.9879% |
+| Two-pass mean | 51.031 ms | 0.252 ms | **99.51%** | 73.216 MiB | 9.06 KiB | **99.9879%** |
+
+The two-pass mean corresponds to approximately **203× higher throughput** and **8,275× less managed allocation** for repeated matching after one immutable preparation.
+
+The result is substantially larger than the original R2.3 acceptance threshold and is reproduced independently in both physical passes. Public-loop allocation is byte-for-byte stable to within 0.04 KiB across passes; prepared-loop allocation is exactly 9.06 KiB in both passes.
+
+## Acceptance decision
+
+**Candidate 1 is accepted as the R2.3 foundation.**
+
+The measurement proves that repeated decode/materialization, not residual state traversal, is the dominant cost for the repeated-search workload. Immutable preparation removes essentially all of that cost while preserving independent per-call match state and the existing semantic contracts.
+
+This does **not** by itself authorize a broad public API. The next R2.3 step is to inspect the actual Icod.Grep repeated-match integration and choose the smallest immutable consumable seam that can capture the measured benefit. The preferred order is:
+
+1. determine whether an existing higher-level consumer operation can prepare once internally;
+2. if cross-assembly reuse requires a package surface, design the smallest public immutable prepared-input contract;
+3. avoid exposing matcher internals, mutable cursors, pooling, or shared state; and
+4. validate the chosen seam through Icod.Grep before closing R2.3.
+
+## Explicit non-goals retained
 
 Candidate 1 does not:
 
@@ -96,30 +144,3 @@ Candidate 1 does not:
 - share match contexts or resource counters between calls;
 - weaken malformed-input or coordinate contracts; or
 - alter the public one-shot matching implementation already accepted in R2.1/R2.2.
-
-## Acceptance gate
-
-After canonical CI is green, run the dedicated collector from a clean physical-reference worktree:
-
-```powershell
-powershell .\benchmarks\Collect-PreparedRegexComparison.ps1 `
-    -Passes 2 `
-    -CooldownSeconds 30
-```
-
-The collector validates each BenchmarkDotNet pass independently and records the candidate commit, pass sequence, hardware inventory SHA-256 when available, .NET SDK version, and collection time in `comparison.json` beneath:
-
-```text
-artifacts/performance/regex-prepared-input-candidate-1/
-```
-
-Candidate 1 should be retained as the R2.3 foundation only if:
-
-1. prepared repeated-search allocation is materially below the current public ~73.3 MiB result;
-2. prepared and public match counts are identical;
-3. prepared timing improves materially enough to justify integration complexity;
-4. public whole-suite behavior remains unchanged;
-5. all immutability, concurrency, coordinate, malformed-input, cancellation, capture, and resource-limit tests remain green; and
-6. no cross-platform CI regression is introduced.
-
-A favorable result authorizes the next design decision: expose immutable preparation only as far as a real consumer needs. A public API remains contingent on Icod.Grep or another cross-assembly consumer proving that internal integration cannot deliver the measured benefit.
