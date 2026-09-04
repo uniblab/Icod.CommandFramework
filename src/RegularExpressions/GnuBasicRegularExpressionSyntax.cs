@@ -426,6 +426,7 @@ internal sealed class AlternationRegexNode : RegexNode {
 				}
 			}
 		}
+	}
 }
 
 /// <summary>
@@ -445,6 +446,7 @@ internal sealed class GroupRegexNode( int captureNumber, RegexNode expression ) 
 				yield return captured;
 			}
 		}
+	}
 }
 
 /// <summary>
