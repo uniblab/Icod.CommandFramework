@@ -341,43 +341,55 @@ internal sealed class SequenceRegexNode : RegexNode {
 			this.isSingleSuccessorNonCapturing
 			&& int.MaxValue == context.Options.MaximumMatchStates
 		) {
-			var current = state;
-			foreach ( var node in nodes ) {
-				context.CancellationToken.ThrowIfCancellationRequested();
-				using var matches = node.Match( context, current ).GetEnumerator();
-				if ( !matches.MoveNext() ) {
-					yield break;
-				}
-				current = matches.Current;
-				if ( matches.MoveNext() ) {
-					throw new InvalidOperationException(
-						"A deterministic regular-expression node produced multiple successor states."
-					);
-				}
-			}
-			context.RegisterState();
-			yield return current;
-			yield break;
+			return MatchDeterministic( context, state );
 		}
+		return MatchGeneral( context, state );
+	}
 
-		var currentStates = new List<RegexMatchState> { state };
+	private IEnumerable<RegexMatchState> MatchDeterministic(
+		RegexMatchContext context,
+		RegexMatchState state
+	) {
+		var current = state;
+		foreach ( var node in nodes ) {
+			context.CancellationToken.ThrowIfCancellationRequested();
+			using var matches = node.Match( context, current ).GetEnumerator();
+			if ( !matches.MoveNext() ) {
+				yield break;
+			}
+			current = matches.Current;
+			if ( matches.MoveNext() ) {
+				throw new InvalidOperationException(
+					"A deterministic regular-expression node produced multiple successor states."
+				);
+			}
+		}
+		context.RegisterState();
+		yield return current;
+	}
+
+	private IEnumerable<RegexMatchState> MatchGeneral(
+		RegexMatchContext context,
+		RegexMatchState state
+	) {
+		var current = new List<RegexMatchState> { state };
 		foreach ( var node in nodes ) {
 			context.CancellationToken.ThrowIfCancellationRequested();
 			var next = new List<RegexMatchState>();
 			var seen = new HashSet<RegexMatchState>( RegexMatchStateComparer.Instance );
-			foreach ( var candidate in currentStates ) {
+			foreach ( var candidate in current ) {
 				foreach ( var result in node.Match( context, candidate ) ) {
 					if ( seen.Add( result ) ) {
 						next.Add( result );
 					}
 				}
 			}
-			currentStates = next;
-			if ( 0 == currentStates.Count ) {
+			current = next;
+			if ( 0 == current.Count ) {
 				yield break;
 			}
 		}
-		foreach ( var result in currentStates ) {
+		foreach ( var result in current ) {
 			context.RegisterState();
 			yield return result;
 		}
