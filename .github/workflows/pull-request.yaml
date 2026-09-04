@@ -147,7 +147,14 @@ jobs:
           --
           --inProcess
           --job Dry
+          --artifacts BenchmarkDotNet.RegexArtifacts
           --filter '*RegexCompileBenchmarks*'
+      - name: Validate regex BenchmarkDotNet artifacts
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: >-
+          ./benchmarks/Assert-BenchmarkDotNetRun.ps1
+          -ArtifactDirectory BenchmarkDotNet.RegexArtifacts
       - name: Build optimized prepared regex benchmark project
         if: runner.os == 'Windows'
         run: >-
@@ -167,13 +174,14 @@ jobs:
           --
           --inProcess
           --job Dry
+          --artifacts BenchmarkDotNet.PreparedArtifacts
           --filter '*PreparedRegexInputBenchmarks*'
-      - name: Validate BenchmarkDotNet execution artifacts
+      - name: Validate prepared-input BenchmarkDotNet artifacts
         if: runner.os == 'Windows'
         shell: pwsh
         run: >-
           ./benchmarks/Assert-BenchmarkDotNetRun.ps1
-          -ArtifactDirectory BenchmarkDotNet.Artifacts
+          -ArtifactDirectory BenchmarkDotNet.PreparedArtifacts
       - name: Validate pinned 2.1.0 comparison orchestration
         if: runner.os == 'Windows'
         shell: powershell
