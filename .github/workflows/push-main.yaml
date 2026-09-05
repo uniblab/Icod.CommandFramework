@@ -1,0 +1,63 @@
+name: push-main
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        description: 'Uploaded workflow artifact containing NuGet packages.'
+        required: true
+        type: string
+      dotnet-version:
+        description: '.NET SDK channel used for publication.'
+        required: false
+        default: '10.0.x'
+        type: string
+    secrets:
+      NUGET_USER:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish-nuget:
+    runs-on: ubuntu-latest
+    environment: Release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: artifacts/package
+      - name: Exchange GitHub OIDC token for NuGet credential
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+      - name: Publish to NuGet.org
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+        run: |
+          $packages = @(
+              Get-ChildItem -LiteralPath 'artifacts/package' -Filter '*.nupkg' -File |
+                  Where-Object { -not $_.Name.EndsWith('.symbols.nupkg', [System.StringComparison]::OrdinalIgnoreCase) } |
+                  Sort-Object Name
+          )
+          if (0 -eq $packages.Count) {
+              throw 'No NuGet packages were downloaded for publication.'
+          }
+          foreach ($package in $packages) {
+              dotnet nuget push $package.FullName `
+                  --api-key $env:NUGET_API_KEY `
+                  --source 'https://api.nuget.org/v3/index.json' `
+                  --skip-duplicate
+              if (0 -ne $LASTEXITCODE) {
+                  throw "NuGet.org publication failed for '$($package.Name)' with status $LASTEXITCODE."
+              }
+          }
