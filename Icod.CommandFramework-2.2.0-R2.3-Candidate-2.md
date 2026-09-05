@@ -2,7 +2,7 @@
 
 **Tranche:** R2.3 — immutable prepared-input consumer surface  
 **Foundation:** R2.3 Candidate 1 accepted  
-**Status:** public API implementation and CI validation in progress
+**Status:** accepted; R2.3 closed
 
 ## Purpose
 
@@ -62,14 +62,14 @@ The public API tests additionally include an adversarial external `ICompiledRegu
 
 ## Benchmark gate
 
-The candidate-only prepared-input benchmark has been changed to use only the **public** Candidate 2 API. The benchmark project no longer requires `InternalsVisibleTo` access.
+The candidate-only prepared-input benchmark uses only the **public** Candidate 2 API. The benchmark project no longer requires `InternalsVisibleTo` access.
 
-The two methods remain:
+The two methods are:
 
 - `PublicMatchLoop`: ordinary public `Match` calls that prepare the same 64 KiB record repeatedly;
 - `PreparedMatchLoop`: public `RegularExpressionPreparedByteInput` plus the public prepared-input `Match` extension.
 
-This ensures the next physical measurement proves the performance available to a real external consumer rather than an internal friend assembly.
+This makes the physical measurement representative of the package surface available to a real external consumer rather than an internal friend assembly.
 
 The authoritative Candidate 2 collector output is intentionally distinct from Candidate 1:
 
@@ -77,23 +77,57 @@ The authoritative Candidate 2 collector output is intentionally distinct from Ca
 artifacts/performance/regex-prepared-input-candidate-2/
 ```
 
-Run from a clean current branch:
+## Canonical CI acceptance
 
-```powershell
-powershell .\benchmarks\Collect-PreparedRegexComparison.ps1 `
-    -Passes 2 `
-    -CooldownSeconds 30
-```
+Canonical PR workflow **33933148479** completed successfully at Candidate 2 head `4732442a6187de95817db610cbde8e028ca83b07`.
 
-## Acceptance gate
+The green workflow validates the public prepared-input implementation and complete CommandFramework test/benchmark gates across the supported CI matrix. The prepared benchmark itself has no friend-assembly access, so its build and smoke validate the same public API shape intended for Icod.Grep.
 
-Candidate 2 should be retained if:
+## Authoritative physical result
 
-1. canonical Windows/Linux/macOS CI and the complete test suite remain green;
-2. the public prepared-input benchmark smoke produces the same match count as the ordinary public path;
-3. a physical two-pass run through the public API retains essentially the Candidate 1 reuse result;
-4. ordinary public `ICompiledRegularExpression` callers remain unchanged;
-5. external `ICompiledRegularExpression` implementations retain a correct fallback path without gaining mutable access to the prepared snapshot; and
-6. no mutable cursor, cache, pooling contract, or matcher-internal type becomes public.
+The authoritative physical archive records:
 
-After acceptance, CommandFramework R2.3 can close with a package-ready immutable consumer contract. Icod.Grep should consume that contract only when a 2.2.0 prerelease package is available, so its frozen PR branch never becomes intentionally unbuildable.
+- candidate commit `4732442a6187de95817db610cbde8e028ca83b07`;
+- BenchmarkDotNet InProcess mode;
+- two non-smoke passes;
+- 30-second recorded cooldown;
+- .NET SDK `10.0.400`;
+- reference hardware inventory SHA-256 `d73c6e3314dc77d24dd2b28a51221d9b77b5cc6b9796ae00fe8c9c0d92821c9b`.
+
+Both passes completed both benchmark methods and produced validated BenchmarkDotNet CSV reports.
+
+| Pass | Public time | Prepared time | Time reduction | Public allocation | Prepared allocation | Allocation reduction |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 43.063 ms | 0.210 ms | 99.51% | 74,973.47 KiB | 9.06 KiB | 99.9879% |
+| 2 | 39.102 ms | 0.214 ms | 99.45% | 74,973.44 KiB | 9.06 KiB | 99.9879% |
+| Two-pass mean | **41.083 ms** | **0.212 ms** | **99.48%** | **73.216 MiB** | **9.06 KiB** | **99.9879%** |
+
+The two-pass mean corresponds to approximately **194× higher throughput** and **8,275× less managed allocation** for repeated matching through the public immutable prepared-input API.
+
+The allocation result reproduces Candidate 1 exactly: **9.06 KiB in both passes**. Prepared timing is also within and slightly better than the Candidate 1 physical result of roughly 0.252 ms. The public API layer therefore adds no material reuse penalty.
+
+## Acceptance decision
+
+**Candidate 2 is accepted, and R2.3 is closed.**
+
+All acceptance gates are satisfied:
+
+1. canonical Windows/Linux/macOS CI and the complete test/benchmark suite are green;
+2. the public prepared-input benchmark smoke verifies the same nonzero match count as the ordinary public path;
+3. the physical public-only two-pass run reproduces Candidate 1's allocation result exactly and retains its timing class;
+4. ordinary `ICompiledRegularExpression` callers and implementations are unchanged;
+5. third-party implementations retain a correct fallback without mutable access to the prepared snapshot; and
+6. no mutable cursor, cache, pooling contract, decoded buffer, state machine, or matcher-internal type is public.
+
+## R2.3 closure contract
+
+The retained package contract is deliberately narrow:
+
+- preparation is explicit;
+- authoritative byte ownership is immutable;
+- matching state remains per-call and ephemeral;
+- one prepared input may safely support concurrent independent matches;
+- the compiled-expression interface remains unchanged; and
+- public text preparation, pooling, mutable cursors, and matcher internals remain out of scope.
+
+The next tranche is **R2.4 — complex-pattern, cancellation, malformed-input, and resource-limit closure**. Icod.Grep PR #12 remains frozen until R2.5 provides a consumable CommandFramework 2.2.0 prerelease package for real cross-repository validation.
