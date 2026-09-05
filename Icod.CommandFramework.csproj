@@ -12,11 +12,11 @@
 		<AssemblyName>Icod.CommandFramework</AssemblyName>
 		<RootNamespace>Icod.CommandFramework</RootNamespace>
 		<Configurations>Debug;Release;Staging</Configurations>
-		<Version>2.1.0</Version>
+		<Version>2.2.0</Version>
 	</PropertyGroup>
 	<PropertyGroup>
-		<PackageVersion>2.1.0</PackageVersion>
-		<PackageReleaseNotes>2.1.0 consolidates pathname expansion around FileSystem.Traversal.PathnameExpander; adds command-oriented ExpandOperandsAsync, deterministic host ordering, *, ?, recursive **, character classes, leading-period, unmatched-pattern, link, boundary, resource-limit, and structured-error policies; uses Icod.Path 1.1.0 for pathname grammar; and retains IO.PathnameExpander as a synchronous compatibility facade.</PackageReleaseNotes>
+		<PackageVersion>2.2.0</PackageVersion>
+		<PackageReleaseNotes>2.2.0 develops measured performance and scalability improvements for the shared managed GNU/POSIX regular-expression engine while preserving the 2.1.0 matching, capture, locale, byte-offset, malformed-input, cancellation, diagnostic, and resource-limit contracts. R2 begins with direct BenchmarkDotNet baselines before production matcher optimization.</PackageReleaseNotes>
 		<Authors>Timothy J. Bruce</Authors>
 		<Description>Cross-platform .NET infrastructure for Unix-style command-line tools, including argument parsing, diagnostics, byte-oriented streaming, filesystem operations, records, GNU/POSIX regular expressions, temporary storage, and Unicode text.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

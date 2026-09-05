@@ -42,18 +42,32 @@ public sealed class GnuExtendedRegularExpressionProvider : IRegularExpressionPro
 			cancellationToken
 		);
 		var parseResult = parser.Parse();
-		if ( null == parseResult.Expression ) {
+		var expression = parseResult.Expression;
+		if ( null == expression ) {
 			return RegularExpressionCompileResult.Failed( parseResult.Diagnostic! );
 		}
-		return RegularExpressionCompileResult.Succeeded(
-			new GnuBasicCompiledRegularExpression(
-				pattern,
-				parseResult.Expression,
-				parseResult.CaptureCount,
-				effective,
-				this.characterClassProvider
-			)
+		ICompiledRegularExpression compiled = new GnuBasicCompiledRegularExpression(
+			pattern,
+			expression,
+			parseResult.CaptureCount,
+			effective,
+			this.characterClassProvider
 		);
+		compiled = LiteralPrefixCompiledRegularExpression.Create(
+			compiled,
+			pattern,
+			effective,
+			this.characterClassProvider
+		);
+		compiled = new PreparedCompiledRegularExpression(
+			compiled,
+			pattern,
+			expression,
+			parseResult.CaptureCount,
+			effective,
+			this.characterClassProvider
+		);
+		return RegularExpressionCompileResult.Succeeded( compiled );
 	}
 
 	/// <inheritdoc/>

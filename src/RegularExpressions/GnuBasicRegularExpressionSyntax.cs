@@ -323,17 +323,55 @@ internal sealed class BracketRegexNode(
 /// Provides the sequence regex node implementation.
 /// </summary>
 internal sealed class SequenceRegexNode : RegexNode {
+	private readonly bool isSingleSuccessorNonCapturing;
 	private readonly IReadOnlyList<RegexNode> nodes;
 
 	/// <summary>
 	/// Initializes a new instance of the SequenceRegexNode class.
 	/// </summary>
 	internal SequenceRegexNode( IReadOnlyList<RegexNode> nodes ) {
+		ArgumentNullException.ThrowIfNull( nodes );
 		this.nodes = nodes;
+		this.isSingleSuccessorNonCapturing = IsSingleSuccessorNonCapturing( nodes );
 	}
 
 	/// <inheritdoc/>
 	internal override IEnumerable<RegexMatchState> Match( RegexMatchContext context, RegexMatchState state ) {
+		if (
+			this.isSingleSuccessorNonCapturing
+			&& int.MaxValue == context.Options.MaximumMatchStates
+		) {
+			return MatchDeterministic( context, state );
+		}
+		return MatchGeneral( context, state );
+	}
+
+	private IEnumerable<RegexMatchState> MatchDeterministic(
+		RegexMatchContext context,
+		RegexMatchState state
+	) {
+		var current = state;
+		foreach ( var node in nodes ) {
+			context.CancellationToken.ThrowIfCancellationRequested();
+			using var matches = node.Match( context, current ).GetEnumerator();
+			if ( !matches.MoveNext() ) {
+				yield break;
+			}
+			current = matches.Current;
+			if ( matches.MoveNext() ) {
+				throw new InvalidOperationException(
+					"A deterministic regular-expression node produced multiple successor states."
+				);
+			}
+		}
+		context.RegisterState();
+		yield return current;
+	}
+
+	private IEnumerable<RegexMatchState> MatchGeneral(
+		RegexMatchContext context,
+		RegexMatchState state
+	) {
 		var current = new List<RegexMatchState> { state };
 		foreach ( var node in nodes ) {
 			context.CancellationToken.ThrowIfCancellationRequested();
@@ -355,6 +393,24 @@ internal sealed class SequenceRegexNode : RegexNode {
 			context.RegisterState();
 			yield return result;
 		}
+	}
+
+	private static bool IsSingleSuccessorNonCapturing(
+		IReadOnlyList<RegexNode> candidateNodes
+	) {
+		foreach ( var node in candidateNodes ) {
+			if (
+				node is not EmptyRegexNode
+				and not LiteralRegexNode
+				and not DotRegexNode
+				and not AssertionRegexNode
+				and not CharacterClassRegexNode
+				and not BracketRegexNode
+			) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
 

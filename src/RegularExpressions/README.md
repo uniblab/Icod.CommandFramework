@@ -1,8 +1,8 @@
 # Shared GNU Regular Expressions
 
-`Icod.CommandFramework.RegularExpressions` is the managed, command-neutral GNU regular-expression foundation introduced by Completion Gate C1 and completed for GNU Basic and Extended syntax by Completion Gate R1. It is not a pattern translator over `System.Text.RegularExpressions`. The same parser, syntax tree, and leftmost-longest matcher serve BRE, ERE, and the GNU Emacs profile used by `ptx`.
+`Icod.CommandFramework.RegularExpressions` is the managed, command-neutral GNU regular-expression foundation used across Icod command suites. It is not a pattern translator over `System.Text.RegularExpressions`. The same parser, syntax tree, and leftmost-longest matcher serve BRE, ERE, and the GNU Emacs profile used by `ptx`.
 
-The directory is provisionally classified as a cross-suite `Icod.CommandFramework` candidate. During incubation it remains in the current Shared project and is consumed through project references. Grep-, Sed-, Ed-, Expr-, and Csplit-specific pattern sourcing, empty-pattern reuse, match iteration, replacement grammar, binary policy, diagnostics presentation, and command state remain in their owning suite or command engines.
+Grep-, Sed-, Ed-, Expr-, and Csplit-specific pattern sourcing, empty-pattern reuse, match iteration, replacement grammar, binary policy, diagnostics presentation, and command state remain in their owning suite or command engines. The shared layer owns compilation, matching semantics, captures, source coordinates, locale/classification policy, cancellation, resource limits, and byte-preserving input behavior.
 
 ## Authoritative behavior
 
@@ -34,7 +34,7 @@ ERE is parsed directly. Escaped ERE metacharacters are literals, unmatched openi
 - `RegularExpressionDiagnostic` exposes a stable code, message, and UTF-16 pattern index where applicable.
 - `IRegularExpressionCharacterClassProvider` isolates classification, scalar comparison, collation, and case-equivalence policy.
 - `RegularExpressionOptions` controls syntax, case, line sensitivity, the logical line-separator scalar, explicit NUL-dot policy, compatibility policy, nesting limits, and match-state limits.
-- - `RegularExpressionMatchOptions` addresses .NET strings by UTF-16 index.
+- `RegularExpressionMatchOptions` addresses .NET strings by UTF-16 index.
 - `RegularExpressionOptions.LineSeparator` defaults to LF and selects the logical separator used by line-sensitive anchors, dot, and negated bracket expressions. `DotMatchesNull` is an explicit opt-in for consumers such as GNU Sed `--null-data`; multiline mode still excludes NUL when NUL is the selected separator.
 - `RegularExpressionInputOptions` selects byte-valued or UTF-8 decoding and an explicit malformed-input policy.
 - `RegularExpressionByteMatchOptions` addresses authoritative byte input by source-byte offset.
@@ -56,6 +56,29 @@ The CPU-bound asynchronous members do not call `Task.Run`. They preserve a consi
 | Repeated captures | Last successful register values retained by repeated and nested captures |
 | Locale behavior | Literal, range, class, equivalence, case, and back-reference comparisons use the injected provider |
 | Operational controls | Cancellation during compile/decode/match, bounded syntax nesting, and a controlled match-state limit diagnostic |
+
+## 2.2.0 performance architecture
+
+Version `2.2.0` optimizes the shared matcher without introducing a second semantic engine.
+
+R2.1 adds conservative start-position acceleration. Complete literals and expressions with a provable required literal prefix may skip impossible unanchored start positions. If a required prefix cannot be proven, matching falls back to the ordinary matcher. Finite `MaximumMatchStates` also bypasses the accelerator so resource accounting remains compatible with the existing contract.
+
+R2.2 adds deterministic sequence specialization inside the general matcher. A `SequenceRegexNode` uses a single-state path only when every direct child is proven single-successor and non-capturing and `MaximumMatchStates` is unlimited. The accepted deterministic child classes are:
+
+- `EmptyRegexNode`;
+- `LiteralRegexNode`;
+- `DotRegexNode`;
+- `AssertionRegexNode`;
+- `CharacterClassRegexNode`; and
+- `BracketRegexNode`.
+
+Groups, alternation, repetition, backreferences, finite resource limits, and future unproven node types retain the general collection path at the containing sequence level. Nested deterministic sequences may still optimize independently inside a larger branching or capturing expression.
+
+The deterministic and general paths are implemented as separate iterators with a small non-iterator dispatcher. This separation is intentional: physical R2.2 measurements found that combining both algorithms in one iterator produced a repeatable fallback timing regression. The split implementation eliminated that regression while preserving and improving allocation reductions.
+
+These optimizations do not change the public regex language, match ordering, capture semantics, byte/source coordinates, cancellation contract, or diagnostics. The complete shared regex test suite remains the semantic authority.
+
+See the repository-root R2 performance roadmap and retained Candidate reports for quantitative evidence and benchmark methodology.
 
 ## String and authoritative-byte contract
 
