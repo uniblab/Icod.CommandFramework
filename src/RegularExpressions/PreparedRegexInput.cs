@@ -47,6 +47,26 @@ internal sealed class PreparedRegexInput {
 		}
 		cancellationToken.ThrowIfCancellationRequested();
 		var ownedSource = source.ToArray();
+		return PrepareOwned( ownedSource, options, cancellationToken );
+	}
+
+	/// <summary>
+	/// Prepares authoritative bytes whose ownership has already been transferred to the caller.
+	/// </summary>
+	internal static PreparedRegexInput PrepareOwned(
+		byte[] ownedSource,
+		RegularExpressionInputOptions options,
+		CancellationToken cancellationToken = default
+	) {
+		ArgumentNullException.ThrowIfNull( ownedSource );
+		ArgumentNullException.ThrowIfNull( options );
+		if ( !Enum.IsDefined( options.DecodingMode ) ) {
+			throw new ArgumentOutOfRangeException( nameof( options ) );
+		}
+		if ( !Enum.IsDefined( options.InvalidEncodingPolicy ) ) {
+			throw new ArgumentOutOfRangeException( nameof( options ) );
+		}
+		cancellationToken.ThrowIfCancellationRequested();
 		return new(
 			RegexInput.Decode(
 				ownedSource,
