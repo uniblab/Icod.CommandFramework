@@ -2,11 +2,11 @@
 
 **Tranche:** R2.4 — complex-pattern, cancellation, malformed-input, and resource-limit closure  
 **Predecessor:** R2.3 accepted and closed  
-**Status:** semantic closure validation in progress
+**Status:** accepted and closed
 
 ## Purpose
 
-R2.4 is deliberately not a broad new optimization tranche. R2.1 through R2.3 have already changed start-position dispatch, deterministic state propagation, and repeated byte-input preparation. Before packaging those changes for Icod.Grep, R2.4 proves that difficult workloads still preserve the ordinary GNU matching contract through both the traditional one-shot byte API and the new public immutable prepared-input API.
+R2.4 is deliberately not a broad new optimization tranche. R2.1 through R2.3 changed start-position dispatch, deterministic state propagation, and repeated byte-input preparation. Before packaging those changes for Icod.Grep, R2.4 proves that difficult workloads still preserve the ordinary GNU matching contract through both the traditional one-shot byte API and the new public immutable prepared-input API.
 
 The principal acceptance question is:
 
@@ -54,23 +54,39 @@ For successful matches, the parity assertion compares:
 - each capture's source-byte index/length; and
 - each capture's exact returned byte value.
 
-## Acceptance gate
+## Canonical acceptance result
 
-R2.4 closes if:
+Canonical PR workflow **33936220502** completed successfully at R2.4 head `e345a41b368348c4dd9572f98a2985a2f6b9eba2`.
+
+The workflow passed:
+
+- Windows, Linux, and macOS restore/build/test;
+- Staging package validation on the designated package host;
+- ordinary regex benchmark restore/build/smoke on all three host families;
+- prepared-input benchmark restore/build/smoke on all three host families;
+- Windows BenchmarkDotNet execution and artifact validation for both benchmark suites;
+- prepared-input comparison collector smoke; and
+- pinned `2.1.0` comparison collector smoke.
+
+No production regex change was required to make the R2.4 matrix pass.
+
+## Acceptance decision
+
+**R2.4 is accepted and closed.**
+
+The closure result establishes that:
 
 1. the new cross-path matrix is green on Windows, Linux, and macOS;
-2. the complete existing CommandFramework test suite remains green;
-3. benchmark project builds/smokes and collector validation remain green;
+2. the complete existing CommandFramework suite remains green;
+3. benchmark projects and collector validation remain green;
 4. finite state exhaustion returns `MatchResourceLimitExceeded` identically through ordinary and prepared paths;
 5. malformed-input policy and exact source coordinates remain unchanged;
 6. cancellation remains an `OperationCanceledException` contract rather than a controlled regex diagnostic;
-7. complex patterns that cannot use start-prefix acceleration retain ordinary general-matcher semantics; and
-8. no production-code change is required unless the closure matrix exposes a real regression.
+7. complex patterns outside the start-prefix optimization retain ordinary general-matcher semantics; and
+8. the accepted R2.1–R2.3 architecture required no semantic repair during adversarial closure.
 
-## Decision discipline
+## R2.4 closure conclusion
 
-If the matrix passes without production changes, that is a positive result: R2.4 is intended to validate the accepted architecture rather than create another optimization merely to justify the tranche.
+The absence of a production-code change is the desired outcome. R2.4 was a proof tranche, not an optimization tranche, and it demonstrates that the public prepared-input path remains a semantic peer of ordinary byte matching even when the engine is forced into difficult general-matcher cases.
 
-If a mismatch is found, fix the smallest proven semantic defect and add a regression case before closing R2.4.
-
-After R2.4 closes, proceed to R2.5: produce a consumable CommandFramework 2.2.0 prerelease package and integrate it into the frozen Icod.Grep 1.6.0 performance branch for full GNU grep conformance and physical command-level measurement.
+The next tranche is **R2.5 — prerelease package and Icod.Grep consumer validation**. The prerelease mechanism must preserve the repository's stable tagged-release rules while allowing the still-Draft performance branch to be consumed by Grep before merge.
