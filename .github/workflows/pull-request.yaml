@@ -263,45 +263,12 @@ jobs:
   publish-prerelease-nuget:
     needs: prerelease-package
     if: needs.prerelease-package.result == 'success'
-    runs-on: ubuntu-latest
-    environment: Release
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      - uses: actions/download-artifact@v4
-        with:
-          name: commandframework-${{ needs.prerelease-package.outputs.version }}
-          path: artifacts/package
-      - name: Exchange GitHub OIDC token for NuGet credential
-        id: nuget-login
-        uses: NuGet/login@v1
-        with:
-          user: ${{ secrets.NUGET_USER }}
-      - name: Publish validation prerelease to NuGet.org
-        shell: pwsh
-        env:
-          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
-        run: |
-          $packages = @(
-              Get-ChildItem -LiteralPath 'artifacts/package' -Filter '*.nupkg' -File |
-                  Sort-Object Name
-          )
-          if (0 -eq $packages.Count) {
-              throw 'No R2.5 prerelease package was downloaded.'
-          }
-          foreach ($package in $packages) {
-              dotnet nuget push $package.FullName `
-                  --api-key $env:NUGET_API_KEY `
-                  --source 'https://api.nuget.org/v3/index.json' `
-                  --skip-duplicate
-              if (0 -ne $LASTEXITCODE) {
-                  throw "NuGet.org R2.5 publication failed for '$($package.Name)' with status $LASTEXITCODE."
-              }
-          }
+    uses: ./.github/workflows/push-main.yaml
+    with:
+      artifact-name: commandframework-${{ needs.prerelease-package.outputs.version }}
+      dotnet-version: '10.0.x'
+    secrets:
+      NUGET_USER: ${{ secrets.NUGET_USER }}
 
   publish-prerelease-github:
     needs: prerelease-package
