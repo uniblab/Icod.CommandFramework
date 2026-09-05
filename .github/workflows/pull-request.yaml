@@ -263,6 +263,9 @@ jobs:
   publish-prerelease-nuget:
     needs: prerelease-package
     if: needs.prerelease-package.result == 'success'
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/push-main.yaml
     with:
       artifact_name: commandframework-${{ needs.prerelease-package.outputs.version }}
