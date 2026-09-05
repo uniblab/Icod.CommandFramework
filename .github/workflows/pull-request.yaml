@@ -265,8 +265,8 @@ jobs:
     if: needs.prerelease-package.result == 'success'
     uses: ./.github/workflows/push-main.yaml
     with:
-      artifact-name: commandframework-${{ needs.prerelease-package.outputs.version }}
-      dotnet-version: '10.0.x'
+      artifact_name: commandframework-${{ needs.prerelease-package.outputs.version }}
+      dotnet_version: '10.0.x'
 
   publish-prerelease-github:
     needs: prerelease-package
