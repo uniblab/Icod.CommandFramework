@@ -14,8 +14,7 @@ public class PreparedRegexInputBenchmarks {
 		DecodingMode = TextDecodingMode.Bytes
 	};
 	private readonly ICompiledRegularExpression expression;
-	private readonly IPreparedCompiledRegularExpression preparedExpression;
-	private readonly PreparedRegexInput preparedInput;
+	private readonly RegularExpressionPreparedByteInput preparedInput;
 
 	/// <summary>
 	/// Initializes the deterministic repeated-search comparison.
@@ -37,18 +36,14 @@ public class PreparedRegexInputBenchmarks {
 			);
 		}
 		this.expression = compiled.Expression;
-		this.preparedExpression = compiled.Expression as IPreparedCompiledRegularExpression
-			?? throw new InvalidOperationException(
-				"Compiled expression does not expose the internal prepared-input contract."
-			);
-		this.preparedInput = PreparedRegexInput.Prepare(
+		this.preparedInput = RegularExpressionPreparedByteInput.Prepare(
 			this.input,
 			this.inputOptions
 		);
 	}
 
 	/// <summary>
-	/// Enumerates matches through the unchanged public API, preparing the same input on every call.
+	/// Enumerates matches through the ordinary public API, preparing the same input on every call.
 	/// </summary>
 	[Benchmark( Baseline = true )]
 	public int PublicMatchLoop() {
@@ -79,14 +74,14 @@ public class PreparedRegexInputBenchmarks {
 	}
 
 	/// <summary>
-	/// Enumerates matches while reusing one immutable prepared input.
+	/// Enumerates matches through the public immutable prepared-input API.
 	/// </summary>
 	[Benchmark]
 	public int PreparedMatchLoop() {
 		var count = 0;
 		var offset = 0;
 		while ( offset <= this.input.Length ) {
-			var result = this.preparedExpression.MatchPrepared(
+			var result = this.expression.Match(
 				this.preparedInput,
 				new RegularExpressionByteMatchOptions { StartByteOffset = offset }
 			);
@@ -109,7 +104,7 @@ public class PreparedRegexInputBenchmarks {
 	}
 
 	/// <summary>
-	/// Verifies that both paths enumerate the same match count.
+	/// Verifies that both public paths enumerate the same match count.
 	/// </summary>
 	internal static int RunSmoke() {
 		var benchmark = new PreparedRegexInputBenchmarks();
