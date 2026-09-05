@@ -41,7 +41,9 @@ The existing `ICompiledRegularExpression` interface is unchanged, preserving sou
 
 When the extension methods receive a CommandFramework compiled GNU expression, they use the internal prepared matcher and therefore avoid repeated decode/materialization.
 
-When they receive a third-party `ICompiledRegularExpression` implementation that does not expose the internal prepared matcher, they fall back to that implementation's existing byte `Match` / `MatchAsync` methods using the immutable source snapshot and captured input options. This preserves correctness and compatibility without requiring external implementations to understand CommandFramework internals.
+When they receive a third-party `ICompiledRegularExpression` implementation that does not expose the internal prepared matcher, they fall back to that implementation's existing byte `Match` / `MatchAsync` methods. The fallback receives a fresh copy of the prepared source rather than the prepared object's private array. This deliberately trades fallback allocation for a strong immutability boundary: even an external implementation that recovers and mutates the `ReadOnlyMemory<byte>` backing array cannot alter the reusable prepared snapshot.
+
+This preserves correctness and source/binary compatibility without requiring external implementations to understand CommandFramework internals or weakening the immutable ownership contract.
 
 ## Immutability and parallel execution
 
@@ -56,6 +58,8 @@ When they receive a third-party `ICompiledRegularExpression` implementation that
 
 Returned byte match/capture values remain isolated from the prepared source, preserving the Candidate 1 mutation-safety contract.
 
+The public API tests additionally include an adversarial external `ICompiledRegularExpression` implementation that attempts to mutate the array backing its fallback input. A subsequent native prepared match must still observe the original authoritative bytes.
+
 ## Benchmark gate
 
 The candidate-only prepared-input benchmark has been changed to use only the **public** Candidate 2 API. The benchmark project no longer requires `InternalsVisibleTo` access.
@@ -67,6 +71,20 @@ The two methods remain:
 
 This ensures the next physical measurement proves the performance available to a real external consumer rather than an internal friend assembly.
 
+The authoritative Candidate 2 collector output is intentionally distinct from Candidate 1:
+
+```text
+artifacts/performance/regex-prepared-input-candidate-2/
+```
+
+Run from a clean current branch:
+
+```powershell
+powershell .\benchmarks\Collect-PreparedRegexComparison.ps1 `
+    -Passes 2 `
+    -CooldownSeconds 30
+```
+
 ## Acceptance gate
 
 Candidate 2 should be retained if:
@@ -75,7 +93,7 @@ Candidate 2 should be retained if:
 2. the public prepared-input benchmark smoke produces the same match count as the ordinary public path;
 3. a physical two-pass run through the public API retains essentially the Candidate 1 reuse result;
 4. ordinary public `ICompiledRegularExpression` callers remain unchanged;
-5. external `ICompiledRegularExpression` implementations retain a correct fallback path; and
+5. external `ICompiledRegularExpression` implementations retain a correct fallback path without gaining mutable access to the prepared snapshot; and
 6. no mutable cursor, cache, pooling contract, or matcher-internal type becomes public.
 
 After acceptance, CommandFramework R2.3 can close with a package-ready immutable consumer contract. Icod.Grep should consume that contract only when a 2.2.0 prerelease package is available, so its frozen PR branch never becomes intentionally unbuildable.
