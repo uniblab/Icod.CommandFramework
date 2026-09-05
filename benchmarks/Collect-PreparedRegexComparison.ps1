@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$OutputDirectory = 'artifacts/performance/regex-prepared-input-candidate-1',
+    [string]$OutputDirectory = 'artifacts/performance/regex-prepared-input-candidate-2',
     [ValidateRange(1, 8)]
     [int]$Passes = 2,
     [ValidateRange(0, 600)]
