@@ -42,7 +42,7 @@ The collector:
 8. writes `comparison.json` beside the per-pass artifacts beneath:
 
 ```text
-artifacts/performance/regex-prepared-input-candidate-1/
+artifacts/performance/regex-prepared-input-candidate-2/
 ```
 
 A direct exploratory run remains available:
@@ -56,6 +56,6 @@ dotnet run `
     --artifacts artifacts/performance/regex-prepared-input-exploratory
 ```
 
-`RegularExpressionPreparedByteInput` owns a defensive copy of authoritative bytes. Matching creates fresh per-call context/state, so one prepared input and one compiled expression can be reused concurrently. Returned byte values are isolated from the private prepared source.
+`RegularExpressionPreparedByteInput` owns a defensive copy of authoritative bytes. Matching creates fresh per-call context/state, so one prepared input and one compiled expression can be reused concurrently. Returned byte values are isolated from the private prepared source. Third-party matcher fallback receives a disposable copy rather than the prepared object's private snapshot.
 
 R2.3 Candidate 1 established the internal reuse ceiling. Candidate 2 uses this same benchmark to verify that the public immutable consumer surface retains that benefit without exposing matcher internals, mutable cursors, pooling, or shared match state.
