@@ -12,9 +12,6 @@ on:
         required: false
         default: '10.0.x'
         type: string
-    secrets:
-      NUGET_USER:
-        required: true
 
 permissions:
   contents: read
