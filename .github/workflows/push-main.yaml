@@ -3,11 +3,11 @@ name: push-main
 on:
   workflow_call:
     inputs:
-      artifact-name:
+      artifact_name:
         description: 'Uploaded workflow artifact containing NuGet packages.'
         required: true
         type: string
-      dotnet-version:
+      dotnet_version:
         description: '.NET SDK channel used for publication.'
         required: false
         default: '10.0.x'
@@ -26,10 +26,10 @@ jobs:
     steps:
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ inputs.dotnet-version }}
+          dotnet-version: ${{ inputs.dotnet_version }}
       - uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.artifact-name }}
+          name: ${{ inputs.artifact_name }}
           path: artifacts/package
       - name: Exchange GitHub OIDC token for NuGet credential
         id: nuget-login
