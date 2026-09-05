@@ -1,0 +1,180 @@
+name: prerelease-validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Prerelease package version (for example 2.2.0-alpha.1)'
+        required: true
+        default: '2.2.0-alpha.1'
+        type: string
+
+concurrency:
+  group: prerelease-validation-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_VERSION: 10.0.x
+  CONFIGURATION: Release
+  PACKAGE_DIRECTORY: artifacts/prerelease-packages
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      solution_path: ${{ steps.repository.outputs.solution_path }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - id: repository
+        name: Discover .NET repository
+        shell: pwsh
+        run: >-
+          ./packaging/Get-RepositoryMetadata.ps1
+          -Configuration '${{ env.CONFIGURATION }}'
+          -GitHubOutputPath $env:GITHUB_OUTPUT
+      - name: Require solution
+        shell: pwsh
+        run: |
+          if ('true' -ne '${{ steps.repository.outputs.has_solution }}') {
+              throw 'Prerelease validation requires exactly one root .sln or .slnx file.'
+          }
+      - id: version
+        name: Validate prerelease version
+        shell: pwsh
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          $version = $env:REQUESTED_VERSION
+          if ($version -notmatch '^2\.2\.0-[0-9A-Za-z][0-9A-Za-z.-]*$') {
+              throw "Prerelease version '$version' must be a 2.2.0 prerelease identifier."
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+      - name: Restore
+        run: dotnet restore '${{ steps.repository.outputs.solution_path }}'
+      - name: Build Release
+        run: >-
+          dotnet build '${{ steps.repository.outputs.solution_path }}'
+          -c ${{ env.CONFIGURATION }}
+          --no-restore
+          -p:ContinuousIntegrationBuild=true
+      - name: Test Release
+        run: >-
+          dotnet test '${{ steps.repository.outputs.solution_path }}'
+          -c ${{ env.CONFIGURATION }}
+          --no-build
+          --no-restore
+          --logger trx
+      - name: Pack prerelease candidate
+        run: >-
+          dotnet pack '${{ steps.repository.outputs.solution_path }}'
+          -c ${{ env.CONFIGURATION }}
+          --no-build
+          --no-restore
+          -o ${{ env.PACKAGE_DIRECTORY }}
+          -p:ContinuousIntegrationBuild=true
+          -p:PackageVersion='${{ steps.version.outputs.version }}'
+      - name: Verify exact prerelease package artifacts
+        shell: pwsh
+        run: >-
+          ./packaging/VerifyPackageArtifact.ps1
+          -ArtifactDirectory '${{ env.PACKAGE_DIRECTORY }}'
+          -Configuration '${{ env.CONFIGURATION }}'
+          -ExpectedVersion '${{ steps.version.outputs.version }}'
+      - name: Upload prerelease package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prerelease-packages-${{ steps.version.outputs.version }}
+          path: |
+            ${{ env.PACKAGE_DIRECTORY }}/*.nupkg
+            ${{ env.PACKAGE_DIRECTORY }}/*.snupkg
+          if-no-files-found: error
+          retention-days: 14
+
+  publish-nuget:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: Release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: prerelease-packages-${{ needs.validate.outputs.version }}
+          path: artifacts/package
+      - name: Exchange GitHub OIDC token for NuGet credential
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+      - name: Publish prerelease to NuGet.org
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+        run: |
+          $packages = @(
+              Get-ChildItem -LiteralPath 'artifacts/package' -Filter '*.nupkg' -File |
+                  Sort-Object Name
+          )
+          if (0 -eq $packages.Count) {
+              throw 'No prerelease NuGet packages were downloaded.'
+          }
+          foreach ($package in $packages) {
+              dotnet nuget push $package.FullName `
+                  --api-key $env:NUGET_API_KEY `
+                  --source 'https://api.nuget.org/v3/index.json' `
+                  --skip-duplicate
+              if (0 -ne $LASTEXITCODE) {
+                  throw "NuGet.org prerelease publication failed for '$($package.Name)' with status $LASTEXITCODE."
+              }
+          }
+
+  publish-github-packages:
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: prerelease-packages-${{ needs.validate.outputs.version }}
+          path: artifacts/package
+      - name: Publish prerelease to GitHub Packages
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
+        run: |
+          $source = "https://nuget.pkg.github.com/$env:GITHUB_OWNER/index.json"
+          $packages = @(
+              Get-ChildItem -LiteralPath 'artifacts/package' -Filter '*.nupkg' -File |
+                  Sort-Object Name
+          )
+          if (0 -eq $packages.Count) {
+              throw 'No prerelease NuGet packages were downloaded.'
+          }
+          foreach ($package in $packages) {
+              dotnet nuget push $package.FullName `
+                  --source $source `
+                  --api-key $env:GITHUB_TOKEN `
+                  --skip-duplicate
+              if (0 -ne $LASTEXITCODE) {
+                  throw "GitHub Packages prerelease publication failed for '$($package.Name)' with status $LASTEXITCODE."
+              }
+          }
