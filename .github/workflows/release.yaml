@@ -65,7 +65,6 @@ jobs:
           if ($tag -notmatch '^v(?<version>[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)$') {
               throw "Release tag '$tag' is not a supported v<semver> tag."
           }
-
           $version = $Matches.version
           "version=$version" >> $env:GITHUB_OUTPUT
           "prerelease=$($version.Contains('-').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
@@ -86,17 +85,12 @@ jobs:
       - name: Build Release package inputs
         run: >-
           dotnet build '${{ needs.metadata.outputs.solution_path }}'
-          -c ${{ env.CONFIGURATION }}
-          --no-restore
-          -p:ContinuousIntegrationBuild=true
+          -c ${{ env.CONFIGURATION }} --no-restore -p:ContinuousIntegrationBuild=true
       - name: Pack release candidates
         run: >-
           dotnet pack '${{ needs.metadata.outputs.solution_path }}'
-          -c ${{ env.CONFIGURATION }}
-          --no-build
-          --no-restore
-          -o ${{ env.RELEASE_DIRECTORY }}
-          -p:ContinuousIntegrationBuild=true
+          -c ${{ env.CONFIGURATION }} --no-build --no-restore
+          -o ${{ env.RELEASE_DIRECTORY }} -p:ContinuousIntegrationBuild=true
       - id: select
         name: Select packages matching tag version
         shell: pwsh
@@ -165,43 +159,6 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  publish-nuget:
-    needs: [metadata, package]
-    if: needs.package.outputs.has_packages == 'true'
-    runs-on: ubuntu-latest
-    environment: Release
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      - uses: actions/download-artifact@v4
-        with:
-          name: ${{ env.PACKAGE_ARTIFACT }}
-          path: artifacts/package
-      - name: Exchange GitHub OIDC token for NuGet credential
-        id: nuget-login
-        uses: NuGet/login@v1
-        with:
-          user: ${{ secrets.NUGET_USER }}
-      - name: Publish to NuGet.org
-        shell: pwsh
-        env:
-          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
-        run: |
-          $packages = @(Get-ChildItem -LiteralPath 'artifacts/package' -Filter '*.nupkg' -File | Sort-Object Name)
-          foreach ($package in $packages) {
-              dotnet nuget push $package.FullName `
-                  --api-key $env:NUGET_API_KEY `
-                  --source 'https://api.nuget.org/v3/index.json' `
-                  --skip-duplicate
-              if (0 -ne $LASTEXITCODE) {
-                  throw "NuGet.org publication failed for '$($package.Name)' with status $LASTEXITCODE."
-              }
-          }
-
   publish-github-packages:
     needs: [metadata, package]
     if: needs.package.outputs.has_packages == 'true'
@@ -236,13 +193,12 @@ jobs:
           }
 
   github-release:
-    needs: [metadata, package, archives, publish-nuget, publish-github-packages]
+    needs: [metadata, package, archives, publish-github-packages]
     if: >-
       always() &&
       needs.metadata.result == 'success' &&
       needs.package.result == 'success' &&
       (needs.archives.result == 'success' || needs.archives.result == 'skipped') &&
-      (needs.publish-nuget.result == 'success' || needs.publish-nuget.result == 'skipped') &&
       (needs.publish-github-packages.result == 'success' || needs.publish-github-packages.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:
@@ -274,7 +230,6 @@ jobs:
           if (0 -eq $files.Count) {
               throw 'The release contains neither NuGet packages nor executable archives.'
           }
-
           $lines = foreach ($file in $files) {
               $hash = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
               "$hash  $($file.Name)"
@@ -298,7 +253,6 @@ jobs:
                   Sort-Object Name |
                   ForEach-Object { $_.FullName }
           )
-
           $arguments = @(
               'release', 'create', $tag,
               '--verify-tag',
@@ -310,7 +264,6 @@ jobs:
               $arguments += '--latest=false'
           }
           $arguments += $assets
-
           & gh @arguments
           if (0 -ne $LASTEXITCODE) {
               throw "GitHub Release creation failed with status $LASTEXITCODE."
