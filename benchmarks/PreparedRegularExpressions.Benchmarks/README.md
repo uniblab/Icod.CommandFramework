@@ -1,13 +1,15 @@
 # Immutable prepared-input regular-expression benchmark
 
-This candidate-only BenchmarkDotNet project measures the R2.3 reuse ceiling without changing the public `ICompiledRegularExpression` contract.
+This BenchmarkDotNet project measures the R2.3 reuse benefit through the package-ready **public immutable byte-input API** without changing the `ICompiledRegularExpression` interface.
 
 It compares two ways of enumerating every `TARGET` match in the same 64 KiB authoritative byte record:
 
-- `PublicMatchLoop` uses the existing public `Match` API and therefore prepares the record for every call.
-- `PreparedMatchLoop` prepares one immutable, privately owned input once and reuses it for every match.
+- `PublicMatchLoop` uses the ordinary public `Match` API and therefore prepares the record for every call.
+- `PreparedMatchLoop` creates one public `RegularExpressionPreparedByteInput` and reuses it through the public prepared-input `Match` extension.
 
-The project is intentionally separate from `RegularExpressions.Benchmarks`. The pinned `2.1.0` comparison collector overlays that original benchmark project into the baseline worktree; placing candidate-only internal APIs there would make the immutable historical baseline impossible to build.
+The project remains intentionally separate from `RegularExpressions.Benchmarks`. The pinned `2.1.0` comparison collector overlays that original benchmark project into the baseline worktree, while the prepared-input project exercises only the current candidate package surface.
+
+The benchmark project no longer requires `InternalsVisibleTo` access. A successful physical result therefore represents performance available to a real cross-assembly consumer such as Icod.Grep.
 
 ## Deterministic smoke
 
@@ -31,7 +33,7 @@ powershell .\benchmarks\Collect-PreparedRegexComparison.ps1 `
 The collector:
 
 1. records the exact candidate commit;
-2. restores and builds the candidate-only benchmark in Release;
+2. restores and builds the prepared-input benchmark in Release;
 3. runs two independent in-process BenchmarkDotNet passes by default;
 4. validates each pass independently;
 5. waits 30 seconds between passes by default;
@@ -54,6 +56,6 @@ dotnet run `
     --artifacts artifacts/performance/regex-prepared-input-exploratory
 ```
 
-The prepared input owns a defensive copy of authoritative bytes. Matching creates fresh per-call context/state, so one prepared input and one compiled expression can be used concurrently. Returned byte values are copied from the private prepared source so a result cannot mutate later matches.
+`RegularExpressionPreparedByteInput` owns a defensive copy of authoritative bytes. Matching creates fresh per-call context/state, so one prepared input and one compiled expression can be reused concurrently. Returned byte values are isolated from the private prepared source.
 
-This project establishes the potential benefit before any public prepared-input API is considered. R2.3 should prefer internal consumer integration unless a real cross-repository consumer demonstrates that a public immutable type is necessary.
+R2.3 Candidate 1 established the internal reuse ceiling. Candidate 2 uses this same benchmark to verify that the public immutable consumer surface retains that benefit without exposing matcher internals, mutable cursors, pooling, or shared match state.
