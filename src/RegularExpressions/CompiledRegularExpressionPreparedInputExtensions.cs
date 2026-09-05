@@ -30,7 +30,7 @@ public static class CompiledRegularExpressionPreparedInputExtensions {
 		}
 
 		return expression.Match(
-			input.Source,
+			input.Source.ToArray(),
 			input.InputOptions,
 			matchOptions,
 			cancellationToken
@@ -65,7 +65,7 @@ public static class CompiledRegularExpressionPreparedInputExtensions {
 		}
 
 		return expression.MatchAsync(
-			input.Source,
+			input.Source.ToArray(),
 			input.InputOptions,
 			matchOptions,
 			cancellationToken
