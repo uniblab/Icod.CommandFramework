@@ -89,224 +89,62 @@ jobs:
           -Configuration '${{ env.CONFIGURATION }}'
           -AllowNoPackages
       - name: Restore regex benchmark project
-        run: >-
-          dotnet restore
-          benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
+        run: dotnet restore benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
       - name: Build regex benchmark project
         run: >-
-          dotnet build
-          benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
-          -c ${{ env.CONFIGURATION }}
-          --no-restore
-          -p:ContinuousIntegrationBuild=true
+          dotnet build benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
+          -c ${{ env.CONFIGURATION }} --no-restore -p:ContinuousIntegrationBuild=true
       - name: Run deterministic regex benchmark smoke
         run: >-
-          dotnet run
-          --project benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
-          -c ${{ env.CONFIGURATION }}
-          --no-build
-          --no-restore
-          --
-          --smoke
+          dotnet run --project benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
+          -c ${{ env.CONFIGURATION }} --no-build --no-restore -- --smoke
       - name: Restore prepared regex benchmark project
-        run: >-
-          dotnet restore
-          benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
+        run: dotnet restore benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
       - name: Build prepared regex benchmark project
         run: >-
-          dotnet build
-          benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
-          -c ${{ env.CONFIGURATION }}
-          --no-restore
-          -p:ContinuousIntegrationBuild=true
+          dotnet build benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
+          -c ${{ env.CONFIGURATION }} --no-restore -p:ContinuousIntegrationBuild=true
       - name: Run immutable prepared regex benchmark smoke
         run: >-
-          dotnet run
-          --project benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
-          -c ${{ env.CONFIGURATION }}
-          --no-build
-          --no-restore
-          --
-          --smoke
+          dotnet run --project benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
+          -c ${{ env.CONFIGURATION }} --no-build --no-restore -- --smoke
       - name: Build optimized regex benchmark project
         if: runner.os == 'Windows'
         run: >-
-          dotnet build
-          benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
-          -c Release
-          --no-restore
-          -p:ContinuousIntegrationBuild=true
+          dotnet build benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
+          -c Release --no-restore -p:ContinuousIntegrationBuild=true
       - name: Exercise physical BenchmarkDotNet mode
         if: runner.os == 'Windows'
         run: >-
-          dotnet run
-          --project benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
-          -c Release
-          --no-build
-          --no-restore
-          --
-          --inProcess
-          --job Dry
-          --artifacts BenchmarkDotNet.RegexArtifacts
-          --filter '*RegexCompileBenchmarks*'
+          dotnet run --project benchmarks/RegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.Benchmarks.csproj
+          -c Release --no-build --no-restore -- --inProcess --job Dry
+          --artifacts BenchmarkDotNet.RegexArtifacts --filter '*RegexCompileBenchmarks*'
       - name: Validate regex BenchmarkDotNet artifacts
         if: runner.os == 'Windows'
         shell: pwsh
-        run: >-
-          ./benchmarks/Assert-BenchmarkDotNetRun.ps1
-          -ArtifactDirectory BenchmarkDotNet.RegexArtifacts
+        run: ./benchmarks/Assert-BenchmarkDotNetRun.ps1 -ArtifactDirectory BenchmarkDotNet.RegexArtifacts
       - name: Build optimized prepared regex benchmark project
         if: runner.os == 'Windows'
         run: >-
-          dotnet build
-          benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
-          -c Release
-          --no-restore
-          -p:ContinuousIntegrationBuild=true
+          dotnet build benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
+          -c Release --no-restore -p:ContinuousIntegrationBuild=true
       - name: Exercise prepared-input BenchmarkDotNet mode
         if: runner.os == 'Windows'
         run: >-
-          dotnet run
-          --project benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
-          -c Release
-          --no-build
-          --no-restore
-          --
-          --inProcess
-          --job Dry
-          --artifacts BenchmarkDotNet.PreparedArtifacts
-          --filter '*PreparedRegexInputBenchmarks*'
+          dotnet run --project benchmarks/PreparedRegularExpressions.Benchmarks/Icod.CommandFramework.RegularExpressions.PreparedBenchmarks.csproj
+          -c Release --no-build --no-restore -- --inProcess --job Dry
+          --artifacts BenchmarkDotNet.PreparedArtifacts --filter '*PreparedRegexInputBenchmarks*'
       - name: Validate prepared-input BenchmarkDotNet artifacts
         if: runner.os == 'Windows'
         shell: pwsh
-        run: >-
-          ./benchmarks/Assert-BenchmarkDotNetRun.ps1
-          -ArtifactDirectory BenchmarkDotNet.PreparedArtifacts
+        run: ./benchmarks/Assert-BenchmarkDotNetRun.ps1 -ArtifactDirectory BenchmarkDotNet.PreparedArtifacts
       - name: Validate prepared-input comparison orchestration
         if: runner.os == 'Windows'
         shell: powershell
         run: >-
-          .\benchmarks\Collect-PreparedRegexComparison.ps1
-          -Smoke
-          -AllowDirty
+          .\benchmarks\Collect-PreparedRegexComparison.ps1 -Smoke -AllowDirty
           -OutputDirectory artifacts/performance/regex-prepared-input-smoke
       - name: Validate pinned 2.1.0 comparison orchestration
         if: runner.os == 'Windows'
         shell: powershell
         run: .\benchmarks\Collect-RegexReferenceComparison.ps1 -Smoke -AllowDirty
-
-  prerelease-package:
-    needs: metadata
-    if: >-
-      needs.metadata.outputs.has_solution == 'true' &&
-      github.event.pull_request.number == 9 &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.pull_request.head.ref == 'regex-performance-2.2.0'
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-    env:
-      CONFIGURATION: Release
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      - id: version
-        name: Select immutable validation version
-        shell: pwsh
-        run: |
-          $version = "2.2.0-alpha.${{ github.run_number }}"
-          "version=$version" >> $env:GITHUB_OUTPUT
-          Write-Host "R2.5 validation package: $version"
-      - name: Restore
-        run: dotnet restore '${{ needs.metadata.outputs.solution_path }}'
-      - name: Build Release
-        run: >-
-          dotnet build '${{ needs.metadata.outputs.solution_path }}'
-          -c ${{ env.CONFIGURATION }}
-          --no-restore
-          -p:ContinuousIntegrationBuild=true
-      - name: Test Release
-        run: >-
-          dotnet test '${{ needs.metadata.outputs.solution_path }}'
-          -c ${{ env.CONFIGURATION }}
-          --no-build
-          --no-restore
-          --logger trx
-      - name: Pack immutable prerelease
-        run: >-
-          dotnet pack '${{ needs.metadata.outputs.solution_path }}'
-          -c ${{ env.CONFIGURATION }}
-          --no-build
-          --no-restore
-          -o artifacts/prerelease
-          -p:ContinuousIntegrationBuild=true
-          -p:PackageVersion='${{ steps.version.outputs.version }}'
-      - name: Verify exact prerelease package artifact
-        shell: pwsh
-        run: >-
-          ./packaging/VerifyPackageArtifact.ps1
-          -ArtifactDirectory artifacts/prerelease
-          -Configuration '${{ env.CONFIGURATION }}'
-          -ExpectedVersion '${{ steps.version.outputs.version }}'
-      - name: Upload prerelease package artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: commandframework-${{ steps.version.outputs.version }}
-          path: |
-            artifacts/prerelease/*.nupkg
-            artifacts/prerelease/*.snupkg
-          if-no-files-found: error
-          retention-days: 14
-
-  publish-prerelease-nuget:
-    needs: prerelease-package
-    if: needs.prerelease-package.result == 'success'
-    permissions:
-      contents: read
-      id-token: write
-    uses: ./.github/workflows/push-main.yaml
-    with:
-      artifact_name: commandframework-${{ needs.prerelease-package.outputs.version }}
-      dotnet_version: '10.0.x'
-    secrets: inherit
-
-  publish-prerelease-github:
-    needs: prerelease-package
-    if: needs.prerelease-package.result == 'success'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      - uses: actions/download-artifact@v4
-        with:
-          name: commandframework-${{ needs.prerelease-package.outputs.version }}
-          path: artifacts/package
-      - name: Publish validation prerelease to GitHub Packages
-        shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_OWNER: ${{ github.repository_owner }}
-        run: |
-          $source = "https://nuget.pkg.github.com/$env:GITHUB_OWNER/index.json"
-          $packages = @(
-              Get-ChildItem -LiteralPath 'artifacts/package' -Filter '*.nupkg' -File |
-                  Sort-Object Name
-          )
-          if (0 -eq $packages.Count) {
-              throw 'No R2.5 prerelease package was downloaded.'
-          }
-          foreach ($package in $packages) {
-              dotnet nuget push $package.FullName `
-                  --source $source `
-                  --api-key $env:GITHUB_TOKEN `
-                  --skip-duplicate
-              if (0 -ne $LASTEXITCODE) {
-                  throw "GitHub Packages R2.5 publication failed for '$($package.Name)' with status $LASTEXITCODE."
-              }
-          }
