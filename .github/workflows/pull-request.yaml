@@ -270,6 +270,7 @@ jobs:
     with:
       artifact_name: commandframework-${{ needs.prerelease-package.outputs.version }}
       dotnet_version: '10.0.x'
+    secrets: inherit
 
   publish-prerelease-github:
     needs: prerelease-package
