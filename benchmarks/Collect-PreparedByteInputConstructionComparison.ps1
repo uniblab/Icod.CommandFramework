@@ -62,11 +62,13 @@ try {
     New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
 
     $repoParent = Split-Path -Parent $repoRoot
-    $temporaryRoot = Join-Path $repoParent ('Icod.CommandFramework-R2-memory-' + [Guid]::NewGuid().ToString('N'))
-    $baselineRoot = Join-Path $temporaryRoot 'baseline'
+    $temporaryBase = [System.IO.Path]::GetTempPath()
+    $temporaryName = 'icf-r2-' + [Guid]::NewGuid().ToString('N').Substring(0, 8)
+    $temporaryRoot = Join-Path $temporaryBase $temporaryName
+    $baselineRoot = Join-Path $temporaryRoot 'b'
     New-Item -ItemType Directory -Path $temporaryRoot -Force | Out-Null
 
-    Write-IcodProgressLine "Preparing $BaselineLabel worktree."
+    Write-IcodProgressLine "Preparing $BaselineLabel worktree at $baselineRoot."
     git worktree add --detach $baselineRoot $BaselineCommit
     if (0 -ne $LASTEXITCODE) {
         throw "Unable to create the $BaselineLabel worktree."
@@ -207,8 +209,21 @@ try {
         Write-IcodProgressLine "Byte-input construction comparison complete. Results: $outputRoot"
     } finally {
         Write-IcodProgressLine "Removing temporary $BaselineLabel worktree."
-        git worktree remove --force $baselineRoot 2>$null
-        Remove-Item -LiteralPath $temporaryRoot -Recurse -Force -ErrorAction SilentlyContinue
+        $previousErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        try {
+            & git worktree remove --force $baselineRoot 2>$null
+            $worktreeExitCode = $LASTEXITCODE
+            if (0 -ne $worktreeExitCode) {
+                Write-Warning "Git could not remove the temporary worktree cleanly. Pruning its registration and continuing because benchmark data collection has already completed."
+                & git worktree prune 2>$null | Out-Null
+            }
+        } finally {
+            $ErrorActionPreference = $previousErrorActionPreference
+        }
+        if (Test-Path -LiteralPath $temporaryRoot) {
+            Remove-Item -LiteralPath $temporaryRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
     }
 } finally {
     Pop-Location
