@@ -503,10 +503,10 @@ internal sealed class RegexInput {
 			var byteRunes = new Rune[ span.Length ];
 			var byteOpaqueUnits = new bool[ span.Length ];
 			var byteIndices = new int[ span.Length + 1 ];
-			for ( var byteIndex = 0; span.Length > byteIndex; byteIndex++ ) {
+			for ( var byteInputIndex = 0; span.Length > byteInputIndex; byteInputIndex++ ) {
 				cancellationToken.ThrowIfCancellationRequested();
-				byteRunes[ byteIndex ] = new Rune( span[ byteIndex ] );
-				byteIndices[ byteIndex ] = byteIndex;
+				byteRunes[ byteInputIndex ] = new Rune( span[ byteInputIndex ] );
+				byteIndices[ byteInputIndex ] = byteInputIndex;
 			}
 			byteIndices[ ^1 ] = span.Length;
 			return new(
