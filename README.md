@@ -9,6 +9,18 @@ It is intended for applications that need more than a thin wrapper around `Syste
 The library originated as the command-neutral infrastructure developed while porting GNU Coreutils and related Unix utilities to C#. It is now a standalone package so unrelated command suites and applications can reuse the same tested foundation without depending on `Icod.CoreUtils`.
 
 > [!NOTE]
+> **2.2.1 reduces byte-mode GNU/POSIX regular-expression preparation memory.**
+> The public immutable prepared-input API and matching semantics are unchanged. Physical
+> reference-host validation measured managed allocation for a 1 MiB byte-mode prepared
+> input falling from about 19.01 MiB to 10.00 MiB per preparation, a 47.36% reduction,
+> while construction time also improved materially. UTF-8 decoding is intentionally
+> unchanged.
+>
+> **2.2.0 added the public immutable prepared-input regular-expression surface.**
+> `RegularExpressionPreparedByteInput` allows one authoritative byte record to be
+> prepared once and reused safely across repeated matches, including concurrent matches,
+> without exposing mutable matcher state.
+>
 > **2.1.0 adds canonical pathname globbing.** `FileSystem.Traversal.PathnameExpander`
 > now provides the authoritative expansion engine, including `*`, `?`, recursive
 > `**`, character classes, deterministic ordering, structured expansion issues,
@@ -64,7 +76,7 @@ The package is organized into focused namespaces. Most areas also contain a loca
 | `Icod.CommandFramework.FileSystem` | Filesystem capability discovery, metadata, canonical pathname-pattern expansion and traversal, POSIX mode vocabulary, mutation, recursive mutation, and transactional replacement through reusable system/provider boundaries. |
 | `Icod.CommandFramework.Platform` | Cross-platform feature/result contracts, user/group and current-identity services, security-context capability checks, and SELinux integration where available. |
 | `Icod.CommandFramework.Text` | Byte-preserving text units and logical lines, malformed-encoding policy, locale classification, Unicode display width, display-column tracking, and explicit/recurring tab-stop models. |
-| `Icod.CommandFramework.RegularExpressions` | Fully managed GNU Basic, GNU Extended, and GNU Emacs regular-expression profiles with POSIX/GNU leftmost-longest matching, captures, locale-aware character classes, cancellation/resource limits, and exact byte-coordinate matching. |
+| `Icod.CommandFramework.RegularExpressions` | Fully managed GNU Basic, GNU Extended, and GNU Emacs regular-expression profiles with POSIX/GNU leftmost-longest matching, captures, locale-aware character classes, cancellation/resource limits, exact byte-coordinate matching, and immutable prepared byte input for repeated searches. |
 | `Icod.CommandFramework.Temporary` | Cryptographically strong temporary-name generation, exclusive file/directory creation, template handling, collision reporting, and disposable temporary workspaces. |
 
 ### Command-line parsing
@@ -132,7 +144,7 @@ The regular-expression layer is intentionally **not** a source-to-source transla
 
 GNU Basic Regular Expressions, Extended Regular Expressions, and the GNU Emacs profile have syntax and matching rules that differ materially from .NET regexes. In particular, POSIX/GNU leftmost-longest selection, capture behavior, locale-aware bracket classes, byte-oriented matching, malformed-input handling, and GNU compatibility rules cannot be reproduced reliably by changing a few metacharacters and handing the result to `Regex`.
 
-`Icod.CommandFramework.RegularExpressions` therefore contains a managed parser and matcher with explicit GNU/POSIX profiles. It can match .NET strings using UTF-16 coordinates or authoritative byte input using exact source-byte offsets.
+`Icod.CommandFramework.RegularExpressions` therefore contains a managed parser and matcher with explicit GNU/POSIX profiles. It can match .NET strings using UTF-16 coordinates or authoritative byte input using exact source-byte offsets. For repeated searches over the same authoritative byte record, `RegularExpressionPreparedByteInput` snapshots and prepares the record once, after which the prepared object may be reused safely across matches.
 
 See [`src/RegularExpressions/README.md`](src/RegularExpressions/README.md).
 

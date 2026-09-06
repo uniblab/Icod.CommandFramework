@@ -499,6 +499,25 @@ internal sealed class RegexInput {
 		CancellationToken cancellationToken
 	) {
 		var span = source.Span;
+		if ( TextDecodingMode.Bytes == options.DecodingMode ) {
+			var byteRunes = new Rune[ span.Length ];
+			var byteOpaqueUnits = new bool[ span.Length ];
+			var byteIndices = new int[ span.Length + 1 ];
+			for ( var byteInputIndex = 0; span.Length > byteInputIndex; byteInputIndex++ ) {
+				cancellationToken.ThrowIfCancellationRequested();
+				byteRunes[ byteInputIndex ] = new Rune( span[ byteInputIndex ] );
+				byteIndices[ byteInputIndex ] = byteInputIndex;
+			}
+			byteIndices[ ^1 ] = span.Length;
+			return new(
+				null,
+				source,
+				byteRunes,
+				byteOpaqueUnits,
+				byteIndices
+			);
+		}
+
 		var runes = new List<Rune>( span.Length );
 		var opaqueUnits = new List<bool>( span.Length );
 		var indices = new List<int>( span.Length + 1 );
@@ -506,12 +525,6 @@ internal sealed class RegexInput {
 		while ( span.Length > byteIndex ) {
 			cancellationToken.ThrowIfCancellationRequested();
 			indices.Add( byteIndex );
-			if ( TextDecodingMode.Bytes == options.DecodingMode ) {
-				runes.Add( new Rune( span[ byteIndex ] ) );
-				opaqueUnits.Add( false );
-				byteIndex++;
-				continue;
-			}
 			var status = Rune.DecodeFromUtf8(
 				span[ byteIndex.. ],
 				out var value,
