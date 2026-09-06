@@ -380,7 +380,8 @@ internal sealed class RegexMatchContext {
 	internal RegexInput Input { get; }
 
 	/// <summary>
-	/// Gets the options value.</summary>
+	/// Gets the options value.
+	/// </summary>
 	internal RegularExpressionOptions Options { get; }
 
 	/// <summary>
