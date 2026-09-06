@@ -30,6 +30,9 @@ ERE is parsed directly. Escaped ERE metacharacters are literals, unmatched openi
 
 - `IRegularExpressionProvider` compiles patterns through synchronous and TAP-shaped asynchronous methods.
 - `ICompiledRegularExpression` performs reusable string and byte-preserving searches.
+- `RegularExpressionPreparedByteInput` owns an immutable snapshot of authoritative byte input prepared once for repeated matching.
+- `RegularExpressionPreparedByteInput.Prepare(...)` performs the one-time snapshot/decode step under an explicit `RegularExpressionInputOptions` policy.
+- `CompiledRegularExpressionPreparedInputExtensions.Match(...)` and `MatchAsync(...)` reuse a prepared byte input through the public compiled-expression surface without exposing mutable matcher state.
 - `RegularExpressionCompileResult`, `RegularExpressionMatchResult`, and `RegularExpressionByteMatchResult` distinguish successful no-match results from controlled errors.
 - `RegularExpressionDiagnostic` exposes a stable code, message, and UTF-16 pattern index where applicable.
 - `IRegularExpressionCharacterClassProvider` isolates classification, scalar comparison, collation, and case-equivalence policy.
@@ -38,6 +41,8 @@ ERE is parsed directly. Escaped ERE metacharacters are literals, unmatched openi
 - `RegularExpressionOptions.LineSeparator` defaults to LF and selects the logical separator used by line-sensitive anchors, dot, and negated bracket expressions. `DotMatchesNull` is an explicit opt-in for consumers such as GNU Sed `--null-data`; multiline mode still excludes NUL when NUL is the selected separator.
 - `RegularExpressionInputOptions` selects byte-valued or UTF-8 decoding and an explicit malformed-input policy.
 - `RegularExpressionByteMatchOptions` addresses authoritative byte input by source-byte offset.
+
+A prepared input owns its byte snapshot. Caller mutation after `Prepare(...)` cannot alter subsequent matches. Matching allocates fresh per-call match context/state, so one prepared input and one compiled expression may be reused concurrently. Returned byte values do not expose the prepared object's private source snapshot for mutation.
 
 The CPU-bound asynchronous members do not call `Task.Run`. They preserve a consistent TAP-facing command API, honor cancellation throughout parsing and matching, and normally return an already-completed `ValueTask`.
 
@@ -76,9 +81,21 @@ Groups, alternation, repetition, backreferences, finite resource limits, and fut
 
 The deterministic and general paths are implemented as separate iterators with a small non-iterator dispatcher. This separation is intentional: physical R2.2 measurements found that combining both algorithms in one iterator produced a repeatable fallback timing regression. The split implementation eliminated that regression while preserving and improving allocation reductions.
 
+R2.3 introduced the public immutable prepared-byte-input surface. A consumer that performs repeated searches over the same authoritative byte record can pay the snapshot/decode cost once and reuse that prepared representation across all subsequent matches. This is especially important for consumers such as `grep -o`, multi-pattern selection, and other match-iteration loops.
+
 These optimizations do not change the public regex language, match ordering, capture semantics, byte/source coordinates, cancellation contract, or diagnostics. The complete shared regex test suite remains the semantic authority.
 
 See the repository-root R2 performance roadmap and retained Candidate reports for quantitative evidence and benchmark methodology.
+
+## 2.2.1 byte-mode memory architecture
+
+Version `2.2.1` is a compatible implementation optimization of prepared byte-mode input construction.
+
+For `TextDecodingMode.Bytes`, the number of matching units is known exactly before preparation begins: every source byte is one matching unit. Version 2.2.0 constructed full-capacity `List<Rune>`, `List<bool>`, and `List<int>` buffers and then copied those buffers into final arrays. Version 2.2.1 instead allocates the final `Rune[]`, `bool[]`, and source-index `int[]` directly and populates them in one pass.
+
+The UTF-8 path is intentionally unchanged because its scalar count is not known without decoding and because malformed-input handling must preserve the established `PreserveBytes`, `Replace`, and `Throw` contracts.
+
+On the physical Windows reference host, preparing one 1 MiB byte-mode input through the public `RegularExpressionPreparedByteInput.Prepare(...)` API reduced managed allocation from about **19.01 MiB to 10.00 MiB**, a **47.36% reduction**. Both candidate timing passes were also materially faster than the fastest 2.2.0 baseline pass. The retained closure report is `Icod.CommandFramework-2.2.1-Byte-Input-Memory-Closure.md`.
 
 ## String and authoritative-byte contract
 
