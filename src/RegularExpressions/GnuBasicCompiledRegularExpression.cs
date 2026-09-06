@@ -226,7 +226,7 @@ internal sealed class GnuBasicCompiledRegularExpression : ICompiledRegularExpres
 	) {
 		var source = input.ByteSource;
 		var captures = new RegularExpressionByteCapture[ CaptureCount ];
-		for ( var captureIndex = 0; CaptureCount > index; captureIndex++ ) {
+		for ( var captureIndex = 0; CaptureCount > captureIndex; captureIndex++ ) {
 			cancellationToken.ThrowIfCancellationRequested();
 			var capture = state.Captures[ captureIndex ];
 			if ( capture is not RegexCaptureSpan captureSpan ) {
@@ -380,8 +380,7 @@ internal sealed class RegexMatchContext {
 	internal RegexInput Input { get; }
 
 	/// <summary>
-	/// Gets the options value.
-	/// </summary>
+	/// Gets the options value.</summary>
 	internal RegularExpressionOptions Options { get; }
 
 	/// <summary>
