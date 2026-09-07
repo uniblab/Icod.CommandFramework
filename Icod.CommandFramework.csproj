@@ -12,11 +12,9 @@
 		<AssemblyName>Icod.CommandFramework</AssemblyName>
 		<RootNamespace>Icod.CommandFramework</RootNamespace>
 		<Configurations>Debug;Release;Staging</Configurations>
-		<Version>2.2.1</Version>
 	</PropertyGroup>
 	<PropertyGroup>
-		<PackageVersion>2.2.1</PackageVersion>
-		<PackageReleaseNotes>2.2.1 reduces managed allocation when preparing byte-mode GNU/POSIX regular-expression input by allocating final decoded arrays directly. Physical reference-host validation of a 1 MiB prepared input measured a 47.36% allocation reduction, from about 19.01 MiB to 10.00 MiB per preparation, with materially improved construction time and no changes to UTF-8 decoding, matching, capture, cancellation, diagnostic, or resource-limit semantics.</PackageReleaseNotes>
+		<PackageReleaseNotes>2.2.2 centralizes package versioning in Directory.Build.props and records a focused CoreUtils consumer audit for repeated regular-expression preparation opportunities in ptx, csplit, tac, nl, expr, and numfmt.</PackageReleaseNotes>
 		<Authors>Timothy J. Bruce</Authors>
 		<Description>Cross-platform .NET infrastructure for Unix-style command-line tools, including argument parsing, diagnostics, byte-oriented streaming, filesystem operations, records, GNU/POSIX regular expressions, temporary storage, and Unicode text.</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
