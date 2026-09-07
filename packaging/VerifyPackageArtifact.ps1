@@ -18,6 +18,40 @@ Set-StrictMode -Version Latest
 $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 Import-Module (Join-Path $PSScriptRoot 'RepositoryTools.psm1') -Force
 
+$versionPropsPath = Join-Path $repositoryRoot 'Directory.Build.props'
+if (Test-Path -LiteralPath $versionPropsPath -PathType Leaf) {
+    [xml]$versionProps = Get-Content -LiteralPath $versionPropsPath -Raw
+    $declaredVersions = @(
+        $versionProps.Project.PropertyGroup |
+            ForEach-Object { $_.Version } |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+    )
+    $declaredPackageVersions = @(
+        $versionProps.Project.PropertyGroup |
+            ForEach-Object { $_.PackageVersion } |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+    )
+
+    if (1 -ne $declaredVersions.Count) {
+        throw "Directory.Build.props must declare exactly one non-empty Version value."
+    }
+    if (1 -ne $declaredPackageVersions.Count) {
+        throw "Directory.Build.props must declare exactly one non-empty PackageVersion value."
+    }
+
+    $declaredVersion = [string]$declaredVersions[0]
+    $declaredPackageVersion = [string]$declaredPackageVersions[0]
+    if ($declaredVersion -ne $declaredPackageVersion) {
+        throw "Directory.Build.props Version '$declaredVersion' does not match PackageVersion '$declaredPackageVersion'."
+    }
+
+    if ([string]::IsNullOrWhiteSpace($ExpectedVersion)) {
+        $ExpectedVersion = $declaredPackageVersion
+    } elseif ($ExpectedVersion -ne $declaredPackageVersion) {
+        throw "Expected version '$ExpectedVersion' does not match Directory.Build.props version '$declaredPackageVersion'."
+    }
+}
+
 if (-not [System.IO.Path]::IsPathRooted($ArtifactDirectory)) {
     $ArtifactDirectory = Join-Path $repositoryRoot $ArtifactDirectory
 }
