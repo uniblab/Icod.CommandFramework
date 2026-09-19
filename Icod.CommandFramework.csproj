@@ -27,7 +27,7 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<Deterministic>true</Deterministic>
-		<PackageTags>command-line;cli;command-framework;command-line-parser;argument-parsing;option-parsing;getopt;unix;posix;gnu;filesystem;file-io;streaming;byte-streaming;records;regular-expressions;regex;gnu-regex;posix-regex;temporary-files;unicode;text;bre;ere;globbing;wildcards;pathname-expansion</PackageTags>
+		<PackageTags>argument-parser;argument-parsing;argument;arguments;api;bre;byte-streaming;cli;command;command-framework;command-line;command-line-parser;commandline;commands;console;ere;executable;file-globbing;file-io;filesystem;framework;getopt;globbing;gnu;gnu-regex;library;option-parsing;parser;parsing;pathname-expansion;pattern;pattern-matching;posix;posix-regex;records;regex;regexp;regular-expressions;shell;streaming;syntax;temporary-files;terminal;text;tui;text-ui;ui;unicode;unix;wildcards</PackageTags>
 		<RepositoryUrl>https://github.com/uniblab/Icod.CommandFramework</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageIcon>icon.png</PackageIcon>
