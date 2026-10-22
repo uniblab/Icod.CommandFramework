@@ -9,6 +9,12 @@ The existing GNU behavior is separately pinned to Gnulib commit
 `fb7312fa8d3df29f0ca0678f669b9a5b88a078ec` in the
 [CoreUtils upstream ledger](https://github.com/uniblab/Icod.CoreUtils/blob/main/Icod.CoreUtils-Upstream-Version-Ledger.md).
 
+The separately named [draft BRE contract](POSIX-BRE-CONTRACT.md) and
+[draft ERE contract](POSIX-ERE-CONTRACT.md) state the intended strict surfaces,
+their inherited GNU divergences, and the unresolved oracle/locale work.
+The [A04 characterization index](Icod.Expressions-A04-Characterization-Index.md)
+maps current tests to these gaps.
+
 This is an inventory of **observed source and test contracts**. The column
 called "classification" identifies the work needed to separate a future
 strict POSIX surface from the current GNU surface. It does not infer that a
