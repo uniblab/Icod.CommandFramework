@@ -71,6 +71,11 @@ jobs:
           --no-build
           --no-restore
           --logger trx
+      - name: Verify Icod.Expressions in-situ parity baseline
+        run: >-
+          dotnet run --project tools/RegularExpressionParityBaseline/RegularExpressionParityBaseline.csproj
+          -c ${{ env.CONFIGURATION }}
+          -- --verify doc/Icod.Expressions-A04-Parity-Baseline.jsonl
       - name: Pack Staging artifacts
         if: matrix.verify_packages
         run: >-
