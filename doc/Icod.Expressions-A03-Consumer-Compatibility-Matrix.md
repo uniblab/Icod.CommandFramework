@@ -54,5 +54,8 @@ convenience preset is not proof of bit-for-bit `RE_SYNTAX_*` parity.
    results. Capture each consumer's test/command oracle and package version
    before declaring A03 closed.
 
+The `tac` discrepancy is tracked as
+[Icod.CoreUtils issue #190](https://github.com/uniblab/Icod.CoreUtils/issues/190)
+for a later consumer bugfix, after the new library has a solid implementation.
 This matrix classifies discovered call sites, not a final certification that
 all repositories or application-specific edge cases have been exhausted.
