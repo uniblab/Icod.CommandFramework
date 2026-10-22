@@ -61,6 +61,10 @@ compatibility presets and language-affecting switches to every provider.
 4. Current tests establish many local behaviors but do not form a
    standards-versus-GNU divergence corpus. The same result under one
    provider and locale does not prove all permitted locales.
+5. The [A04 comparison with pinned Gnulib test expectations](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
+   finds the same whole match but different group participation for an ERE
+   zero-width anchor branch. This is an unresolved capture discrepancy, not
+   evidence of strict POSIX conformance by either implementation.
 
 ## A01 closure work
 
