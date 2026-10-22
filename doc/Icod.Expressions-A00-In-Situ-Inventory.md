@@ -46,11 +46,23 @@ analysis and a successful source copy alone do not authorize it.
 ## Public source API at the candidate snapshot
 
 All 24 top-level public types below are declared in the pinned source tree.
-This is a **source declaration inventory**: the exact signatures, defaults,
-enum values, nullability, record-generated members, and XML comments are those
-in the linked commit. A compiled assembly/API export is still required before
-the A00 acceptance gate can be closed; no SDK is available in the current
-analysis environment.
+The [compiled API snapshot](Icod.Expressions-A00-Compiled-API.txt) lists public
+declared members, nullability metadata, optional defaults, enum values, and
+record-generated public members from the `net10.0` assembly. It also lists
+the two external text enums named by the regex API. Reproduce it with:
+
+```sh
+dotnet run --project tools/RegularExpressionApiSnapshot/RegularExpressionApiSnapshot.csproj \
+  -c Release > doc/Icod.Expressions-A00-Compiled-API.txt
+```
+
+The snapshot's SHA-256 is
+`70701777a44a3869522208eb140b5eef047548698ef35a0b6301a65bd541848c`.
+The tool inspects compiled metadata rather than scraping source; it excludes
+inherited framework members and private/protected members. At the local
+candidate commit, the source and external enum files match the pinned SHA
+exactly. A05 must compare this API against the extracted assembly; XML docs
+and runtime semantics remain separate evidence.
 
 | Surface | Public types and contract-bearing members |
 |---|---|
@@ -153,20 +165,22 @@ revision; a release name alone is insufficient for A02.
   `uniblab` or `Timothy Bruce`, both with `uniblab@hotmail.com`, as author.
   This establishes repository attribution only; it does not establish
   whether a test case or implementation fragment was adapted from upstream.
-- A compiled public API export is pending. The existing source passed the
+- The compiled API export is now reproducible via the checked-in reflection
+  tool and snapshot. The existing source passed the
   [PR #16 CI run 39846950536](https://github.com/uniblab/Icod.CommandFramework/actions/runs/39846950536)
   at documentation-only head `cdd0ea80bc6250743a8059f44327ac87e1eff302`:
   Linux, macOS, and Windows all completed restore, build, test, and both
-  deterministic regex benchmark smoke steps successfully. The local analysis
-  host has no `dotnet` executable; the workflow result is a build/test
-  baseline, not yet a compiled public API export or semantic parity proof.
+  deterministic regex benchmark smoke steps successfully. A .NET 10 SDK was
+  also located for local verification: the five initial A04 characterization
+  cases pass. These results establish a build/test baseline, not extraction
+  parity or external standards conformance.
 - A01-A04 must distinguish strict POSIX behavior, Gnulib syntax bits,
   consumer-owned profiles, and observed deviations. They may add tests and
   documentation in situ, but production semantics remain unchanged until
   A05 is frozen and extraction parity can be measured.
 
-**A00 closure condition:** reconcile the compiled API export with this source
-inventory, finish the file/fixture provenance ledger, and confirm every
+**A00 closure condition:** review the compiled API export and source inventory,
+finish the file/fixture provenance ledger, and confirm every
 upstream semantic claim against its immutable reference. Only then designate
 an extraction source SHA at A05. The source manifest follows.
 
