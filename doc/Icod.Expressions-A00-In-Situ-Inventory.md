@@ -133,6 +133,12 @@ revision; a release name alone is insufficient for A02.
   focused C# source and tests. This is **not** proof that all implementation
   and fixtures are original; inspect Git history and any imported fixtures
   before closing the provenance ledger.
+- Repository history shows the focused paths first appeared in commit
+  `b2c53304aaa9fc0d047e97d169c13195bcac8afc` on 20 August 2026.
+  Commits touching those paths through the candidate snapshot identify
+  `uniblab` or `Timothy Bruce`, both with `uniblab@hotmail.com`, as author.
+  This establishes repository attribution only; it does not establish
+  whether a test case or implementation fragment was adapted from upstream.
 - A compiled public API export and a clean baseline test run are pending.
   The current analysis host has no `dotnet` executable, so this document does
   not claim build or test verification.
