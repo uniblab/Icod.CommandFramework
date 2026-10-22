@@ -57,7 +57,7 @@ dotnet run --project tools/RegularExpressionApiSnapshot/RegularExpressionApiSnap
 ```
 
 The snapshot's SHA-256 is
-`70701777a44a3869522208eb140b5eef047548698ef35a0b6301a65bd541848c`.
+`8e64436d919f0b9fba74de88a03c2154960fe33d8a29675d6b360c15786abc82`.
 The tool inspects compiled metadata rather than scraping source; it excludes
 inherited framework members and private/protected members. At the local
 candidate commit, the source and external enum files match the pinned SHA
