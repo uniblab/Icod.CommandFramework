@@ -1,10 +1,16 @@
-# Icod.Expressions A05: extraction baseline
+# Icod.Expressions A05: candidate extraction baseline
 
-**Status:** frozen extraction baseline for a semantics-neutral copy of the
-inherited engine. This is not a strict POSIX or complete Gnulib conformance
-claim. The source and test identities below are immutable Git objects; the
-audit documents may continue to clarify their interpretation. Production
-source in `Icod.CommandFramework` must remain intact.
+**Status:** immutable copy-time checkpoint, not formal A05 acceptance. The
+inherited engine has been copied to `Icod.Expressions` before the A01–A04
+audit gates were fully closed. This is not a strict POSIX or complete Gnulib
+conformance claim. The source and test identities below are immutable Git
+objects; later characterization can add separately identified fixtures and
+tests before the final A05 corpus is declared. Production source in
+`Icod.CommandFramework` must remain intact.
+
+The [five-case A04 consumer-shaped supplement](Icod.Expressions-A04-Consumer-Shape-Supplement.md)
+is an additive later corpus; it does not change any of the first checkpoint's
+source, test, API, or JSONL identities recorded below.
 
 ## Immutable inputs
 
@@ -77,8 +83,11 @@ compiled API export still matches its frozen file byte-for-byte. The
 [three-platform CI run 39867051683](https://github.com/uniblab/Icod.CommandFramework/actions/runs/39867051683)
 passed at A04 commit `797f9d3e36c3b5ee0f7faa9a45ddb567ab3d787c`, including
 the suite, parity verifier, and regex benchmark smoke steps. The only new
-content in this A05 commit is this evidence record; source, tests, runner,
-and fixtures are not changed by the freeze.
+content in that checkpoint commit was this evidence record; source, tests,
+runner, and fixtures were unchanged. Its scope is copy-time parity of the
+identified corpus. Formal A05 acceptance still requires A01 strict claims and
+public branches, A02 option/profile evidence, A03 consumer coverage, and A04
+behavior-or-gap closure.
 
 ```sh
 git ls-tree -r e1e118f18246eed290bee4758325a20e302bfb92 -- src/RegularExpressions src/Text/TextDecodingMode.cs src/Text/InvalidEncodingPolicy.cs
@@ -86,12 +95,11 @@ git ls-tree -r 797f9d3e36c3b5ee0f7faa9a45ddb567ab3d787c -- tests/CommandFramewor
 dotnet run --project tools/RegularExpressionParityBaseline/RegularExpressionParityBaseline.csproj -c Staging -- --verify doc/Icod.Expressions-A04-Parity-Baseline.jsonl
 ```
 
-At E00, transplant the exact focused tests, fixture and runner before the
-production source. At E01, copy rather than remove the audited source and
-its two external enums, making only project/namespace/accessibility changes
-needed by the package boundary. At E02, compare the copied runtime with the
-frozen JSONL and focused tests; reconcile the public API against the snapshot
-with an explicit identity mapping for namespace/assembly changes. An exact
-copy is not permission to remove or redirect the old implementation. Such
-changes require a separate consumer-validated PR after a solid new library
-exists.
+E00 transplanted the exact focused tests, fixture and runner before the
+production source. E01 copied rather than removed the audited source and its
+two external enums. E02 compared the copied runtime with this checkpoint's
+JSONL and focused tests; its result is bounded by that corpus. Complete the
+open A01–A04 evidence, identify additions independently, then review the
+final A05 and E02 gates. Exact copy-time parity is not permission to remove
+or redirect the old implementation. Such changes require a separate
+consumer-validated PR after a solid new library exists.

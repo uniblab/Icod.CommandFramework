@@ -5,14 +5,18 @@ The production regex files and two external text enums are unchanged from
 CommandFramework commit `e1e118f18246eed290bee4758325a20e302bfb92`.
 The first ten focused test files at that commit have Git blob IDs in the
 [A00 manifest](Icod.Expressions-A00-In-Situ-Inventory.md#complete-tracked-sourcetest-manifest).
-The additive `IcodExpressionsA04CharacterizationTests.cs` is tracked on the
-draft PR; its Git blob must be refreshed in the final A05 manifest.
+The additive `IcodExpressionsA04CharacterizationTests.cs` and the 44-case
+JSONL have immutable identities in the [copy-time checkpoint](Icod.Expressions-A05-Extraction-Baseline.md).
+The five additive consumer-shaped cases are separately identified in the
+[supplement](Icod.Expressions-A04-Consumer-Shape-Supplement.md).
 
-There are **110 `[Fact]`/`[Theory]` declarations** in the current focused
-regex test directory: 106 at the pinned source commit and four added by this
-audit. Theory rows expand to more runtime cases. The additive file now has
-seven runtime cases, including both orders of the empty-anchor alternation;
-all 193 focused runtime cases passed locally on .NET SDK 10.0.402. The earlier
+The first checkpoint has **110 `[Fact]`/`[Theory]` declarations**: 106 at
+the pinned source commit and four added by this audit. Theory rows expand to
+193 runtime cases. The original additive file has seven runtime cases,
+including both orders of the empty-anchor alternation. Five later
+consumer-shaped declarations bring the current directory to 115 declarations
+and 198 runtime cases on .NET 10. The original 193 cases passed locally on
+.NET SDK 10.0.402 before the supplement. The earlier
 five-case version passed in the
 [three-platform PR workflow](https://github.com/uniblab/Icod.CommandFramework/actions/runs/39848729579).
 This index points to assertions already present; it does not imply that each
@@ -85,6 +89,7 @@ baseline is a bounded selection of cases, not full A04 differential closure.
 | String, byte and UTF-8 coordinates | `LineEditorRegularExpressionContractTests`: `StringAndUtf8ByteSurfacesReturnAuthoritativeCoordinates`, `Utf8StartOffsetCannotSplitASourceScalar`, `MalformedUtf8CanRemainAnExactAuthoritativeByte`; `GnuExtendedRegularExpressionTests`: `ByteModeUsesOneMatchingUnitPerSourceByte`, `InvalidUtf8PolicyIsExplicitAndBytePreserving` | UTF-16 string indices, authoritative byte slices/offsets, and controlled split-scalar failures. |
 | Prepared input and optimization parity | `PreparedRegularExpressionTests`, `PreparedRegularExpressionProfileTests`, `PublicPreparedByteInputTests`, `PublicPreparedByteInputIsolationTests`, `LiteralPrefixRegularExpressionTests`, and `R2_4RegularExpressionClosureTests` | Prepared/ordinary byte parity, source ownership, concurrency, malformed input, prefix fallback, resource accounting, and cancellation in selected cases. |
 | Diagnostics and limits | `GnuBasicRegularExpressionTests`: `InvalidPatternsProduceStableDiagnostics`, `ConfiguredNestingLimitProducesAControlledDiagnostic`, `ConfiguredMatchStateLimitProducesAControlledFailure`, `CompileAndMatchHonorCancellation`; `GnuExtendedRegularExpressionTests`: `InvalidExtendedPatternsProduceStableDiagnostics` | Existing controlled result and cancellation paths. |
+| Consumer-shaped supplemental cases | `IcodExpressionsA04ConsumerShapeTests`: prepared UTF-8 Grep offsets and captures, ProcPs anchored offset, Ptx bounded prefix, Sed NUL-line second search, Ed caller advance | Engine behavior at these call shapes; command invocation/output and consumer-owned iteration remain outside this assembly. The five cases are not part of the original 193-case checkpoint. |
 
 ## Required closure cases still open
 
@@ -93,9 +98,9 @@ baseline is a bounded selection of cases, not full A04 differential closure.
 | A01 | Strict BRE and strict ERE are not independently selectable APIs. Some malformed or escaped constructs are undefined or GNU-defined rather than standard-required. | Write separate draft `POSIX-BRE-CONTRACT.md` and `POSIX-ERE-CONTRACT.md` with section-level Issue 8 references; record standard status per fixture. Compare only defined cases to a pinned POSIX oracle and mark undefined cases without forcing one result. |
 | A01 | Subexpression tie ordering, BRE backreference edge cases, and locale-sensitive bracket behavior need independent comparison. Multi-scalar collating elements are not representable in the current bracket model. | Add a differential table with pattern, input, locale, expected capture spans, oracle identity, and disposition; keep controlled `UnsupportedCollatingElement` as an inherited behavior fixture. |
 | A02 | The current parser offers coupled Basic/Extended/Emacs modes, not switches for all 26 pinned Gnulib bits or 13 named macros. | For each implemented/coupled bit, test both polarities where meaningful; for missing bits, record a fixture as unsupported rather than pretending a profile is present. Compare named configurations with pinned Gnulib `regex.h`/engine. |
-| A03 | Command-level invocation and output remain outside the focused CommandFramework test assembly. | Run source-pinned consumer tests for grep byte/UTF-8 offsets and empty matches, expr anchored capture return, ptx bounded search, Sed `-z`/`M` and replacement, Ed global substitution, diff line suppression, and procps offsets. Preserve tac's current result for extraction; fix it later under CoreUtils #190. |
+| A03 | Five additional consumer-shaped engine tests now cover selected prepared/anchored/repeated paths, but command-level invocation and output remain outside the focused CommandFramework test assembly. | Run source-pinned consumer tests for grep byte/UTF-8 offsets and empty matches, expr anchored capture return, ptx bounded search, Sed `-z`/`M` and replacement, Ed global substitution, diff line suppression, and procps offsets. Preserve tac's current result for extraction; fix it later under CoreUtils #190. |
 | A04 | No pinned external oracle is wired into this test suite. The 110 declarations are local assertions, not 110 standards fixtures. | Record executable versions, source revisions, locale, encoding, invocation, and normalized captures for POSIX/Gnulib differential fixtures. Classify each disagreement as bug, deliberate deviation, undefined/unspecified, or unresolved. |
-| A05 | The final extraction source SHA and exact test corpus have not been frozen. | After A01–A04 closure, freeze source/test blob identities, compiled API snapshot, known deviations, and passing CI run; copy source/tests to `Icod.Expressions` without removing CommandFramework code. |
+| A05 | The source SHA and first copy-time corpus are pinned, and a mechanical copy has occurred, but formal A05 acceptance is open while A01–A04 remain incomplete. | Finish the audit and characterize or explicitly classify each public/consumer gap. Identify any corpus additions without rewriting the first baseline; then freeze the final source/test identities, API, deviations, and CI run. Keep CommandFramework production unchanged. |
 
 ## Reproduction
 
@@ -107,4 +112,4 @@ dotnet test tests/CommandFramework.Tests/Icod.CommandFramework.Tests.csproj \
 
 The complete CommandFramework suite is exercised by PR CI on Linux, macOS,
 and Windows. The independent oracle and full consumer-level evidence above
-remain explicit gates before the extraction baseline is called solid.
+remain explicit gates before formal A05 acceptance.

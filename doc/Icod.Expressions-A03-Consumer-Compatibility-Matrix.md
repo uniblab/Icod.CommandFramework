@@ -37,6 +37,11 @@ convenience preset is not proof of bit-for-bit `RE_SYNTAX_*` parity.
 
 ## Migration and closure checks
 
+Five additive engine-level cases for Grep, ProcPs, Ptx, Sed, and Ed are
+recorded in the [A04 supplement](Icod.Expressions-A04-Consumer-Shape-Supplement.md).
+They characterize caller-shaped inputs and offsets, not command output or
+full consumer integration.
+
 1. Extract a copy of the provider, options, matching, diagnostics, and byte
    preparation contract into `Icod.Expressions` and compare results against
    the frozen CommandFramework engine. Preserve the Basic-provider override
