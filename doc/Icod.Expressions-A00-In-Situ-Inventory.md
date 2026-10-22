@@ -29,6 +29,20 @@ The commit, not a moving `main` branch or package version, is the source
 authority for this inventory. A05 must decide whether to retain this commit as
 the final extraction baseline after A01-A04 characterization changes.
 
+## Non-destructive migration rule
+
+`Icod.CommandFramework` retains its existing regular-expression implementation,
+public API, and consumer behavior while `Icod.Expressions` is developed. The
+first implementation in the new repository must **copy** the audited source and
+tests against a frozen baseline; it must not remove them from CommandFramework,
+replace its engine, or redirect its dependencies as part of that step.
+
+Before any later CommandFramework removal or dependency switch is proposed,
+the new library must build and pass the frozen semantic corpus and exact
+extraction-parity tests, and each affected consumer must have a validated
+migration path. Such a change belongs in a separate, reviewable PR. A00-A05
+analysis and a successful source copy alone do not authorize it.
+
 ## Public source API at the candidate snapshot
 
 All 24 top-level public types below are declared in the pinned source tree.
