@@ -22,7 +22,10 @@ A05 corpus after the remaining audit gates close.
 
 Local Staging .NET 10 verification after adding this file: 536/536 full
 CommandFramework tests and 198/198 focused Expressions tests passed; the
-five-case filtered run in CommandFramework also passed. Cross-platform and
-net8/net9 CI are required before counting this supplement as verified across
-the support matrix. These tests do not replace command-level consumer suites,
-strict POSIX fixtures, or the pinned Gnulib differential oracle.
+five-case filtered run in CommandFramework also passed. The
+[CommandFramework CI run 39872377165](https://github.com/uniblab/Icod.CommandFramework/actions/runs/39872377165)
+and [Expressions CI run 39872443907](https://github.com/uniblab/Icod.Expressions/actions/runs/39872443907)
+completed successfully on their corresponding PR heads. Expressions CI
+requires exactly 198 focused tests per target framework on Windows, Linux,
+and macOS. These tests do not replace command-level consumer suites, strict
+POSIX fixtures, or the pinned Gnulib differential oracle.
