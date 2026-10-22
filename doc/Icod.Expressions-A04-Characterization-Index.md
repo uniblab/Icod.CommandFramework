@@ -18,7 +18,7 @@ feature is fully tested against an external oracle.
 
 ## Copy-time parity baseline
 
-The [25-case JSON Lines baseline](Icod.Expressions-A04-Parity-Baseline.jsonl)
+The [44-case JSON Lines baseline](Icod.Expressions-A04-Parity-Baseline.jsonl)
 captures the current engine through its public API. Each row includes the
 provider, profile, pattern, input and positioning, followed by the compile
 diagnostic or match outcome, span, value and participating captures. Byte
@@ -28,8 +28,13 @@ explicit C-locale or invariant-Unicode character-class provider, and stable
 diagnostic codes rather than display messages. Cases include all three
 current syntax providers, the tac provider/option mismatch, literal pattern
 newlines, leftmost-longest captures, absent versus empty captures, UTF-16 and
-UTF-8 offsets, malformed and opaque bytes, prepared input, and a resource
-limit. It does not assert that these outcomes are POSIX or Gnulib conformant.
+UTF-8 offsets, malformed and opaque bytes, prepared input, case folding,
+invalid repetition and range policies, nesting and match-state limits, and
+selected consumer-shaped calls for grep, expr, ptx, procps, diff, Ed, and
+csplit. The existing tests additionally exercise cancellation, asynchronous
+calls, and prepared-input concurrency; this finite JSONL baseline does not
+serialize those outcomes. It does not assert that the current outcomes are
+POSIX or Gnulib conformant.
 
 Regenerate and verify with .NET SDK 10.0.402 (or another .NET 10 SDK):
 
@@ -40,6 +45,10 @@ cmp doc/Icod.Expressions-A04-Parity-Baseline.jsonl /tmp/Icod.Expressions-parity-
 dotnet run --project tools/RegularExpressionParityBaseline/RegularExpressionParityBaseline.csproj \
   -c Release -- --verify doc/Icod.Expressions-A04-Parity-Baseline.jsonl
 ```
+
+The repository pins LF checkout for this JSONL file in `.gitattributes` so
+the byte-for-byte check has the same expected bytes on Windows, macOS, and
+Linux. The PR CI matrix invokes `--verify` under Staging on all three.
 
 At E00/E01, copy the case list and runner alongside the tests and adapt only
 its assembly reference and namespace. Run it against the pinned
