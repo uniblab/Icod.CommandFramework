@@ -29,8 +29,8 @@ coverage, not a complete differential characterization corpus.
 | `RE_DOT_NOT_NULL` | Dot excludes NUL; matcher. | `DotMatchesNull` inverts it, with profile-specific behavior; NUL tests. | grep `-z`, sed `-z`; `DotMatchesNull`. | Implemented |
 | `RE_HAT_LISTS_NOT_NEWLINE` | Negated bracket excludes newline; matcher. | Coupled to `NewLineSensitive` rather than independent of dot; bracket tests. | grep/sed; `NegatedBracketExcludesNewline`. | Partial |
 | `RE_INTERVALS` | Recognize interval repetition; parser. | Always enabled for Basic/Extended/Emacs; interval tests. | All current regex consumers; `RecognizeIntervals`. | Partial |
-| `RE_LIMITED_OPS` | Disable `+`, `?`, `|` operators; parser. | No independent toggle. Basic and Extended always recognize these operators. | Gnulib minimal Basic; `LimitedOperators`. | Missing-Required |
-| `RE_NEWLINE_ALT` | Pattern newline is alternation; parser. | No independent toggle; parser alternation is `\\|` or `|`. | Gnulib Grep/Egrep profiles; `NewlineIsAlternation`. | Missing-Required |
+| `RE_LIMITED_OPS` | Disable `+`, `?`, <code>&#124;</code> operators; parser. | No independent toggle. Basic and Extended always recognize these operators. | Gnulib minimal Basic; `LimitedOperators`. | Missing-Required |
+| `RE_NEWLINE_ALT` | Pattern newline is alternation; parser. | No independent toggle; parser alternation is <code>\\&#124;</code> or <code>&#124;</code>. | Gnulib Grep/Egrep profiles; `NewlineIsAlternation`. | Missing-Required |
 | `RE_NO_BK_BRACES` | Bare rather than escaped interval braces; parser. | Extended bare, Basic/Emacs escaped, coupled to `Syntax`; interval tests. | grep ERE, sed `-E`; `BareIntervalBraces`. | Partial |
 | `RE_NO_BK_PARENS` | Bare rather than escaped group parentheses; parser. | Extended bare, Basic/Emacs escaped; grouping tests. | grep ERE, ed/sed; `BareGroupParentheses`. | Partial |
 | `RE_NO_BK_REFS` | Disable numeric backreferences; parser. | `\\1`–`\\9` recognized in all three modes; no toggle. Basic/Extended backreference tests. | Gnulib Awk/minimal Extended; `RecognizeBackreferences` (inverse). | Missing-Required |
@@ -60,19 +60,19 @@ POSIX contracts or complete application emulations.
 
 | Header name | Exact expression, with abbreviations expanded immediately below | Current managed approximation / target |
 |---|---|---|
-| `RE_SYNTAX_EMACS` | `RE_CHAR_CLASSES | RE_INTERVALS` | `GnuEmacsCompatibility` approximates; exact bit parity unproved. |
-| `RE_SYNTAX_AWK` | `RE_BACKSLASH_ESCAPE_IN_LISTS | RE_DOT_NOT_NULL | RE_NO_BK_PARENS | RE_NO_BK_REFS | RE_NO_BK_VBAR | RE_NO_EMPTY_RANGES | RE_DOT_NEWLINE | RE_CONTEXT_INDEP_ANCHORS | RE_CHAR_CLASSES | RE_UNMATCHED_RIGHT_PAREN_ORD | RE_NO_GNU_OPS` | Missing named profile. |
-| `RE_SYNTAX_GNU_AWK` | `(PE | RE_BACKSLASH_ESCAPE_IN_LISTS | RE_INVALID_INTERVAL_ORD) & ~(RE_DOT_NOT_NULL | RE_CONTEXT_INDEP_OPS | RE_CONTEXT_INVALID_OPS)` | Missing named profile. |
-| `RE_SYNTAX_POSIX_AWK` | `PE | RE_BACKSLASH_ESCAPE_IN_LISTS | RE_INTERVALS | RE_NO_GNU_OPS | RE_INVALID_INTERVAL_ORD` | Missing named profile. |
-| `RE_SYNTAX_GREP` | `(PB | RE_NEWLINE_ALT) & ~(RE_CONTEXT_INVALID_DUP | RE_DOT_NOT_NULL)` | Missing exact named profile. |
-| `RE_SYNTAX_EGREP` | `(PE | RE_INVALID_INTERVAL_ORD | RE_NEWLINE_ALT) & ~(RE_CONTEXT_INVALID_OPS | RE_DOT_NOT_NULL)` | Missing exact named profile. |
+| `RE_SYNTAX_EMACS` | <code>RE_CHAR_CLASSES &#124; RE_INTERVALS</code> | `GnuEmacsCompatibility` approximates; exact bit parity unproved. |
+| `RE_SYNTAX_AWK` | <code>RE_BACKSLASH_ESCAPE_IN_LISTS &#124; RE_DOT_NOT_NULL &#124; RE_NO_BK_PARENS &#124; RE_NO_BK_REFS &#124; RE_NO_BK_VBAR &#124; RE_NO_EMPTY_RANGES &#124; RE_DOT_NEWLINE &#124; RE_CONTEXT_INDEP_ANCHORS &#124; RE_CHAR_CLASSES &#124; RE_UNMATCHED_RIGHT_PAREN_ORD &#124; RE_NO_GNU_OPS</code> | Missing named profile. |
+| `RE_SYNTAX_GNU_AWK` | <code>(PE &#124; RE_BACKSLASH_ESCAPE_IN_LISTS &#124; RE_INVALID_INTERVAL_ORD) & ~(RE_DOT_NOT_NULL &#124; RE_CONTEXT_INDEP_OPS &#124; RE_CONTEXT_INVALID_OPS)</code> | Missing named profile. |
+| `RE_SYNTAX_POSIX_AWK` | <code>PE &#124; RE_BACKSLASH_ESCAPE_IN_LISTS &#124; RE_INTERVALS &#124; RE_NO_GNU_OPS &#124; RE_INVALID_INTERVAL_ORD</code> | Missing named profile. |
+| `RE_SYNTAX_GREP` | <code>(PB &#124; RE_NEWLINE_ALT) & ~(RE_CONTEXT_INVALID_DUP &#124; RE_DOT_NOT_NULL)</code> | Missing exact named profile. |
+| `RE_SYNTAX_EGREP` | <code>(PE &#124; RE_INVALID_INTERVAL_ORD &#124; RE_NEWLINE_ALT) & ~(RE_CONTEXT_INVALID_OPS &#124; RE_DOT_NOT_NULL)</code> | Missing exact named profile. |
 | `RE_SYNTAX_POSIX_EGREP` | `RE_SYNTAX_EGREP` | Alias in header; missing managed alias. |
 | `RE_SYNTAX_ED` | `RE_SYNTAX_POSIX_BASIC` | Alias in header; missing managed alias. |
 | `RE_SYNTAX_SED` | `RE_SYNTAX_POSIX_BASIC` | Alias in header; missing managed alias. |
-| `RE_SYNTAX_POSIX_BASIC` (`PB`) | `COMMON | RE_BK_PLUS_QM | RE_CONTEXT_INVALID_DUP` | Current `Basic` is not an exact profile or strict POSIX contract. |
-| `RE_SYNTAX_POSIX_MINIMAL_BASIC` | `COMMON | RE_LIMITED_OPS` | Missing named profile. |
-| `RE_SYNTAX_POSIX_EXTENDED` (`PE`) | `COMMON | RE_CONTEXT_INDEP_ANCHORS | RE_CONTEXT_INDEP_OPS | RE_NO_BK_BRACES | RE_NO_BK_PARENS | RE_NO_BK_VBAR | RE_CONTEXT_INVALID_OPS | RE_UNMATCHED_RIGHT_PAREN_ORD` | Current `Extended` is not an exact profile or strict POSIX contract. |
-| `RE_SYNTAX_POSIX_MINIMAL_EXTENDED` | `COMMON | RE_CONTEXT_INDEP_ANCHORS | RE_CONTEXT_INVALID_OPS | RE_NO_BK_BRACES | RE_NO_BK_PARENS | RE_NO_BK_REFS | RE_NO_BK_VBAR | RE_UNMATCHED_RIGHT_PAREN_ORD` | Missing named profile. |
+| `RE_SYNTAX_POSIX_BASIC` (`PB`) | <code>COMMON &#124; RE_BK_PLUS_QM &#124; RE_CONTEXT_INVALID_DUP</code> | Current `Basic` is not an exact profile or strict POSIX contract. |
+| `RE_SYNTAX_POSIX_MINIMAL_BASIC` | <code>COMMON &#124; RE_LIMITED_OPS</code> | Missing named profile. |
+| `RE_SYNTAX_POSIX_EXTENDED` (`PE`) | <code>COMMON &#124; RE_CONTEXT_INDEP_ANCHORS &#124; RE_CONTEXT_INDEP_OPS &#124; RE_NO_BK_BRACES &#124; RE_NO_BK_PARENS &#124; RE_NO_BK_VBAR &#124; RE_CONTEXT_INVALID_OPS &#124; RE_UNMATCHED_RIGHT_PAREN_ORD</code> | Current `Extended` is not an exact profile or strict POSIX contract. |
+| `RE_SYNTAX_POSIX_MINIMAL_EXTENDED` | <code>COMMON &#124; RE_CONTEXT_INDEP_ANCHORS &#124; RE_CONTEXT_INVALID_OPS &#124; RE_NO_BK_BRACES &#124; RE_NO_BK_PARENS &#124; RE_NO_BK_REFS &#124; RE_NO_BK_VBAR &#124; RE_UNMATCHED_RIGHT_PAREN_ORD</code> | Missing named profile. |
 
 `COMMON = RE_CHAR_CLASSES | RE_DOT_NEWLINE | RE_DOT_NOT_NULL |
 RE_INTERVALS | RE_NO_EMPTY_RANGES` (the upstream private expression, not an
