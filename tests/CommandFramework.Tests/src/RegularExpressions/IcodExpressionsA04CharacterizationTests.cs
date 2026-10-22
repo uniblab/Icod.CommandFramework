@@ -61,4 +61,22 @@ public sealed class IcodExpressionsA04CharacterizationTests {
 		Assert.Equal( "a^b", caret.Expression!.Match( "a^b" ).Match!.Value );
 		Assert.Equal( "a$b", dollar.Expression!.Match( "a$b" ).Match!.Value );
 	}
+
+	/// <summary>
+	/// Characterizes capture selection for an empty anchor branch. This differs
+	/// from a related pinned Gnulib test-regex.c expectation; do not alter it
+	/// during mechanical extraction.
+	/// </summary>
+	[Fact]
+	public void EmptyAnchorBranchCurrentlyParticipatesAsAnEmptyCapture() {
+		var compiled = Extended.Compile( "(^|x)z" );
+		Assert.True( compiled.IsSuccess, compiled.Diagnostic?.Message );
+		var result = compiled.Expression!.Match( "z" );
+		Assert.True( result.IsMatch );
+		Assert.Equal( "z", result.Match!.Value );
+		Assert.True( result.Match.Captures[ 0 ].Success );
+		Assert.Equal( 0, result.Match.Captures[ 0 ].Index );
+		Assert.Equal( 0, result.Match.Captures[ 0 ].Length );
+		Assert.Equal( "", result.Match.Captures[ 0 ].Value );
+	}
 }
