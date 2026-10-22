@@ -50,6 +50,12 @@ The repository pins LF checkout for this JSONL file in `.gitattributes` so
 the byte-for-byte check has the same expected bytes on Windows, macOS, and
 Linux. The PR CI matrix invokes `--verify` under Staging on all three.
 
+An [exploratory GNU grep 3.11 probe](Icod.Expressions-A04-GNU-Grep-Probe.md)
+records exact binary identity, C-locale commands, and selected whole-match
+comparisons. It identifies an Extended middle-anchor profile difference;
+GNU grep 3.11 is not the pinned Gnulib oracle and cannot expose capture
+registers or the managed diagnostic identity.
+
 At E00/E01, copy the case list and runner alongside the tests and adapt only
 its assembly reference and namespace. Run it against the pinned
 CommandFramework source and the extracted source; require byte-identical
