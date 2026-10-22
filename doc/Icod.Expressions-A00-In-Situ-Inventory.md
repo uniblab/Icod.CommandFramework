@@ -198,6 +198,13 @@ characterization tests were authored on PR #16; the A04 JSONL is generated
 from the public API by its checked-in runner and is marked as observed output.
 The existing test cases have not yet been checked line by line for upstream
 adaptation. Git history and absent headers cannot settle that question.
+The A04 [pinned Gnulib capture comparison](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
+records five pattern/input/span examples from Gnulib `tests/test-regex.c`
+(GPL-3.0-or-later; its source notes an earlier glibc test origin). Those
+examples are attributed in that comparison document; they were evaluated in
+scratch and are not copied into the CommandFramework test assembly or
+production source. The additive anchor-capture test uses a separate analogous
+pattern authored for this audit.
 - The compiled API export is now reproducible via the checked-in reflection
   tool and snapshot. The existing source passed the
   [PR #16 CI run 39846950536](https://github.com/uniblab/Icod.CommandFramework/actions/runs/39846950536)
