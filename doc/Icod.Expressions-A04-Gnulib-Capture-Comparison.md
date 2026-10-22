@@ -26,10 +26,11 @@ opening-parenthesis order. The upstream rows use `REG_EXTENDED`.
 | 95; `a(b)()c\1` / `abcb` | `(0,4); (1,2); (2,2)` | `(0,4); (1,2); (2,2)` | Agrees on participating empty and nonempty captures. |
 | 92; `([0-9]).*\1(a*)` / `7;7a` | `(0,4); (0,1); (3,4)` | `(0,4); (0,1); (3,4)` | Agrees on these repeated/backreference spans. |
 
-The additive A04 test
-`EmptyAnchorBranchCurrentlyParticipatesAsAnEmptyCapture` uses an
-independently written analogous pattern and pins the inherited behavior
-without copying an upstream fixture into the test assembly. The exact
+The additive A04 theory
+`EmptyAnchorBranchCurrentlyParticipatesAsAnEmptyCapture` uses two
+independently written analogous patterns, with the anchor branch first and
+last. Both rows pin the inherited behavior without copying an upstream
+fixture into the test assembly. The exact
 upstream examples were evaluated only in the scratch comparison. The
 initial upstream-style assertion failed locally, then the characterization
 assertion passed after recording the current result.

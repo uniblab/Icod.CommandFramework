@@ -10,8 +10,10 @@ draft PR; its Git blob must be refreshed in the final A05 manifest.
 
 There are **110 `[Fact]`/`[Theory]` declarations** in the current focused
 regex test directory: 106 at the pinned source commit and four added by this
-audit. Theory rows expand to more runtime cases. The initial five runtime cases from
-the additive file passed locally on .NET SDK 10.0.402 and in the
+audit. Theory rows expand to more runtime cases. The additive file now has
+seven runtime cases, including both orders of the empty-anchor alternation;
+all 193 focused runtime cases passed locally on .NET SDK 10.0.402. The earlier
+five-case version passed in the
 [three-platform PR workflow](https://github.com/uniblab/Icod.CommandFramework/actions/runs/39848729579).
 This index points to assertions already present; it does not imply that each
 feature is fully tested against an external oracle.
@@ -92,7 +94,7 @@ baseline is a bounded selection of cases, not full A04 differential closure.
 | A01 | Subexpression tie ordering, BRE backreference edge cases, and locale-sensitive bracket behavior need independent comparison. Multi-scalar collating elements are not representable in the current bracket model. | Add a differential table with pattern, input, locale, expected capture spans, oracle identity, and disposition; keep controlled `UnsupportedCollatingElement` as an inherited behavior fixture. |
 | A02 | The current parser offers coupled Basic/Extended/Emacs modes, not switches for all 26 pinned Gnulib bits or 13 named macros. | For each implemented/coupled bit, test both polarities where meaningful; for missing bits, record a fixture as unsupported rather than pretending a profile is present. Compare named configurations with pinned Gnulib `regex.h`/engine. |
 | A03 | Command-level invocation and output remain outside the focused CommandFramework test assembly. | Run source-pinned consumer tests for grep byte/UTF-8 offsets and empty matches, expr anchored capture return, ptx bounded search, Sed `-z`/`M` and replacement, Ed global substitution, diff line suppression, and procps offsets. Preserve tac's current result for extraction; fix it later under CoreUtils #190. |
-| A04 | No pinned external oracle is wired into this test suite. The 109 declarations are local assertions, not 109 standards fixtures. | Record executable versions, source revisions, locale, encoding, invocation, and normalized captures for POSIX/Gnulib differential fixtures. Classify each disagreement as bug, deliberate deviation, undefined/unspecified, or unresolved. |
+| A04 | No pinned external oracle is wired into this test suite. The 110 declarations are local assertions, not 110 standards fixtures. | Record executable versions, source revisions, locale, encoding, invocation, and normalized captures for POSIX/Gnulib differential fixtures. Classify each disagreement as bug, deliberate deviation, undefined/unspecified, or unresolved. |
 | A05 | The final extraction source SHA and exact test corpus have not been frozen. | After A01–A04 closure, freeze source/test blob identities, compiled API snapshot, known deviations, and passing CI run; copy source/tests to `Icod.Expressions` without removing CommandFramework code. |
 
 ## Reproduction

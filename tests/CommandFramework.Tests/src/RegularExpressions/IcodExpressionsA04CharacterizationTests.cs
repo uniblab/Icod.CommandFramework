@@ -67,9 +67,11 @@ public sealed class IcodExpressionsA04CharacterizationTests {
 	/// from a related pinned Gnulib test-regex.c expectation; do not alter it
 	/// during mechanical extraction.
 	/// </summary>
-	[Fact]
-	public void EmptyAnchorBranchCurrentlyParticipatesAsAnEmptyCapture() {
-		var compiled = Extended.Compile( "(^|x)z" );
+	[Theory]
+	[InlineData( "(^|x)z" )]
+	[InlineData( "(x|^)z" )]
+	public void EmptyAnchorBranchCurrentlyParticipatesAsAnEmptyCapture( string pattern ) {
+		var compiled = Extended.Compile( pattern );
 		Assert.True( compiled.IsSuccess, compiled.Diagnostic?.Message );
 		var result = compiled.Expression!.Match( "z" );
 		Assert.True( result.IsMatch );
