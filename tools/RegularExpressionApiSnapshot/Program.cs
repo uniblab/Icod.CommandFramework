@@ -19,11 +19,13 @@ Console.WriteLine( $"# Top-level regex types: {included.Count( type => type.Name
 Console.WriteLine( "# Referenced external text enums: TextDecodingMode, InvalidEncodingPolicy" );
 
 foreach ( var type in included ) {
-	var kind = type.IsInterface ? "interface" : type.IsEnum ? "enum" : type.IsValueType ? "struct" : "class";
-	var parent = type.BaseType is { } baseType && baseType != typeof( object ) && baseType != typeof( ValueType ) && baseType != typeof( Enum )
-		? $" : {Format( baseType )}"
-		: string.Empty;
-	Console.WriteLine( $"{kind} {Format( type )}{parent}" );
+	var kind = type.IsInterface ? "interface" : type.IsEnum ? "enum" : type.IsValueType ? "struct"
+		: type.IsAbstract && type.IsSealed ? "static class" : type.IsSealed ? "sealed class"
+		: type.IsAbstract ? "abstract class" : "class";
+	var ancestry = new List<string>();
+	if ( type.BaseType is { } baseType && baseType != typeof( object ) && baseType != typeof( ValueType ) && baseType != typeof( Enum ) ) ancestry.Add( Format( baseType ) );
+	ancestry.AddRange( type.GetInterfaces().Select( iface => Format( iface ) ).OrderBy( name => name, StringComparer.Ordinal ) );
+	Console.WriteLine( $"{kind} {Format( type )}{( ancestry.Count == 0 ? string.Empty : " : " + string.Join( ", ", ancestry ) )}" );
 	if ( type.IsEnum ) {
 		foreach ( var field in type.GetFields( BindingFlags.Public | BindingFlags.Static ).OrderBy( field => field.Name, StringComparer.Ordinal ) ) {
 			Console.WriteLine( $"  {field.Name} = {Convert.ToInt64( field.GetRawConstantValue(), System.Globalization.CultureInfo.InvariantCulture )}" );
