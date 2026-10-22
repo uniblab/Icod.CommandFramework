@@ -153,9 +153,13 @@ revision; a release name alone is insufficient for A02.
   `uniblab` or `Timothy Bruce`, both with `uniblab@hotmail.com`, as author.
   This establishes repository attribution only; it does not establish
   whether a test case or implementation fragment was adapted from upstream.
-- A compiled public API export and a clean baseline test run are pending.
-  The current analysis host has no `dotnet` executable, so this document does
-  not claim build or test verification.
+- A compiled public API export is pending. The existing source passed the
+  [PR #16 CI run 39846950536](https://github.com/uniblab/Icod.CommandFramework/actions/runs/39846950536)
+  at documentation-only head `cdd0ea80bc6250743a8059f44327ac87e1eff302`:
+  Linux, macOS, and Windows all completed restore, build, test, and both
+  deterministic regex benchmark smoke steps successfully. The local analysis
+  host has no `dotnet` executable; the workflow result is a build/test
+  baseline, not yet a compiled public API export or semantic parity proof.
 - A01-A04 must distinguish strict POSIX behavior, Gnulib syntax bits,
   consumer-owned profiles, and observed deviations. They may add tests and
   documentation in situ, but production semantics remain unchanged until
