@@ -16,6 +16,38 @@ the additive file passed locally on .NET SDK 10.0.402 and in the
 This index points to assertions already present; it does not imply that each
 feature is fully tested against an external oracle.
 
+## Copy-time parity baseline
+
+The [25-case JSON Lines baseline](Icod.Expressions-A04-Parity-Baseline.jsonl)
+captures the current engine through its public API. Each row includes the
+provider, profile, pattern, input and positioning, followed by the compile
+diagnostic or match outcome, span, value and participating captures. Byte
+results contain authoritative source bytes as hexadecimal text. The
+`RegularExpressionParityBaseline` runner uses an invariant culture, the
+explicit C-locale or invariant-Unicode character-class provider, and stable
+diagnostic codes rather than display messages. Cases include all three
+current syntax providers, the tac provider/option mismatch, literal pattern
+newlines, leftmost-longest captures, absent versus empty captures, UTF-16 and
+UTF-8 offsets, malformed and opaque bytes, prepared input, and a resource
+limit. It does not assert that these outcomes are POSIX or Gnulib conformant.
+
+Regenerate and verify with .NET SDK 10.0.402 (or another .NET 10 SDK):
+
+```sh
+dotnet run --project tools/RegularExpressionParityBaseline/RegularExpressionParityBaseline.csproj \
+  -c Release > /tmp/Icod.Expressions-parity-actual.jsonl
+cmp doc/Icod.Expressions-A04-Parity-Baseline.jsonl /tmp/Icod.Expressions-parity-actual.jsonl
+dotnet run --project tools/RegularExpressionParityBaseline/RegularExpressionParityBaseline.csproj \
+  -c Release -- --verify doc/Icod.Expressions-A04-Parity-Baseline.jsonl
+```
+
+At E00/E01, copy the case list and runner alongside the tests and adapt only
+its assembly reference and namespace. Run it against the pinned
+CommandFramework source and the extracted source; require byte-identical
+JSONL before E02 parity is closed. Record any intentional difference in a
+separate reviewed exception ledger instead of rewriting this baseline. The
+baseline is a bounded selection of cases, not full A04 differential closure.
+
 ## Evidence already in the corpus
 
 | Contract area | Focused assertions | What they establish |
