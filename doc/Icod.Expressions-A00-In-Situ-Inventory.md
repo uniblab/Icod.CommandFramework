@@ -165,6 +165,39 @@ revision; a release name alone is insufficient for A02.
   `uniblab` or `Timothy Bruce`, both with `uniblab@hotmail.com`, as author.
   This establishes repository attribution only; it does not establish
   whether a test case or implementation fragment was adapted from upstream.
+
+### Git introduction and fixture trail
+
+At the candidate source commit, the manifest has 44 regex source/test/README
+paths, plus the two external `Text` enums. Git history records 33 of these
+46 paths as added in `b2c53304aaa9fc0d047e97d169c13195bcac8afc`
+(20 August 2026). The other 13 paths have these individual introductions:
+
+| Introduced path under `src/RegularExpressions/` or `tests/CommandFramework.Tests/src/RegularExpressions/` | Git commit |
+|---|---|
+| source `LiteralPrefixCompiledRegularExpression.cs` | `d5f2041659b04ce8b4317410a1ae165393a521c7` |
+| source `RequiredLiteralPrefixAnalyzer.cs` | `aa33adfd00e70300543ce948a77afe767ff4e794` |
+| source `IPreparedCompiledRegularExpression.cs` | `d4ed7e18f4160d7d924dfeea8c100b3df8c08ad7` |
+| source `PreparedRegexInput.cs` | `9156ca09bb7aa36da957de9e0a6647d8281f5095` |
+| source `PreparedCompiledRegularExpression.cs` | `4c773c1f93948bb510d620c957cf09551d985deb` |
+| source `RegularExpressionPreparedByteInput.cs` | `7d8f1ef91c41203ad51426d68ba294633949ea75` |
+| source `CompiledRegularExpressionPreparedInputExtensions.cs` | `8621346a9ed4baab90ed56ade6fa8d06ebd1b74e` |
+| test `LiteralPrefixRegularExpressionTests.cs` | `84908c912abc4f3ccad35588aec3a9407d946eac` |
+| test `PreparedRegularExpressionTests.cs` | `0b5ff3adf2df64fa84bccbdee38f52c131abb22a` |
+| test `PreparedRegularExpressionProfileTests.cs` | `870463edee7634617f85ce14612c0054d48acad5` |
+| test `PublicPreparedByteInputTests.cs` | `24c69fc8a6363746b185fe56634c74b960b9da9c` |
+| test `PublicPreparedByteInputIsolationTests.cs` | `15b793cdb513e5c01dcdc2de20211b16c16244e3` |
+| test `R2_4RegularExpressionClosureTests.cs` | `52fa9ba11c326d1c4c04b041ab537f0323bb2526` |
+
+The remaining 33 paths are exactly the manifest paths not in this table,
+including both external `Text` enums. Later commits modify several paths;
+`git log --name-status -- src/RegularExpressions
+tests/CommandFramework.Tests/src/RegularExpressions src/Text/TextDecodingMode.cs
+src/Text/InvalidEncodingPolicy.cs` supplies that full trail. The new A04
+characterization tests were authored on PR #16; the A04 JSONL is generated
+from the public API by its checked-in runner and is marked as observed output.
+The existing test cases have not yet been checked line by line for upstream
+adaptation. Git history and absent headers cannot settle that question.
 - The compiled API export is now reproducible via the checked-in reflection
   tool and snapshot. The existing source passed the
   [PR #16 CI run 39846950536](https://github.com/uniblab/Icod.CommandFramework/actions/runs/39846950536)
