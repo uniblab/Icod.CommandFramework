@@ -82,10 +82,17 @@ The next extension pins LineEditor commit
 `1705e1dc5107eb2ede6b5ecec5dad7ea18c93061`. Its original Sed,
 Ed.Shared, Ed, and Red suites compile against published CommandFramework
 2.1.0. All 116 + 68 + 26 + 28 tests pass locally against that package and
-with the scratch bridge substituted. The full source-pinned CI gate is
-pending. These command tests exercise substitution, repeated searches, and
+with the scratch bridge substituted. [Expressions CI run 39889627829](https://github.com/uniblab/Icod.Expressions/actions/runs/39889627829)
+passed the full 487-case gate, including these 238 LineEditor cases. These
+command tests exercise substitution, repeated searches, and
 shared editor regex paths; additional caller audit and cross-platform
 forwarding remain open.
+
+The pinned CoreUtils checkout also has `NL`, `CSplit`, and `Ptx` command
+suites (35 + 43 + 46 cases). Their GNU Basic pattern styles, split controls,
+and prepared byte input pass locally against the published package and the
+scratch bridge. The expanded hosted gate is pending. `tac` remains separate
+under [CoreUtils #190](https://github.com/uniblab/Icod.CoreUtils/issues/190).
 
 1. Extract a copy of the provider, options, matching, diagnostics, and byte
    preparation contract into `Icod.Expressions` and compare results against
