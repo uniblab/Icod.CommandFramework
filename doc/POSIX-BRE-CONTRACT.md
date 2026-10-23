@@ -42,7 +42,9 @@ the precise locale and provider recorded.
 ## Open acceptance work
 
 1. Pin an executable standards oracle and locale for defined C/POSIX cases;
-   record Issue 8 text/section for each asserted result.
+   record Issue 8 text/section for each asserted result. A first
+   [Linux/glibc C-locale comparison](Icod.Expressions-A04-POSIX-Glibc-Differential.md)
+   now covers three defined ASCII BRE cases; broader coverage remains open.
 2. Add explicit strict BRE fixtures alongside inherited GNU Basic fixtures,
    including operator spelling, interval boundaries, backreferences, tie
    ordering, brackets and anchors.

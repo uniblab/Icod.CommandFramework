@@ -76,6 +76,16 @@ jobs:
           dotnet run --project tools/RegularExpressionParityBaseline/RegularExpressionParityBaseline.csproj
           -c ${{ env.CONFIGURATION }}
           -- --verify doc/Icod.Expressions-A04-Parity-Baseline.jsonl
+      - name: Compare POSIX ASCII cases with glibc
+        if: matrix.os == 'ubuntu-latest'
+        run: >-
+          dotnet run --project tools/PosixRegexDifferential/PosixRegexDifferential.csproj
+          -c ${{ env.CONFIGURATION }}
+      - name: Verify differential runner identity
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          test "$(git hash-object tools/PosixRegexDifferential/Program.cs)" = bec36b11aa2bd1617e191ac49703244a03dcc10b
       - name: Pack Staging artifacts
         if: matrix.verify_packages
         run: >-

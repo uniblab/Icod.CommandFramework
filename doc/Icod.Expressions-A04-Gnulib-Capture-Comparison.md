@@ -10,6 +10,14 @@ GPL-3.0-or-later and says its initial test table was copied from glibc
 source reference, including nonparticipating groups represented by `-1,-1`.
 No upstream test source has been copied into CommandFramework.
 
+An independent [Linux/glibc differential](Icod.Expressions-A04-POSIX-Glibc-Differential.md)
+subsequently ran the same anchor-branch patterns through glibc 2.39
+`regcomp`/`regexec` under the C locale. glibc returns a participating empty
+capture `(0,0)` in both orders, agreeing with the inherited managed result.
+The pinned Gnulib test table still expects `(-1,-1)`. This makes the source
+table's observation implementation-sensitive in our evidence; it does not
+resolve the difference or prove that the inherited engine is strict POSIX.
+
 The managed observations below were produced in scratch with .NET SDK
 10.0.402, `GnuExtendedRegularExpressionProvider` and
 `PosixCLocaleRegularExpressionCharacterClassProvider.Instance`, on the pinned

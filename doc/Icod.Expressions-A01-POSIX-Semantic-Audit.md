@@ -14,6 +14,10 @@ The separately named [draft BRE contract](POSIX-BRE-CONTRACT.md) and
 their inherited GNU divergences, and the unresolved oracle/locale work.
 The [A04 characterization index](Icod.Expressions-A04-Characterization-Index.md)
 maps current tests to these gaps.
+The [Linux/glibc differential](Icod.Expressions-A04-POSIX-Glibc-Differential.md)
+adds seven defined ASCII/C-locale agreement cases and two anchor-capture
+observations. This is an independent implementation sample, not a strict
+POSIX certification or a running pinned Gnulib oracle.
 
 This is an inventory of **observed source and test contracts**. The column
 called "classification" identifies the work needed to separate a future
