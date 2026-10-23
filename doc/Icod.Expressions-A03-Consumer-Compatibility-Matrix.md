@@ -35,6 +35,28 @@ convenience preset is not proof of bit-for-bit `RE_SYNTAX_*` parity.
 | `Icod.LineEditor/sed` [compiler](https://github.com/uniblab/Icod.LineEditor/blob/1705e1dc5107eb2ede6b5ecec5dad7ea18c93061/sed/src/SedRegularExpressions.cs#L159-L265) [and matches](https://github.com/uniblab/Icod.LineEditor/blob/1705e1dc5107eb2ede6b5ecec5dad7ea18c93061/sed/src/SedRegularExpressions.cs#L53-L145) | GNU Basic/Extended provider, `Syntax`, `IgnoreCase`, `NewLineSensitive=M`, `LineSeparator=NUL` for `-z` else LF, `DotMatchesNull=-z`. C-locale classifier for byte decoding, current-culture Unicode otherwise. Sed builds a `string` pattern space. | Uses `StartIndex` for repeated matches, skips a zero-length match immediately following a nonempty match at the same endpoint, advances by a Unicode scalar on empty matches. `--posix` escape expansion/normalization, empty-pattern reuse, addresses, substitutions/replacement syntax, and script diagnostics remain layer 4. The general separator and dot policies are layer 3. |
 | `Icod.LineEditor/ed` and `/red` [host selection](https://github.com/uniblab/Icod.LineEditor/blob/1705e1dc5107eb2ede6b5ecec5dad7ea18c93061/ed/src/Command.cs#L216-L220) [shared engine](https://github.com/uniblab/Icod.LineEditor/blob/1705e1dc5107eb2ede6b5ecec5dad7ea18c93061/Icod.LineEditor.Ed.Shared/src/EditorEngine.cs#L891-L1001) | GNU Basic or Extended provider depending on command flag, compiled with provider defaults; `string` line inputs. | Shared Ed engine owns remembered empty pattern, line-address wrapping, global selection, substitution and replacement (`&`, `\\1`–`\\9`), occurrence/global flags, and one-character advance after empty match. `red` additionally owns restricted capabilities. Matcher result/captures remain layer 3; editor behavior remains layer 4. |
 
+## Shared Text enum forwarding boundary
+
+The extracted regex input options use `TextDecodingMode` and
+`InvalidEncodingPolicy`. Those public enum identities also occur outside
+regex calls. In the pinned CoreUtils source, `cut`, `expand`, `unexpand`,
+`fold`, and `fmt` call CommandFramework Text APIs that use one or both enums;
+CoreUtils Shared has additional direct Text API callers. A CommandFramework
+bridge must forward the enum identities while keeping `TextUnitReader` and
+the other non-regex Text implementation in CommandFramework.
+
+The [Expressions three-platform scratch gate](https://github.com/uniblab/Icod.Expressions/blob/bootstrap/pre-extraction-foundation/doc/E03-Compatibility-Bridge.md#cross-platform-pinned-consumer-gate)
+now adds the original `cut` (28), `expand` (18), `unexpand` (20), `fold` (18),
+and `fmt` (29) suites to the 611 regex-consumer cases: **724 source-pinned
+cases per pass**. Each command's original and bridged binaries pass with the
+same test names and outcomes on Windows, macOS, and Linux
+([CI run 40014111537](https://github.com/uniblab/Icod.Expressions/actions/runs/40014111537)).
+An old-compiled assembly probe checks that `TextDecodingMode` and
+`InvalidEncodingPolicy` resolve from Expressions while `TextUnitReader`
+resolves from the scratch CommandFramework bridge. This does not cover every
+standalone CoreUtils Shared Text test, every Text API caller, or a
+distributable bridge.
+
 ## Migration and closure checks
 
 Five additive engine-level cases for Grep, ProcPs, Ptx, Sed, and Ed are
