@@ -21,14 +21,16 @@ The Expressions [`verify-a05-candidate.sh`](https://github.com/uniblab/Icod.Expr
 checks the original manifests, the 13-file census, both additive test blobs,
 and both oracle-tool blobs. CI separately requires exactly 214 passing
 focused cases and byte-identical 44-case JSONL on .NET 8, 9, and 10 across
-Linux, Windows, and macOS. The [Expressions CI run
-39896864947](https://github.com/uniblab/Icod.Expressions/actions/runs/39896864947)
-passed the tests, original source/API/fixture guards, 15-case differential,
-included Gnulib oracle, alpha package smoke, and consumer gate before this
-consolidated verifier was introduced. [CommandFramework CI run
-39896877423](https://github.com/uniblab/Icod.CommandFramework/actions/runs/39896877423)
-passed its full suite and parity checks. Revalidate the new verifier in CI
-before formal acceptance.
+Linux, Windows, and macOS. [Expressions CI run
+39996617131](https://github.com/uniblab/Icod.Expressions/actions/runs/39996617131)
+passed all five jobs with the consolidated verifier, source/API/fixture
+guards, 15-case differential, included Gnulib oracle, alpha package smoke,
+cross-platform old-client forwarding check, and 611-case Linux consumer
+gate. [CommandFramework CI run
+39994624392](https://github.com/uniblab/Icod.CommandFramework/actions/runs/39994624392)
+passed its full suite and parity checks on the corresponding candidate.
+The executable A05 verification gate is satisfied; formal acceptance still
+requires review of the classified limits below.
 
 ## Classified limits of this extraction contract
 
