@@ -1,7 +1,8 @@
-# Icod.Expressions A05: final extraction corpus candidate
+# Icod.Expressions A05: accepted extraction corpus
 
-**Status:** Reviewable candidate for formal A05 acceptance, not a strict
-POSIX/Gnulib conformance decision or a CommandFramework migration. The
+**Status:** Accepted on 2026-10-23 as the bounded extraction baseline with
+the classified gaps below; not a strict POSIX/Gnulib conformance decision,
+a stable release, or a CommandFramework migration. The
 [first copy-time checkpoint](Icod.Expressions-A05-Extraction-Baseline.md)
 remains immutable. This record adds the later fixtures and classifies what
 the extraction contract can and cannot establish.
@@ -35,8 +36,10 @@ pass the same 214 test names/outcomes, and both runners verify the exact
 [audit ref](https://github.com/uniblab/Icod.CommandFramework/tree/audit/icod-expressions-a05-frozen). [CommandFramework CI run
 39994624392](https://github.com/uniblab/Icod.CommandFramework/actions/runs/39994624392)
 passed its full suite and parity checks on the corresponding candidate.
-The executable A05 verification gate is satisfied; formal acceptance still
-requires review of the classified limits below.
+The executable A05 verification gate is satisfied. The user accepted the
+bounded A05/E02 review and its classified limits on 2026-10-23. This freezes
+the identities for extraction comparisons without closing the later strict
+POSIX/GNU work or changing CommandFramework production.
 
 ## Classified limits of this extraction contract
 
@@ -48,10 +51,10 @@ requires review of the classified limits below.
 | A03 consumers | [Call-site matrix](Icod.Expressions-A03-Consumer-Compatibility-Matrix.md) and 725 source-pinned tests through the scratch bridge, including 114 shared-Text cases. | `tac` provider/options bug is deferred to [CoreUtils #190](https://github.com/uniblab/Icod.CoreUtils/issues/190); direct `diff -I` correction to [DiffUtils #8](https://github.com/uniblab/Icod.DiffUtils/issues/8). Remaining callers, cross-platform distributable forwarding, and actual consumer migrations belong to E03 and separate consumer PRs. |
 | A04 parity | [Characterization index](Icod.Expressions-A04-Characterization-Index.md), 214 focused tests, 44 JSONL cases, 15 glibc cases, and four pinned Gnulib capture observations. | **Bounded evidence:** broader locale, malformed-input, capture-tie, and GNU profile differentials are not established. The Gnulib table's absent-register expectation explicitly tolerates the observed participating `(0,0)` capture; it is not a runtime disagreement for the four probed rows. |
 
-Formal A05 acceptance should freeze these identities and expressly carry the
-classified limitations into later strict/GNU work. It would establish
-**preservation of the inherited engine for this bounded corpus**, not full
-standards conformance, exact Gnulib profile behavior, a stable release, or
-authorization to alter CommandFramework production. A future ownership
-change needs review of this final parity evidence and a separate
-consumer-validated PR.
+A05 acceptance freezes these identities and carries the classified limitations
+into later strict/GNU work. It establishes **preservation of the inherited
+engine for this bounded corpus**, not full standards conformance, exact Gnulib
+profile behavior, a stable release, or authorization to alter CommandFramework
+production. Publish Expressions, then migrate and validate every known
+consumer before removing or replacing any CommandFramework production regex
+code. A future ownership change needs a separate consumer-validated PR.

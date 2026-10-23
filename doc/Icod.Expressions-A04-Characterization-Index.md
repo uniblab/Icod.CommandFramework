@@ -112,7 +112,7 @@ baseline is a bounded selection of cases, not full A04 differential closure.
 | A02 | The current parser offers coupled Basic/Extended/Emacs modes, not switches for all 26 pinned Gnulib bits or 13 named macros. Sixteen additive cases cover selected present controls, but missing switches and named compositions remain unproved. | Extend both-polarity fixtures to remaining meaningful controls; record missing bits as explicit gaps. Compare named configurations with the pinned Gnulib header/engine before N01. |
 | A03 | Five additional consumer-shaped engine tests now cover selected prepared/anchored/repeated paths, but command-level invocation and output remain outside the focused CommandFramework test assembly. | Run source-pinned consumer tests for grep byte/UTF-8 offsets and empty matches, expr anchored capture return, ptx bounded search, Sed `-z`/`M` and replacement, Ed global substitution, diff line suppression, and procps offsets. Preserve tac's current result for extraction; fix it later under CoreUtils #190. |
 | A04 | Fifteen C-locale ASCII cases compare against host glibc, including two classified ERE middle-anchor divergences; an included pinned Gnulib runtime probe resolves four anchor-capture rows. No broad strict POSIX/GNU profile corpus is wired into the test suite. The original 110 declarations are local assertions, not 110 standards fixtures. | Extend the oracle matrix across public branches, locale and malformed input. Record executable versions, locale, encoding, invocation, normalized captures, and discrepancy classification. |
-| A05 | The source SHA and first copy-time corpus are pinned, and a mechanical copy has occurred, but formal A05 acceptance is open while A01–A04 remain incomplete. | Finish the audit and characterize or explicitly classify each public/consumer gap. Identify any corpus additions without rewriting the first baseline; then freeze the final source/test identities, API, deviations, and CI run. Keep CommandFramework production unchanged. |
+| A05 | The source SHA and first copy-time corpus are pinned, and a mechanical copy has occurred. The [bounded final corpus](Icod.Expressions-A05-Final-Candidate.md) was accepted on 2026-10-23 with explicit A01–A04 gaps. | Carry the classified limits into later strict/GNU work. Publish Expressions and migrate and validate every known consumer before removing or replacing any CommandFramework production regex code. |
 
 ## Reproduction
 
@@ -124,4 +124,4 @@ dotnet test tests/CommandFramework.Tests/Icod.CommandFramework.Tests.csproj \
 
 The complete CommandFramework suite is exercised by PR CI on Linux, macOS,
 and Windows. The independent oracle and full consumer-level evidence above
-remain explicit gates before formal A05 acceptance.
+remain explicit gaps for later strict/GNU work under the bounded A05 acceptance.
