@@ -91,8 +91,19 @@ forwarding remain open.
 The pinned CoreUtils checkout also has `NL`, `CSplit`, and `Ptx` command
 suites (35 + 43 + 46 cases). Their GNU Basic pattern styles, split controls,
 and prepared byte input pass locally against the published package and the
-scratch bridge. The expanded hosted gate is pending. `tac` remains separate
-under [CoreUtils #190](https://github.com/uniblab/Icod.CoreUtils/issues/190).
+scratch bridge. [Expressions CI run 39890569950](https://github.com/uniblab/Icod.Expressions/actions/runs/39890569950)
+passed the complete 611-case hosted gate, including those CoreUtils commands.
+`tac` remains separate under
+[CoreUtils #190](https://github.com/uniblab/Icod.CoreUtils/issues/190).
+
+An additional default-branch code-search check on 2026-10-23 searched the
+`uniblab` owner for `Icod.CommandFramework.RegularExpressions` (95 indexed
+files), `GnuBasicRegularExpressionProvider` (32), and
+`GnuEmacsRegularExpressionProvider` (6). The repository names in these
+results were CommandFramework and the same five consumer repositories in
+this matrix; no sixth repository appeared. This is bounded to indexed
+default-branch matches for those names. Aliases, reflection, unindexed files,
+and other branches still require a separate caller audit before A03 closure.
 
 1. Extract a copy of the provider, options, matching, diagnostics, and byte
    preparation contract into `Icod.Expressions` and compare results against
