@@ -15,18 +15,24 @@ the extraction contract can and cannot establish.
 | Original tests and fixture | Eleven focused C# blobs, 193 runtime cases, and the 44-case JSONL (SHA-256 `61696259b079b0ef48b33326b51db8a37083e2dd9219825024398786c3cea4ff`) in the [first checkpoint](Icod.Expressions-A05-Extraction-Baseline.md#focused-test-git-blobs). `tools/verify-frozen-corpus.sh` retains their identities. |
 | Additive tests | `IcodExpressionsA04ConsumerShapeTests.cs` blob `589a52b42d5e3010e9e678f771cc85b156236e0b` (five cases) and `IcodExpressionsA02SyntaxOptionCharacterizationTests.cs` blob `ef9cd9e358460f412d343c91db228c6179c964ff` (16 cases). Both blobs are identical in CommandFramework and Expressions. Total: **13 focused C# files, 214 runtime cases**. |
 | Independent runtime comparisons | C-locale Linux/glibc 15-case differential runner blob `59a10c631112307159a0682a493062de4cd82c80` in both repositories; 13 agreement cases and two defined ERE anchor divergences. The Expressions pinned included-Gnulib runner blob `7511107d8c12d1e98b53c88311c2d44ae0c0c387` checks four anchor-capture observations. These are supplemental oracle evidence, not extra focused test cases. |
-| Source-pinned consumer gate | The Expressions package-backed scratch bridge runs 611 original CoreUtils, ProcPs, DiffUtils, Grep, and LineEditor tests before and after substitution on hosted Linux. The bridge is not a distributable dependency switch. |
+| Source-pinned consumer gate | The Expressions package-backed scratch bridge runs 611 original CoreUtils, ProcPs, DiffUtils, Grep, and LineEditor tests before and after substitution on Windows, macOS, and Linux. The bridge is not a distributable dependency switch. |
 
 The Expressions [`verify-a05-candidate.sh`](https://github.com/uniblab/Icod.Expressions/blob/bootstrap/pre-extraction-foundation/tools/verify-a05-candidate.sh)
 checks the original manifests, the 13-file census, both additive test blobs,
 and both oracle-tool blobs. CI separately requires exactly 214 passing
 focused cases and byte-identical 44-case JSONL on .NET 8, 9, and 10 across
 Linux, Windows, and macOS. [Expressions CI run
-39996617131](https://github.com/uniblab/Icod.Expressions/actions/runs/39996617131)
+40009459778, attempt 2](https://github.com/uniblab/Icod.Expressions/actions/runs/40009459778)
 passed all five jobs with the consolidated verifier, source/API/fixture
 guards, 15-case differential, included Gnulib oracle, alpha package smoke,
-cross-platform old-client forwarding check, and 611-case Linux consumer
-gate. [CommandFramework CI run
+cross-platform old-client forwarding check, and the 611-case consumer gate
+before and after scratch substitution on each operating system. Its
+[final E02 review](https://github.com/uniblab/Icod.Expressions/blob/bootstrap/pre-extraction-foundation/doc/E02-Final-Parity-Review.md)
+records the same-run comparison against the frozen CommandFramework audit
+commit: 35 source blobs and 13 focused test blobs match, both .NET 10 suites
+pass the same 214 test names/outcomes, and both runners verify the exact
+44-case JSONL. The audit commit is retained by the
+[audit ref](https://github.com/uniblab/Icod.CommandFramework/tree/audit/icod-expressions-a05-frozen). [CommandFramework CI run
 39994624392](https://github.com/uniblab/Icod.CommandFramework/actions/runs/39994624392)
 passed its full suite and parity checks on the corresponding candidate.
 The executable A05 verification gate is satisfied; formal acceptance still
@@ -47,4 +53,5 @@ classified limitations into later strict/GNU work. It would establish
 **preservation of the inherited engine for this bounded corpus**, not full
 standards conformance, exact Gnulib profile behavior, a stable release, or
 authorization to alter CommandFramework production. A future ownership
-change needs the final parity gate and a separate consumer-validated PR.
+change needs review of this final parity evidence and a separate
+consumer-validated PR.
