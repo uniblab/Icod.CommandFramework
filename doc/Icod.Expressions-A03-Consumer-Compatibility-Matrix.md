@@ -68,14 +68,24 @@ ignored-line `-I` cases, and the `diff` tests include `-F` function-context
 matching. A direct `diff -I` command case remains open under
 [DiffUtils #8](https://github.com/uniblab/Icod.DiffUtils/issues/8).
 
-The gate is being extended to pinned Grep commit
+The gate now covers pinned Grep commit
 `2ef1c11f11b77eb876242eb0c92a88d20857db64`, which compiles its original
 test project against CommandFramework 2.2.1. Its 112 tests other than a
 device-policy Unix-domain socket test pass locally with both the published
 package and scratch bridge; this workspace denies socket creation. The
-hosted Linux gate will run all 113 without that local filter. Grep's byte
-offset and prepared-input paths are present in that original suite. Count
-the full Grep validation only after its hosted CI result passes.
+hosted [Linux gate 39888672536](https://github.com/uniblab/Icod.Expressions/actions/runs/39888672536)
+ran all 113 without that local filter and passed before and after bridge
+substitution. Grep's byte offset and prepared-input paths are present in
+that original suite.
+
+The next extension pins LineEditor commit
+`1705e1dc5107eb2ede6b5ecec5dad7ea18c93061`. Its original Sed,
+Ed.Shared, Ed, and Red suites compile against published CommandFramework
+2.1.0. All 116 + 68 + 26 + 28 tests pass locally against that package and
+with the scratch bridge substituted. The full source-pinned CI gate is
+pending. These command tests exercise substitution, repeated searches, and
+shared editor regex paths; additional caller audit and cross-platform
+forwarding remain open.
 
 1. Extract a copy of the provider, options, matching, diagnostics, and byte
    preparation contract into `Icod.Expressions` and compare results against
