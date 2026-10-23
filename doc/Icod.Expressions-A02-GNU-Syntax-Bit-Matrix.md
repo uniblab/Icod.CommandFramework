@@ -26,22 +26,22 @@ coverage, not a complete differential characterization corpus.
 | `RE_CONTEXT_INDEP_OPS` | Repetition special even in otherwise literal contexts; parser. | Leading repetition is diagnosed or treated by coupled permissive switch; no independent policy. Repetition tests. | Extended profiles; `ContextIndependentOperators`. | Partial |
 | `RE_CONTEXT_INVALID_OPS` | Reject leading `*`, `+`, `?`, `{`; parser/diagnostic. | Partly governed by `AllowInvalidRepetitionOperators`, also coupled with adjacent-duplicate handling. Repetition tests. | Extended profiles; `RejectLeadingOperators`. | Partial |
 | `RE_DOT_NEWLINE` | Dot matches newline; matcher. | `NewLineSensitive`/`LineSeparator` control the chosen separator, with Emacs special treatment; independent Gnulib bit absent. Line-sensitive tests. | grep/sed; `DotMatchesNewline`. | Partial |
-| `RE_DOT_NOT_NULL` | Dot excludes NUL; matcher. | `DotMatchesNull` inverts it, with profile-specific behavior; NUL tests. | grep `-z`, sed `-z`; `DotMatchesNull`. | Implemented |
-| `RE_HAT_LISTS_NOT_NEWLINE` | Negated bracket excludes newline; matcher. | Coupled to `NewLineSensitive` rather than independent of dot; bracket tests. | grep/sed; `NegatedBracketExcludesNewline`. | Partial |
+| `RE_DOT_NOT_NULL` | Dot excludes NUL; matcher. | `DotMatchesNull` inverts it, with profile-specific behavior; A02 both-polarity dot/line tests. | grep `-z`, sed `-z`; `DotMatchesNull`. | Implemented |
+| `RE_HAT_LISTS_NOT_NEWLINE` | Negated bracket excludes newline; matcher. | Coupled to `NewLineSensitive` rather than independently selectable; A02 tests show changing `DotMatchesNull` has no effect on this exclusion. | grep/sed; `NegatedBracketExcludesNewline`. | Partial |
 | `RE_INTERVALS` | Recognize interval repetition; parser. | Always enabled for Basic/Extended/Emacs; interval tests. | All current regex consumers; `RecognizeIntervals`. | Partial |
 | `RE_LIMITED_OPS` | Disable `+`, `?`, <code>&#124;</code> operators; parser. | No independent toggle. Basic and Extended always recognize these operators. | Gnulib minimal Basic; `LimitedOperators`. | Missing-Required |
 | `RE_NEWLINE_ALT` | Pattern newline is alternation; parser. | No independent toggle; parser alternation is <code>\\&#124;</code> or <code>&#124;</code>. | Gnulib Grep/Egrep profiles; `NewlineIsAlternation`. | Missing-Required |
 | `RE_NO_BK_BRACES` | Bare rather than escaped interval braces; parser. | Extended bare, Basic/Emacs escaped, coupled to `Syntax`; interval tests. | grep ERE, sed `-E`; `BareIntervalBraces`. | Partial |
 | `RE_NO_BK_PARENS` | Bare rather than escaped group parentheses; parser. | Extended bare, Basic/Emacs escaped; grouping tests. | grep ERE, ed/sed; `BareGroupParentheses`. | Partial |
-| `RE_NO_BK_REFS` | Disable numeric backreferences; parser. | `\\1`–`\\9` recognized in all three modes; no toggle. Basic/Extended backreference tests. | Gnulib Awk/minimal Extended; `RecognizeBackreferences` (inverse). | Missing-Required |
+| `RE_NO_BK_REFS` | Disable numeric backreferences; parser. | `\\1`–`\\9` recognized in all three modes; no toggle. A02 Basic/Extended backreference cases and existing Emacs coverage. | Gnulib Awk/minimal Extended; `RecognizeBackreferences` (inverse). | Missing-Required |
 | `RE_NO_BK_VBAR` | Bare rather than escaped alternation bar; parser. | Extended bare, Basic/Emacs escaped; alternation tests. | grep ERE, sed `-E`; `BareAlternationBar`. | Partial |
-| `RE_NO_EMPTY_RANGES` | Reject reversed ranges rather than treat as empty; bracket parser. | Inverse of `AllowEmptyRanges`; Basic/profile bracket tests. | GNU expr preset, grep; `AllowReverseRangeAsEmpty`. | Implemented |
+| `RE_NO_EMPTY_RANGES` | Reject reversed ranges rather than treat as empty; bracket parser. | Inverse of `AllowEmptyRanges`; A02 both-polarity Basic/Extended tests. | GNU expr preset, grep; `AllowReverseRangeAsEmpty`. | Implemented |
 | `RE_UNMATCHED_RIGHT_PAREN_ORD` | Unmatched `)` is literal rather than error; parser. | Extended unmatched `)` is literal, Basic escaped unmatched `\\)` is diagnosed; behavior is coupled to `Syntax`. `UnmatchedExtendedClosingParenthesisIsLiteral`. | Gnulib Extended profiles; `UnmatchedRightParenIsLiteral`. | Partial |
 | `RE_NO_POSIX_BACKTRACKING` | Succeed at first whole-pattern match; matcher selection. | Current matcher uses leftmost-longest; no policy switch. Longest-match tests. | No confirmed current need; `MatchSelectionPolicy` (first success vs longest). | Designed-Defer |
 | `RE_NO_GNU_OPS` | Disable GNU word/boundary/subject operators; parser. | GNU escapes are recognized, without a global disable switch. Basic/Extended GNU-operator tests. | Awk/PosixAwk, strict contracts; `RecognizeGnuOperators` (inverse). | Missing-Required |
 | `RE_DEBUG` | Native `regex.c` conditional debugging; implementation. | No corresponding managed syntax contract. | None; no public option. | Not-Applicable/Internal |
 | `RE_INVALID_INTERVAL_ORD` | Malformed interval becomes ordinary text; parser. | Extended has some literal fallback while other malformed forms diagnose; no independent switch. Interval diagnostics tests. | Gnulib Egrep/Awk; `InvalidIntervalIsOrdinary`. | Partial |
-| `RE_ICASE` | Ignore case; comparison/provider and matcher. | `IgnoreCase`; case-insensitive tests. | grep `-i`, ptx; `IgnoreCase`. | Implemented |
+| `RE_ICASE` | Ignore case; comparison/provider and matcher. | `IgnoreCase`; A02 both-polarity Basic/Extended literal tests and existing class/backreference tests. | grep `-i`, ptx; `IgnoreCase`. | Implemented |
 | `RE_CARET_ANCHORS_HERE` | Native parser helper for caret; implementation. | Not a semantic user option. | None; no public option. | Not-Applicable/Internal |
 | `RE_CONTEXT_INVALID_DUP` | Invalid leading/adjacent duplicate operator; parser/diagnostic. | `AllowInvalidRepetitionOperators` inverts a subset but also changes other contexts. Basic/Extended repetition tests. | GNU expr preset; `RejectInvalidDuplicate`. | Partial |
 | `RE_NO_SUB` | Suppress submatch result production; compile/result. | Captures always materialized; no result policy. Capture tests. | Consumers needing existence only; `CaptureResultPolicy`. | Missing-Required |
@@ -87,6 +87,12 @@ both names separately.
   `IgnoreCase`, `NewLineSensitive`, `DotMatchesNull`,
   `AllowInvalidRepetitionOperators`, and `AllowEmptyRanges`. None is a
   one-to-one representation of a named Gnulib configuration.
+- The additive 16-case `IcodExpressionsA02SyntaxOptionCharacterizationTests`
+  exercises both polarities of null, newline, range, and case controls and
+  observes backreferences in both Basic and Extended. The identical test blob
+  `ef9cd9e358460f412d343c91db228c6179c964ff` is also in
+  `Icod.Expressions`. These are managed observations, not a Gnulib
+  differential or independent profile selection.
 - Preserve current results as characterization fixtures. Add differential
   cases for each coupled or missing control before any normalization; especially
   anchor contexts, pattern newline, backslash in brackets, invalid intervals,
@@ -96,8 +102,9 @@ both names separately.
   distinct from strict `Icod.Expressions.Bre` and `.Ere` contracts.
 - A03 will fill the known-consumer column with source-pinned call sites;
   the entries above identify likely consumers, not an exhaustive dependency
-  trace. A02's acceptance gate remains open pending tests and exact managed
-  profile parity.
+  trace. The remaining profile composition and missing-control evidence is
+  open; exact named profiles belong to the later N01 implementation, not the
+  mechanical extraction.
 
 The [non-destructive migration rule](Icod.Expressions-A00-In-Situ-Inventory.md#non-destructive-migration-rule)
 still applies: no removal or behavioral refactor of the CommandFramework
