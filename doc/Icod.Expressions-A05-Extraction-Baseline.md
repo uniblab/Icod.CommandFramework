@@ -11,6 +11,11 @@ tests before the final A05 corpus is declared. Production source in
 The [five-case A04 consumer-shaped supplement](Icod.Expressions-A04-Consumer-Shape-Supplement.md)
 is an additive later corpus; it does not change any of the first checkpoint's
 source, test, API, or JSONL identities recorded below.
+**Post-checkpoint evidence:** The [included pinned Gnulib runtime probe](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
+later showed the source table tolerates an actual participating `(0,0)`
+capture in four anchor cases. The unresolved wording below records the
+original checkpoint's interpretation; its source, test, API, and fixture
+identities remain frozen.
 The [nine-case glibc differential](Icod.Expressions-A04-POSIX-Glibc-Differential.md)
 is additional oracle evidence, not part of that original JSONL or a claim
 that the pinned Gnulib implementation has been executed.

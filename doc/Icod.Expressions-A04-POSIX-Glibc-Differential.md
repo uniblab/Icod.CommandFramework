@@ -1,8 +1,9 @@
 # Icod.Expressions A04: Linux POSIX regex differential
 
 **Status:** executable, bounded comparison with an independent POSIX regex
-implementation. It is neither a POSIX.1-2024 conformance certificate nor a
-run of the pinned Gnulib engine. The standards reference is
+implementation. It is not a POSIX.1-2024 conformance certificate; the
+separate [pinned Gnulib runtime probe](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
+addresses the anchor-capture source-table ambiguity. The standards reference is
 [Issue 8, chapter 9](https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap09.html),
 especially §§9.1, 9.3 and 9.4. Defined examples below use ASCII subject and
 pattern text under the C locale; a byte offset therefore equals the managed
@@ -31,11 +32,12 @@ dotnet run --project tools/PosixRegexDifferential/PosixRegexDifferential.csproj 
 |---|---|---|
 | BRE interval longest match, backreference capture, empty capture | Agreed on all three exact register lists. | Defined ASCII/C-locale samples; agreement for these inputs only. |
 | ERE longest alternative, subexpression tie, digit class, alternative before a suffix | Agreed on all four exact register lists. | Defined ASCII/C-locale samples; not a locale or full grammar certification. |
-| ERE `(^\|foo)bar` and `(foo\|^)bar` on `bar` | Both return whole `(0,3)` and participating empty group `(0,0)`. | Independent glibc observation. The [source-pinned Gnulib test table](Icod.Expressions-A04-Gnulib-Capture-Comparison.md) expects an absent group `(-1,-1)` for the same patterns/input. Remains an unresolved cross-implementation capture discrepancy. |
+| ERE `(^\|foo)bar` and `(foo\|^)bar` on `bar` | Both return whole `(0,3)` and participating empty group `(0,0)`. | Independent glibc observation; the included pinned Gnulib engine also reports `(0,0)`. Its test table lists `(-1,-1)` but explicitly tolerates a different actual span. |
 
 All nine current differential rows matched their independently recorded
 glibc and managed expectations locally. The tool fails on any changed
 register list, including a change that made both engines agree for a new
-reason. The Linux CI job reruns it. A running pinned Gnulib oracle, larger
-strict BRE/ERE coverage, non-C locales, multicharacter collation, malformed
-input, and consumer command behavior remain open A01/A04 work.
+reason. The Linux CI job reruns it. The Gnulib runtime probe covers four
+anchor captures; broader strict BRE/ERE coverage, non-C locales,
+multicharacter collation, malformed input, and consumer command behavior
+remain open A01/A04 work.

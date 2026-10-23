@@ -39,8 +39,9 @@ configuration and strict standard are separate oracle columns.
 1. Build a pinned standards oracle corpus for defined ERE grammar, anchors,
    brackets and captures, including locales with relevant collation behavior.
    A first [Linux/glibc C-locale comparison](Icod.Expressions-A04-POSIX-Glibc-Differential.md)
-   covers four defined ASCII ERE cases and two unresolved anchor-branch
-   capture observations; it does not settle the pinned Gnulib disagreement.
+   covers four defined ASCII ERE cases and two anchor-branch capture
+   observations. The [included Gnulib runtime check](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
+   agrees for those anchor cases; broader capture and locale rules remain open.
 2. Characterize GNU-only ERE backreferences, malformed intervals, and operator
    contexts as inherited divergence cases before normalization.
 3. Resolve multi-scalar collation and capture tie behavior, or state their

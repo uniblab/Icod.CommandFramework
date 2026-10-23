@@ -16,8 +16,9 @@ The [A04 characterization index](Icod.Expressions-A04-Characterization-Index.md)
 maps current tests to these gaps.
 The [Linux/glibc differential](Icod.Expressions-A04-POSIX-Glibc-Differential.md)
 adds seven defined ASCII/C-locale agreement cases and two anchor-capture
-observations. This is an independent implementation sample, not a strict
-POSIX certification or a running pinned Gnulib oracle.
+observations. A separate [included Gnulib runtime check](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
+shows the pinned engine also returns a participating empty capture in the two
+ERE cases. Neither check is strict POSIX certification.
 
 This is an inventory of **observed source and test contracts**. The column
 called "classification" identifies the work needed to separate a future
@@ -65,10 +66,11 @@ compatibility presets and language-affecting switches to every provider.
 4. Current tests establish many local behaviors but do not form a
    standards-versus-GNU divergence corpus. The same result under one
    provider and locale does not prove all permitted locales.
-5. The [A04 comparison with pinned Gnulib test expectations](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
-   finds the same whole match but different group participation for an ERE
-   zero-width anchor branch. This is an unresolved capture discrepancy, not
-   evidence of strict POSIX conformance by either implementation.
+5. The [A04 included Gnulib runtime check](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
+   finds the same participating empty capture as managed and glibc for two ERE
+   zero-width anchor branches. Pinned Gnulib's table lists an absent group
+   but its comparison code tolerates the actual `(0,0)` span. This resolves an
+   apparent source-table disagreement, not strict POSIX conformance.
 
 ## A01 closure work
 

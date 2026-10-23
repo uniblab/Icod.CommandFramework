@@ -62,18 +62,19 @@ comparisons. It identifies an Extended middle-anchor profile difference;
 GNU grep 3.11 is not the pinned Gnulib oracle and cannot expose capture
 registers or the managed diagnostic identity.
 
-A [source-pinned Gnulib capture comparison](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
-uses expected registers from `tests/test-regex.c`. Two anchor-branch cases
-select the same whole match but disagree on whether the group participated.
-The inherited managed behavior now has its own additive characterization
-test; the discrepancy remains unresolved for eventual normalization.
+A [pinned Gnulib runtime capture comparison](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
+corrects an apparent source-table discrepancy. The upstream table lists absent
+captures for four anchor branches but explicitly tolerates a different actual
+span. The built included Gnulib engine reports `(0,0)` in all four; both ERE
+rows agree with glibc and the inherited managed behavior. The latter has an
+additive characterization test.
 
 An [executable Linux/glibc differential](Icod.Expressions-A04-POSIX-Glibc-Differential.md)
 compares nine C-locale ASCII BRE/ERE cases, including whole-match and capture
 spans. The seven ordinary standards-facing rows agree locally. glibc agrees
 with the inherited engine's participating empty capture in both anchor-branch
-rows, while the pinned Gnulib source table expects an absent capture. The
-tool is run on Linux CI; it is not the pinned Gnulib executable oracle.
+rows, as does the separate included Gnulib runtime probe. The glibc tool is
+run on Linux CI and is an independent implementation sample.
 
 At E00/E01, copy the case list and runner alongside the tests and adapt only
 its assembly reference and namespace. Run it against the pinned
@@ -89,7 +90,7 @@ baseline is a bounded selection of cases, not full A04 differential closure.
 | Basic spelling and GNU extensions | `GnuBasicRegularExpressionTests`: `RepetitionOperatorsUseGnuBasicSyntax`, `ContextuallyInvalidRepetitionTokensAreOrdinary`, `StrictBasicSyntaxAcceptsGnuValidAdjacentRepetitions`, `ExprCompatibilityAcceptsGnulibInvalidDuplicateProfile` | Current Basic parser and expr preset behavior, including accepted contexts that must not be relabeled strict POSIX. |
 | Extended spelling | `GnuExtendedRegularExpressionTests`: `ExtendedOperatorsAreUnescaped`, `EscapedExtendedMetacharactersAreLiterals`, `MalformedExtendedBraceTextRemainsLiteral`, `GnuExtendedCompatibilityAcceptsInvalidDuplicateContexts` | Current Extended spelling and malformed-brace policy, not the complete Gnulib syntax-bit set. |
 | Emacs spelling | `GnuEmacsRegularExpressionTests`: `PlusAndQuestionMarkAreUnescapedOperators`, `GroupingAlternationAndIntervalsRemainEscaped`, `DotMatchesNullButNotLineFeed`, `BackslashDoesNotEscapeClosingBracket` | Current Emacs provider behavior used by ptx. |
-| Source/profile coupling found in A02/A03 | `IcodExpressionsA04CharacterizationTests`: `BasicProviderOverridesEmacsSyntaxRequestedByTac`, `PatternNewlineRemainsLiteralInCurrentBasicAndExtendedProviders`, `MidBranchCaretAndDollarRemainLiterals`, `EmptyAnchorBranchCurrentlyParticipatesAsAnEmptyCapture` | The Basic-provider override at the tac call shape, lack of pattern-newline alternation, contextual anchors, and an anchor-branch capture difference from pinned Gnulib test expectations. The tac bugfix is tracked in [CoreUtils #190](https://github.com/uniblab/Icod.CoreUtils/issues/190). |
+| Source/profile coupling found in A02/A03 | `IcodExpressionsA04CharacterizationTests`: `BasicProviderOverridesEmacsSyntaxRequestedByTac`, `PatternNewlineRemainsLiteralInCurrentBasicAndExtendedProviders`, `MidBranchCaretAndDollarRemainLiterals`, `EmptyAnchorBranchCurrentlyParticipatesAsAnEmptyCapture` | The Basic-provider override at the tac call shape, lack of pattern-newline alternation, contextual anchors, and an anchor-branch capture that agrees with running pinned Gnulib despite the latter's tolerated source-table expectation. The tac bugfix is tracked in [CoreUtils #190](https://github.com/uniblab/Icod.CoreUtils/issues/190). |
 | Whole match, captures, backreferences | `GnuBasicRegularExpressionTests`: `SearchSelectsTheLongestMatchAtTheLeftmostPosition`, `OverallLongestMatchConstrainsSubexpressionSelection`, `EqualLengthMatchesFollowGnuGreedyCaptureOrdering`, `EmptyAndNonparticipatingCapturesRemainDistinct`; `GnuExtendedRegularExpressionTests`: `CapturesAndBackReferencesUseExtendedGrouping` | Internal GNU leftmost-longest and capture choices; ERE backreference acceptance is a GNU fixture, not a strict ERE guarantee. |
 | Anchors, dot, NUL, line separator | `GnuBasicRegularExpressionTests`: `AnchorsHonorNewLineSensitivePolicy`, `DotMatchesNewlineButNeverNullByDefault`, `DotAndNegatedBracketExcludeNewlineWhenRequested`; `LineEditorRegularExpressionContractTests`: `ConsumerSelectedLineSeparatorControlsMultilineAndDotPolicy` | Current managed line policy, including Sed's NUL separator choice. |
 | Brackets and locale | `GnuBasicRegularExpressionTests`: `PosixClassesRangesAndEquivalenceExpressionsAreSupported`, `EmptyRangeCompatibilityCanBeEnabledForExpr`, `CharacterClassesAreProviderDrivenAndInjectable`; `GnuExtendedRegularExpressionTests`: `CharacterClassesUseTheInjectedLocaleProvider` | Selected scalar classes, ranges, equivalence behavior and provider injection, not multicharacter collation completeness. |
@@ -106,7 +107,7 @@ baseline is a bounded selection of cases, not full A04 differential closure.
 | A01 | Subexpression tie ordering, BRE backreference edge cases, and locale-sensitive bracket behavior need independent comparison. Multi-scalar collating elements are not representable in the current bracket model. | Add a differential table with pattern, input, locale, expected capture spans, oracle identity, and disposition; keep controlled `UnsupportedCollatingElement` as an inherited behavior fixture. |
 | A02 | The current parser offers coupled Basic/Extended/Emacs modes, not switches for all 26 pinned Gnulib bits or 13 named macros. | For each implemented/coupled bit, test both polarities where meaningful; for missing bits, record a fixture as unsupported rather than pretending a profile is present. Compare named configurations with pinned Gnulib `regex.h`/engine. |
 | A03 | Five additional consumer-shaped engine tests now cover selected prepared/anchored/repeated paths, but command-level invocation and output remain outside the focused CommandFramework test assembly. | Run source-pinned consumer tests for grep byte/UTF-8 offsets and empty matches, expr anchored capture return, ptx bounded search, Sed `-z`/`M` and replacement, Ed global substitution, diff line suppression, and procps offsets. Preserve tac's current result for extraction; fix it later under CoreUtils #190. |
-| A04 | Nine C-locale ASCII cases now compare against host glibc; no executable pinned Gnulib oracle or broad strict POSIX corpus is wired into the test suite. The original 110 declarations are local assertions, not 110 standards fixtures. | Extend the oracle matrix across public branches, locale and malformed input; run the pinned Gnulib engine where practical. Record executable versions, locale, encoding, invocation, normalized captures, and discrepancy classification. |
+| A04 | Nine C-locale ASCII cases compare against host glibc; an included pinned Gnulib runtime probe resolves four anchor-capture rows. No broad strict POSIX/GNU profile corpus is wired into the test suite. The original 110 declarations are local assertions, not 110 standards fixtures. | Extend the oracle matrix across public branches, locale and malformed input. Record executable versions, locale, encoding, invocation, normalized captures, and discrepancy classification. |
 | A05 | The source SHA and first copy-time corpus are pinned, and a mechanical copy has occurred, but formal A05 acceptance is open while A01–A04 remain incomplete. | Finish the audit and characterize or explicitly classify each public/consumer gap. Identify any corpus additions without rewriting the first baseline; then freeze the final source/test identities, API, deviations, and CI run. Keep CommandFramework production unchanged. |
 
 ## Reproduction

@@ -1,50 +1,49 @@
 # Icod.Expressions A04: pinned Gnulib capture comparison
 
-**Status:** Source-backed differential observations, not a run of the pinned
-Gnulib engine or a POSIX conformance claim. The upstream identity is Gnulib
-commit [`fb7312fa8d3df29f0ca0678f669b9a5b88a078ec`](https://github.com/coreutils/gnulib/tree/fb7312fa8d3df29f0ca0678f669b9a5b88a078ec),
-[`tests/test-regex.c` lines 58–100](https://github.com/coreutils/gnulib/blob/fb7312fa8d3df29f0ca0678f669b9a5b88a078ec/tests/test-regex.c#L58-L100),
+**Status:** Bounded C-locale runtime comparison, not a POSIX conformance
+claim. The upstream identity is Gnulib commit
+[`fb7312fa8d3df29f0ca0678f669b9a5b88a078ec`](https://github.com/coreutils/gnulib/tree/fb7312fa8d3df29f0ca0678f669b9a5b88a078ec),
+[`tests/test-regex.c`](https://github.com/coreutils/gnulib/blob/fb7312fa8d3df29f0ca0678f669b9a5b88a078ec/tests/test-regex.c),
 Git blob `0ab97819d2cdf3b29f5f4b989d1c33e0bd157f36`. That test source is
-GPL-3.0-or-later and says its initial test table was copied from glibc
-`posix/bug-regex11.c`. Its expected `regmatch_t` spans provide a precise
-source reference, including nonparticipating groups represented by `-1,-1`.
-No upstream test source has been copied into CommandFramework.
+GPL-3.0-or-later and says its initial table came from glibc
+`posix/bug-regex11.c`. No upstream C source is committed in either Icod
+repository.
 
-An independent [Linux/glibc differential](Icod.Expressions-A04-POSIX-Glibc-Differential.md)
-subsequently ran the same anchor-branch patterns through glibc 2.39
-`regcomp`/`regexec` under the C locale. glibc returns a participating empty
-capture `(0,0)` in both orders, agreeing with the inherited managed result.
-The pinned Gnulib test table still expects `(-1,-1)`. This makes the source
-table's observation implementation-sensitive in our evidence; it does not
-resolve the difference or prove that the inherited engine is strict POSIX.
+The upstream table *lists* an absent group `(-1,-1)` for two BRE and two ERE
+anchor branches. Its comparison loop intentionally **does not fail** on a
+different actual span whenever the expected register is `(-1,-1)`; see
+[`tests/test-regex.c` lines 148–159](https://github.com/coreutils/gnulib/blob/fb7312fa8d3df29f0ca0678f669b9a5b88a078ec/tests/test-regex.c#L148-L159).
+Consequently, those table entries are tolerated examples, not proven runtime
+registers. Earlier A04 notes treated them as a disagreement with Gnulib;
+the executable check corrects that interpretation.
 
-The managed observations below were produced in scratch with .NET SDK
-10.0.402, `GnuExtendedRegularExpressionProvider` and
-`PosixCLocaleRegularExpressionCharacterClassProvider.Instance`, on the pinned
-CommandFramework production source `e1e118f18246eed290bee4758325a20e302bfb92`.
-All input is ASCII, so the reported UTF-16 offsets coincide with byte
-offsets. Each row gives whole-match `[start,end)` and then capture spans in
-opening-parenthesis order. The upstream rows use `REG_EXTENDED`.
+The [Expressions oracle runner](https://github.com/uniblab/Icod.Expressions/blob/bootstrap/pre-extraction-foundation/tools/GnulibRegexOracle/run.sh)
+checks out that exact commit, verifies the test blob, generates a temporary
+`regex-tests` project, configures `--with-included-regex`, and checks that
+Gnulib's `regex.o` symbol `rpl_regcomp` is defined in the linked test binary.
+It first runs the unmodified upstream test. It then removes only the
+two-line tolerance from the **temporary** test copy, rebuilds, and requires
+exactly four reported `rm[1] 0..0` results for upstream rows 5–8. The
+[diagnostic CI run](https://github.com/uniblab/Icod.Expressions/actions/runs/39892305953)
+showed all four results with the included engine. The maintained runner
+checks that observation on the PR's Linux Staging job.
 
-| Gnulib source line; pattern / input | Source-expected spans | Current managed spans | Classification |
-|---|---|---|---|
-| 82; <code>(^&#124;foo)bar</code> / `bar` | `(0,3); (-1,-1)` | `(0,3); (0,0)` | **Unresolved capture disagreement.** Both choose the same whole match; the current engine marks the anchor branch as a participating empty capture. |
-| 83; <code>(foo&#124;^)bar</code> / `bar` | `(0,3); (-1,-1)` | `(0,3); (0,0)` | Same unresolved capture disagreement in the reversed alternation. |
-| 89; `()x\1` / `x` | `(0,1); (0,0)` | `(0,1); (0,0)` | Agrees in this empty-backreference case. |
-| 95; `a(b)()c\1` / `abcb` | `(0,4); (1,2); (2,2)` | `(0,4); (1,2); (2,2)` | Agrees on participating empty and nonempty captures. |
-| 92; `([0-9]).*\1(a*)` / `7;7a` | `(0,4); (0,1); (3,4)` | `(0,4); (0,1); (3,4)` | Agrees on these repeated/backreference spans. |
+| Pattern / input | Upstream table | Included Gnulib runtime | glibc 2.39 / managed runtime | Interpretation |
+|---|---|---|---|---|
+| BRE `\(^\|foo\)bar` / `bar` | `(0,3); (-1,-1)` | `(0,3); (0,0)` | Not in nine-case glibc runner / not compared here | GNU BRE anchor capture participates; the source table tolerates it. |
+| BRE `\(foo\|^\)bar` / `bar` | `(0,3); (-1,-1)` | `(0,3); (0,0)` | Not in nine-case glibc runner / not compared here | Same observation with reversed branch order. |
+| ERE <code>(^&#124;foo)bar</code> / `bar` | `(0,3); (-1,-1)` | `(0,3); (0,0)` | `(0,3); (0,0)` | All three running engines agree for this input. |
+| ERE <code>(foo&#124;^)bar</code> / `bar` | `(0,3); (-1,-1)` | `(0,3); (0,0)` | `(0,3); (0,0)` | Same agreement with reversed branch order. |
 
-The additive A04 theory
-`EmptyAnchorBranchCurrentlyParticipatesAsAnEmptyCapture` uses two
-independently written analogous patterns, with the anchor branch first and
-last. Both rows pin the inherited behavior without copying an upstream
-fixture into the test assembly. The exact
-upstream examples were evaluated only in the scratch comparison. The
-initial upstream-style assertion failed locally, then the characterization
-assertion passed after recording the current result.
+The managed values use the unchanged CommandFramework production source
+`e1e118f18246eed290bee4758325a20e302bfb92`, the Extended provider,
+and the C-locale character-class provider. The glibc observations use the
+[nine-case C# differential](Icod.Expressions-A04-POSIX-Glibc-Differential.md).
+ASCII inputs make byte and UTF-16 offsets equal here. The additive test
+`EmptyAnchorBranchCurrentlyParticipatesAsAnEmptyCapture` pins analogous
+managed cases without importing the upstream source.
 
-Do not change CommandFramework to force agreement during Stage A or the
-mechanical extraction. Reproduce these source-pinned cases with a built
-Gnulib oracle and adjudicate the capture rule before strict POSIX/GNU
-normalization. This discrepancy is **unresolved**, not silently accepted as
-a managed contract for the eventual normalized implementation.
+This settles the **apparent source-table disagreement for these two ERE
+cases**. It does not determine the strict POSIX rule for all capture ties,
+prove locale behavior, or establish exact parity for every Gnulib syntax
+profile. Preserve CommandFramework's implementation during extraction.
