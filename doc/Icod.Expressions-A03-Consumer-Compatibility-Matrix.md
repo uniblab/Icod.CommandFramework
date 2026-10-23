@@ -68,6 +68,15 @@ ignored-line `-I` cases, and the `diff` tests include `-F` function-context
 matching. A direct `diff -I` command case remains open under
 [DiffUtils #8](https://github.com/uniblab/Icod.DiffUtils/issues/8).
 
+The gate is being extended to pinned Grep commit
+`2ef1c11f11b77eb876242eb0c92a88d20857db64`, which compiles its original
+test project against CommandFramework 2.2.1. Its 112 tests other than a
+device-policy Unix-domain socket test pass locally with both the published
+package and scratch bridge; this workspace denies socket creation. The
+hosted Linux gate will run all 113 without that local filter. Grep's byte
+offset and prepared-input paths are present in that original suite. Count
+the full Grep validation only after its hosted CI result passes.
+
 1. Extract a copy of the provider, options, matching, diagnostics, and byte
    preparation contract into `Icod.Expressions` and compare results against
    the frozen CommandFramework engine. Preserve the Basic-provider override
