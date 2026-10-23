@@ -64,8 +64,9 @@ The local Linux/.NET 10 gate passes both runs. It does not change or merge
 CommandFramework production, prove a distributable bridge, or close the
 remaining A03 consumer matrix. The ProcPs tests cover command matching paths,
 but do not exhaust GNU Extended options or diagnostics. The `sdiff` tests include
-ignored-line `-I` cases; `diff`'s regex options and function-pattern `-F` still
-need direct command coverage.
+ignored-line `-I` cases, and the `diff` tests include `-F` function-context
+matching. A direct `diff -I` command case remains open under
+[DiffUtils #8](https://github.com/uniblab/Icod.DiffUtils/issues/8).
 
 1. Extract a copy of the provider, options, matching, diagnostics, and byte
    preparation contract into `Icod.Expressions` and compare results against
