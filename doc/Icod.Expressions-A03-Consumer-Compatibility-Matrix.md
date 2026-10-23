@@ -47,14 +47,16 @@ the other non-regex Text implementation in CommandFramework.
 
 The [Expressions three-platform scratch gate](https://github.com/uniblab/Icod.Expressions/blob/bootstrap/pre-extraction-foundation/doc/E03-Compatibility-Bridge.md#cross-platform-pinned-consumer-gate)
 now adds the original `cut` (28), `expand` (18), `unexpand` (20), `fold` (18),
-and `fmt` (29) suites to the 611 regex-consumer cases: **724 source-pinned
-cases per pass**. Each command's original and bridged binaries pass with the
-same test names and outcomes on Windows, macOS, and Linux
-([CI run 40014111537](https://github.com/uniblab/Icod.Expressions/actions/runs/40014111537)).
+and `fmt` (29) suites, plus one Shared integration case, to the 611
+regex-consumer cases: **725 source-pinned cases per pass**. The Shared case
+passes both enum values directly into `TextUnitReader` and checks UTF-8
+output. All 114 shared-Text cases retain the same test names and outcomes
+before and after scratch bridge substitution on Windows, macOS, and Linux
+([CI run 40018021229](https://github.com/uniblab/Icod.Expressions/actions/runs/40018021229)).
 An old-compiled assembly probe checks that `TextDecodingMode` and
 `InvalidEncodingPolicy` resolve from Expressions while `TextUnitReader`
 resolves from the scratch CommandFramework bridge. This does not cover every
-standalone CoreUtils Shared Text test, every Text API caller, or a
+other standalone CoreUtils Shared Text test, every Text API caller, or a
 distributable bridge.
 
 ## Migration and closure checks
