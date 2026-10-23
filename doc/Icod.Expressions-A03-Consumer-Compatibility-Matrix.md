@@ -42,6 +42,15 @@ recorded in the [A04 supplement](Icod.Expressions-A04-Consumer-Shape-Supplement.
 They characterize caller-shaped inputs and offsets, not command output or
 full consumer integration.
 
+A later [scratch-only bridge probe in Expressions](https://github.com/uniblab/Icod.Expressions/blob/bootstrap/pre-extraction-foundation/doc/E03-Compatibility-Bridge.md#source-pinned-coreutils-expr-command-probe)
+compiled the source-pinned CoreUtils `expr` command tests against the
+published CommandFramework 2.2.1 package, then ran the compiled binaries
+with a temporary non-regex CommandFramework bridge and the copied Expressions
+assembly. Its 50 existing command tests passed; an additional assembly-origin
+assertion and a missing-DLL negative control confirmed the forwarded provider
+was loaded from Expressions. This is one consumer on Linux/.NET 10, not a
+production bridge or closure of the remaining A03 matrix.
+
 1. Extract a copy of the provider, options, matching, diagnostics, and byte
    preparation contract into `Icod.Expressions` and compare results against
    the frozen CommandFramework engine. Preserve the Basic-provider override
