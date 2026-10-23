@@ -15,8 +15,8 @@ their inherited GNU divergences, and the unresolved oracle/locale work.
 The [A04 characterization index](Icod.Expressions-A04-Characterization-Index.md)
 maps current tests to these gaps.
 The [Linux/glibc differential](Icod.Expressions-A04-POSIX-Glibc-Differential.md)
-adds seven defined ASCII/C-locale agreement cases and two anchor-capture
-observations. A separate [included Gnulib runtime check](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
+now has 15 ASCII/C-locale cases: 13 agreement cases and two defined ERE
+middle-anchor divergences. A separate [included Gnulib runtime check](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
 shows the pinned engine also returns a participating empty capture in the two
 ERE cases. Neither check is strict POSIX certification.
 
@@ -44,7 +44,7 @@ compatibility presets and language-affecting switches to every provider.
 | Intervals | The parser accepts `{m}`, `{m,}`, `{m,n}`, plus omitted lower bounds such as `{,n}`; it caps bounds at 32,767 and has context-dependent invalid-operator handling. | Partition standard forms and implementation/GNU extensions. Test boundary values, leading zeros, malformed forms, and invalid-context dispositions per syntax. |
 | Whole-match choice | `GnuBasicCompiledRegularExpression.Search` enumerates starts and selects the greatest endpoint at the first viable start. `SearchSelectsTheLongestMatchAtTheLeftmostPosition` and ERE/LineEditor tests exercise it. | Retain leftmost-longest characterization, then compare captures and tie behavior with the standards oracle rather than assuming the whole-match test proves subexpression selection. |
 | Captures and repetition | Groups record opening-order numbers; repeated groups retain last participating values. Basic tests exercise nested, empty, and nonparticipating captures and equal-endpoint GNU ordering. | Build a separate strict POSIX capture/tie matrix. Preserve current GNU result as an inherited baseline even where normalization later differs. |
-| Anchors | `^` is recognized at a branch start and `$` at a branch end. `NewLineSensitive` and `LineSeparator` alter line boundaries; Basic and LineEditor tests cover line-sensitive behavior. | Separate common expression grammar from utility-specific line policy; characterize anchors after a start offset and within alternation/grouping. |
+| Anchors | `^` is recognized at a branch start and `$` at a branch end. `NewLineSensitive` and `LineSeparator` alter line boundaries. In the executable 15-case glibc differential, middle `^`/`$` in BRE agree as ordinary text, while middle `^`/`$` in ERE match literally in inherited Extended and cannot match under Issue 8 §9.4.9/glibc. | This is a **defined strict ERE divergence**, not an undefined-pattern choice. Retain it for extraction parity; implement ERE context-independent anchors in the later strict surface and GNU profile control separately. Further test start offsets and grouped alternation. |
 | Dot and nonmatching lists | Dot excludes NUL by default in Basic/Extended; line sensitivity excludes the configured separator. GNU Emacs has its own dot behavior. A negated bracket excludes the separator when line-sensitive. | Record NUL/newline behavior for the strict standards contract separately from GNU Emacs and consumer-selected separators. |
 | Bracket forms | Parser supports classes, ranges, first `]`/edge `-`, and single-scalar collating/equivalence elements. `[[.ch.]]` returns `UnsupportedCollatingElement`; unknown classes and reverse ranges have diagnostics. | Single-scalar support is partial for locales with multicharacter collating elements. Mark complete locale-collation conformance unproven; characterize class names and range order under injected providers. |
 | Locale | Two providers implement Unicode/culture and invariant C-locale classification, scalar comparison, and equivalence. `IRegularExpressionCharacterClassProvider` is injectable; tests prove selected provider behavior. | An injected scalar provider is an implementation seam, not proof of full POSIX locale semantics. Audit `LC_CTYPE`, `LC_COLLATE`, multicharacter elements, case folding, and equivalence independently. |
@@ -71,6 +71,10 @@ compatibility presets and language-affecting switches to every provider.
    zero-width anchor branches. Pinned Gnulib's table lists an absent group
    but its comparison code tolerates the actual `(0,0)` span. This resolves an
    apparent source-table disagreement, not strict POSIX conformance.
+6. The expanded A04 glibc differential confirms a separate, defined ERE
+   middle-anchor divergence under Issue 8 §9.4.9. The Basic middle-anchor
+   controls agree as literals, and escaped ERE anchors agree as literals.
+   Do not normalize the inherited Extended result during extraction.
 
 ## A01 closure work
 

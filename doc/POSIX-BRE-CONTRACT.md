@@ -23,7 +23,7 @@ the standards-facing language.
 | Ordinary and special characters | §9.3 distinguishes context-sensitive BRE special characters and ordinary characters. | The Basic parser handles contextual `*`, dot, brackets, and escapes, but also accepts GNU operators. Separate standard forms from GNU forms with paired fixtures. |
 | Grouping and backreferences | §9.3 describes marked subexpressions and numeric backreferences. | Escaped groups and `\\1`–`\\9` are implemented; characterize unset/empty, repeated, nested, and invalid references against the standard. |
 | Repetition and intervals | §9.3 specifies `*` and escaped interval spelling and bounds. | Basic accepts escaped `+`, `?`, alternation, and `{,n}` extensions. These must not become strict BRE promises. Record invalid versus undefined contexts per standard before selecting a diagnostic. |
-| Anchors | §9.3's BRE anchoring rules control `^` and `$` by context. | Current branch-boundary rule is characterized locally. Test positions within groups, alternation, start offsets, and line-sensitive policy independently. |
+| Anchors | §9.3.8's BRE anchoring rules control `^` and `$` by context. | The 15-case glibc differential confirms middle `a^b` and `a$b` match as literals in both glibc and inherited Basic. Group positions, start offsets, and line-sensitive policy still need separate characterization. |
 | Brackets, classes, and collation | §9.3.5 covers bracket lists, character classes, collating symbols, equivalence classes, and locale-sensitive ranges. | Single-scalar cases exist. The current bracket representation rejects multi-scalar elements; locale completeness is open. A strict completeness claim requires a representational solution or explicit scoped limitation. |
 | Search and captures | §9.1 defines the leftmost-longest whole match and subpattern choice. | Current matcher has local leftmost-longest and GNU tie tests. Compare capture spans with an independent oracle, especially equal-endpoint choices and empty versus absent captures. |
 | Input and case | §9.2 defines shared RE requirements and utility/interface-dependent newline treatment. | Managed strings use UTF-16 indices; byte and UTF-8 modes preserve source-byte offsets. NUL, malformed input, Unicode case, chosen line separator, and finite budgets are implementation policies that need separate documented guarantees. |
@@ -44,7 +44,8 @@ the precise locale and provider recorded.
 1. Pin an executable standards oracle and locale for defined C/POSIX cases;
    record Issue 8 text/section for each asserted result. A first
    [Linux/glibc C-locale comparison](Icod.Expressions-A04-POSIX-Glibc-Differential.md)
-   now covers three defined ASCII BRE cases; broader coverage remains open.
+   now covers five defined ASCII BRE cases, including both middle-anchor
+   controls; broader coverage remains open.
 2. Add explicit strict BRE fixtures alongside inherited GNU Basic fixtures,
    including operator spelling, interval boundaries, backreferences, tie
    ordering, brackets and anchors.

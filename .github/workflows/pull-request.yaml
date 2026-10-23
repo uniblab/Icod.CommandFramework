@@ -85,7 +85,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          test "$(git hash-object tools/PosixRegexDifferential/Program.cs)" = bec36b11aa2bd1617e191ac49703244a03dcc10b
+          test "$(git hash-object tools/PosixRegexDifferential/Program.cs)" = 59a10c631112307159a0682a493062de4cd82c80
       - name: Pack Staging artifacts
         if: matrix.verify_packages
         run: >-

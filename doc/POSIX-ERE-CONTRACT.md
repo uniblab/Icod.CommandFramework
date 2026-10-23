@@ -18,7 +18,7 @@ managed policies around the language contract.
 
 | Topic | Issue 8 reference and strict target | Inherited engine / required evidence |
 |---|---|---|
-| Operator spelling | §9.4 defines unescaped grouping, alternation, repetition and interval forms, ordinary versus special characters, and anchoring. | Extended parses those forms. Its GNU behavior for malformed braces, repetition contexts, and escaped ordinary characters needs case-by-case classification; do not turn a permissive choice into a standard requirement. |
+| Operator spelling | §9.4 defines unescaped grouping, alternation, repetition and interval forms, ordinary versus special characters, and anchoring. | Extended parses those forms. A 15-case independent glibc differential identifies a **defined §9.4.9 divergence**: inherited Extended matches `a^b`/`a$b` literally; a strict ERE must treat the middle anchors as assertions and therefore find no match on those literal inputs. Escaped `a\^b`/`a\$b` agree as literals. Other malformed forms still need case-by-case classification. |
 | Backreferences | §9.4 is the ERE language definition; BRE backreference rules are in §9.3. | The current Extended parser accepts `\\1`–`\\9` as a GNU extension, verified by `CapturesAndBackReferencesUseExtendedGrouping`. Keep the inherited behavior in the GNU corpus; do not promise it as portable ERE. |
 | Brackets and locale | §9.4's bracket rules rely on the shared bracket requirements of §9.3.5. | Single-scalar classes/ranges are tested, but multi-scalar collating elements and locale-wide equivalence are not implemented. Record the limitation before any conformance claim. |
 | Whole match and subpatterns | §9.1 defines leftmost-longest selection and subpattern choices. | Local tests establish some longest matches and capture ties, but no external Issue 8 differential corpus yet. Compare whole and subgroup spans, not just success/failure. |
@@ -39,8 +39,9 @@ configuration and strict standard are separate oracle columns.
 1. Build a pinned standards oracle corpus for defined ERE grammar, anchors,
    brackets and captures, including locales with relevant collation behavior.
    A first [Linux/glibc C-locale comparison](Icod.Expressions-A04-POSIX-Glibc-Differential.md)
-   covers four defined ASCII ERE cases and two anchor-branch capture
-   observations. The [included Gnulib runtime check](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
+   now covers four original defined ASCII ERE cases, two defined
+   middle-anchor divergences, two escaped-anchor controls, and two
+   anchor-branch capture observations. The [included Gnulib runtime check](Icod.Expressions-A04-Gnulib-Capture-Comparison.md)
    agrees for those anchor cases; broader capture and locale rules remain open.
 2. Characterize GNU-only ERE backreferences, malformed intervals, and operator
    contexts as inherited divergence cases before normalization.

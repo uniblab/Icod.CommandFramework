@@ -21,8 +21,14 @@ var cases = new FixtureCase[] {
 	new( "ere-subexpression-tie", true, "(a*)(a*)", "aa", [S( 0, 2 ), S( 0, 2 ), S( 2, 2 )], [S( 0, 2 ), S( 0, 2 ), S( 2, 2 )], "defined ASCII" ),
 	new( "ere-c-locale-digit-class", true, "([[:digit:]]+)", "x42", [S( 1, 3 ), S( 1, 3 )], [S( 1, 3 ), S( 1, 3 )], "defined ASCII" ),
 	new( "ere-longest-before-suffix", true, "(a|aa)b", "xaab", [S( 1, 4 ), S( 1, 3 )], [S( 1, 4 ), S( 1, 3 )], "defined ASCII" ),
-	new( "ere-anchor-first-branch", true, "(^|foo)bar", "bar", [S( 0, 3 ), S( 0, 0 )], [S( 0, 3 ), S( 0, 0 )], "glibc agrees; pinned Gnulib expects absent capture" ),
-	new( "ere-anchor-second-branch", true, "(foo|^)bar", "bar", [S( 0, 3 ), S( 0, 0 )], [S( 0, 3 ), S( 0, 0 )], "glibc agrees; pinned Gnulib expects absent capture" )
+	new( "bre-middle-caret-literal", false, "a^b", "a^b", [S( 0, 3 )], [S( 0, 3 )], "Issue 8 §9.3.8; BRE middle caret is ordinary" ),
+	new( "bre-middle-dollar-literal", false, "a$b", "a$b", [S( 0, 3 )], [S( 0, 3 )], "Issue 8 §9.3.8; BRE middle dollar is ordinary" ),
+	new( "ere-middle-caret-anchor", true, "a^b", "a^b", [], [S( 0, 3 )], "Issue 8 §9.4.9; inherited Extended literal divergence" ),
+	new( "ere-middle-dollar-anchor", true, "a$b", "a$b", [], [S( 0, 3 )], "Issue 8 §9.4.9; inherited Extended literal divergence" ),
+	new( "ere-escaped-caret-literal", true, @"a\^b", "a^b", [S( 0, 3 )], [S( 0, 3 )], "Issue 8 §9.4.3; escaped anchor is literal" ),
+	new( "ere-escaped-dollar-literal", true, @"a\$b", "a$b", [S( 0, 3 )], [S( 0, 3 )], "Issue 8 §9.4.3; escaped anchor is literal" ),
+	new( "ere-anchor-first-branch", true, "(^|foo)bar", "bar", [S( 0, 3 ), S( 0, 0 )], [S( 0, 3 ), S( 0, 0 )], "glibc and included Gnulib agree on empty capture" ),
+	new( "ere-anchor-second-branch", true, "(foo|^)bar", "bar", [S( 0, 3 ), S( 0, 0 )], [S( 0, 3 ), S( 0, 0 )], "glibc and included Gnulib agree on empty capture" )
 };
 
 var failures = 0;
@@ -49,8 +55,9 @@ Console.WriteLine( $"{cases.Length - failures}/{cases.Length} differential cases
 return failures == 0 ? 0 : 1;
 
 static SpanRange S( int start, int end ) => new( start, end );
-static string Show( IReadOnlyList<SpanRange> spans ) =>
-	String.Join( "; ", spans.Select( span => $"({span.Start},{span.End})" ) );
+static string Show( IReadOnlyList<SpanRange> spans ) => spans.Count == 0
+	? "no match"
+	: String.Join( "; ", spans.Select( span => $"({span.Start},{span.End})" ) );
 
 static SpanRange[] ManagedMatch( FixtureCase item ) {
 	IRegularExpressionProvider provider = item.Extended
@@ -61,8 +68,11 @@ static SpanRange[] ManagedMatch( FixtureCase item ) {
 		throw new InvalidOperationException( $"{item.Id}: managed compile {compiled.Diagnostic?.Code}" );
 	}
 	var result = compiled.Expression!.Match( item.Input );
-	if ( !result.IsSuccess || !result.IsMatch ) {
+	if ( !result.IsSuccess ) {
 		throw new InvalidOperationException( $"{item.Id}: managed match {result.Diagnostic?.Code}" );
+	}
+	if ( !result.IsMatch ) {
+		return [];
 	}
 	var match = result.Match!;
 	return [new SpanRange( match.Index, match.Index + match.Length ),
@@ -85,6 +95,9 @@ static SpanRange[] NativeMatch( FixtureCase item ) {
 		}
 		compiled = true;
 		code = Native.regexec( regex, item.Input, (nuint)MatchCount, matches, 0 );
+		if ( code == 1 ) { // POSIX REG_NOMATCH on glibc.
+			return [];
+		}
 		if ( code != 0 ) {
 			throw new InvalidOperationException( $"{item.Id}: glibc regexec returned {code}" );
 		}

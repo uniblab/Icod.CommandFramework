@@ -30,15 +30,15 @@ checks that observation on the PR's Linux Staging job.
 
 | Pattern / input | Upstream table | Included Gnulib runtime | glibc 2.39 / managed runtime | Interpretation |
 |---|---|---|---|---|
-| BRE `\(^\|foo\)bar` / `bar` | `(0,3); (-1,-1)` | `(0,3); (0,0)` | Not in nine-case glibc runner / not compared here | GNU BRE anchor capture participates; the source table tolerates it. |
-| BRE `\(foo\|^\)bar` / `bar` | `(0,3); (-1,-1)` | `(0,3); (0,0)` | Not in nine-case glibc runner / not compared here | Same observation with reversed branch order. |
+| BRE `\(^\|foo\)bar` / `bar` | `(0,3); (-1,-1)` | `(0,3); (0,0)` | Not in 15-case glibc runner / not compared here | GNU BRE anchor capture participates; the source table tolerates it. |
+| BRE `\(foo\|^\)bar` / `bar` | `(0,3); (-1,-1)` | `(0,3); (0,0)` | Not in 15-case glibc runner / not compared here | Same observation with reversed branch order. |
 | ERE <code>(^&#124;foo)bar</code> / `bar` | `(0,3); (-1,-1)` | `(0,3); (0,0)` | `(0,3); (0,0)` | All three running engines agree for this input. |
 | ERE <code>(foo&#124;^)bar</code> / `bar` | `(0,3); (-1,-1)` | `(0,3); (0,0)` | `(0,3); (0,0)` | Same agreement with reversed branch order. |
 
 The managed values use the unchanged CommandFramework production source
 `e1e118f18246eed290bee4758325a20e302bfb92`, the Extended provider,
 and the C-locale character-class provider. The glibc observations use the
-[nine-case C# differential](Icod.Expressions-A04-POSIX-Glibc-Differential.md).
+[15-case C# differential](Icod.Expressions-A04-POSIX-Glibc-Differential.md).
 ASCII inputs make byte and UTF-16 offsets equal here. The additive test
 `EmptyAnchorBranchCurrentlyParticipatesAsAnEmptyCapture` pins analogous
 managed cases without importing the upstream source.

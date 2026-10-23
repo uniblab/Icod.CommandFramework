@@ -71,8 +71,10 @@ rows agree with glibc and the inherited managed behavior. The latter has an
 additive characterization test.
 
 An [executable Linux/glibc differential](Icod.Expressions-A04-POSIX-Glibc-Differential.md)
-compares nine C-locale ASCII BRE/ERE cases, including whole-match and capture
-spans. The seven ordinary standards-facing rows agree locally. glibc agrees
+compares 15 C-locale ASCII BRE/ERE cases, including whole-match, no-match,
+and capture spans. Thirteen rows agree locally. Two ERE middle-anchor rows
+pin a defined Issue 8 §9.4.9 divergence: glibc finds no match where inherited
+Extended treats the anchor characters as literal. glibc agrees
 with the inherited engine's participating empty capture in both anchor-branch
 rows, as does the separate included Gnulib runtime probe. The glibc tool is
 run on Linux CI and is an independent implementation sample.
@@ -109,7 +111,7 @@ baseline is a bounded selection of cases, not full A04 differential closure.
 | A01 | Subexpression tie ordering, BRE backreference edge cases, and locale-sensitive bracket behavior need independent comparison. Multi-scalar collating elements are not representable in the current bracket model. | Add a differential table with pattern, input, locale, expected capture spans, oracle identity, and disposition; keep controlled `UnsupportedCollatingElement` as an inherited behavior fixture. |
 | A02 | The current parser offers coupled Basic/Extended/Emacs modes, not switches for all 26 pinned Gnulib bits or 13 named macros. Sixteen additive cases cover selected present controls, but missing switches and named compositions remain unproved. | Extend both-polarity fixtures to remaining meaningful controls; record missing bits as explicit gaps. Compare named configurations with the pinned Gnulib header/engine before N01. |
 | A03 | Five additional consumer-shaped engine tests now cover selected prepared/anchored/repeated paths, but command-level invocation and output remain outside the focused CommandFramework test assembly. | Run source-pinned consumer tests for grep byte/UTF-8 offsets and empty matches, expr anchored capture return, ptx bounded search, Sed `-z`/`M` and replacement, Ed global substitution, diff line suppression, and procps offsets. Preserve tac's current result for extraction; fix it later under CoreUtils #190. |
-| A04 | Nine C-locale ASCII cases compare against host glibc; an included pinned Gnulib runtime probe resolves four anchor-capture rows. No broad strict POSIX/GNU profile corpus is wired into the test suite. The original 110 declarations are local assertions, not 110 standards fixtures. | Extend the oracle matrix across public branches, locale and malformed input. Record executable versions, locale, encoding, invocation, normalized captures, and discrepancy classification. |
+| A04 | Fifteen C-locale ASCII cases compare against host glibc, including two classified ERE middle-anchor divergences; an included pinned Gnulib runtime probe resolves four anchor-capture rows. No broad strict POSIX/GNU profile corpus is wired into the test suite. The original 110 declarations are local assertions, not 110 standards fixtures. | Extend the oracle matrix across public branches, locale and malformed input. Record executable versions, locale, encoding, invocation, normalized captures, and discrepancy classification. |
 | A05 | The source SHA and first copy-time corpus are pinned, and a mechanical copy has occurred, but formal A05 acceptance is open while A01–A04 remain incomplete. | Finish the audit and characterize or explicitly classify each public/consumer gap. Identify any corpus additions without rewriting the first baseline; then freeze the final source/test identities, API, deviations, and CI run. Keep CommandFramework production unchanged. |
 
 ## Reproduction

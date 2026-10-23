@@ -19,6 +19,10 @@ identities remain frozen.
 The [nine-case glibc differential](Icod.Expressions-A04-POSIX-Glibc-Differential.md)
 is additional oracle evidence, not part of that original JSONL or a claim
 that the pinned Gnulib implementation has been executed.
+**Later differential supplement:** The glibc runner now has 15 cases and
+separately pins two defined ERE middle-anchor divergences under Issue 8
+§9.4.9. This does not rewrite the original copy-time checkpoint or its
+nine-case observation.
 
 ## Immutable inputs
 
