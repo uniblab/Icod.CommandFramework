@@ -52,13 +52,17 @@ was loaded from Expressions. This is one consumer on Linux/.NET 10, not a
 production bridge or closure of the remaining A03 matrix.
 
 Expressions now also runs a
-[reproducible package-backed Linux gate](https://github.com/uniblab/Icod.Expressions/blob/bootstrap/pre-extraction-foundation/doc/E03-Compatibility-Bridge.md#reproducible-package-backed-expr-gate).
-It fetches these pinned consumer and framework commits, compiles the original
-`expr` tests against CommandFramework 2.2.1, builds the temporary bridge
-against the unpublished Expressions package from an isolated NuGet cache,
-verifies forwarding identity, and reruns the 50 original command tests. This
-replaces the manual probe as the repeatable `expr` evidence; it does not
-change or merge CommandFramework production.
+[reproducible package-backed Linux gate](https://github.com/uniblab/Icod.Expressions/blob/bootstrap/pre-extraction-foundation/doc/E03-Compatibility-Bridge.md#reproducible-package-backed-consumer-gate).
+It fetches pinned framework, CoreUtils, and ProcPs commits, compiles the
+original `expr` tests against CommandFramework 2.2.1 and ProcPs's `pgrep`,
+`pkill`, and `pidwait` suites against 2.1.0, and runs all 74 original cases.
+It builds the temporary 2.2.1.0 bridge against the unpublished Expressions
+package from an isolated NuGet cache, verifies forwarding identity, and
+reruns the same 50 + 11 + 7 + 6 compiled tests in separate scratch outputs.
+The local Linux/.NET 10 gate passes both runs. It does not change or merge
+CommandFramework production, prove a distributable bridge, or close the
+remaining A03 consumer matrix. The ProcPs tests cover command matching paths,
+but do not exhaust GNU Extended options or diagnostics.
 
 1. Extract a copy of the provider, options, matching, diagnostics, and byte
    preparation contract into `Icod.Expressions` and compare results against
