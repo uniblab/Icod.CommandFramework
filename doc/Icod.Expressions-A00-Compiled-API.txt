@@ -1,0 +1,218 @@
+# Icod.CommandFramework 2.2.1.0 compiled regex API
+# Public declared members, including compiler-generated record members; inherited framework members excluded.
+# Top-level regex types: 24
+# Referenced external text enums: TextDecodingMode, InvalidEncodingPolicy
+static class Icod.CommandFramework.RegularExpressions.CompiledRegularExpressionPreparedInputExtensions
+  method static Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchResult Match(Icod.CommandFramework.RegularExpressions.ICompiledRegularExpression expression, Icod.CommandFramework.RegularExpressions.RegularExpressionPreparedByteInput input, Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchOptions? matchOptions = null, System.Threading.CancellationToken cancellationToken = default)
+  method static System.Threading.Tasks.ValueTask<Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchResult> MatchAsync(Icod.CommandFramework.RegularExpressions.ICompiledRegularExpression expression, Icod.CommandFramework.RegularExpressions.RegularExpressionPreparedByteInput input, Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchOptions? matchOptions = null, System.Threading.CancellationToken cancellationToken = default)
+sealed class Icod.CommandFramework.RegularExpressions.GnuBasicRegularExpressionProvider : Icod.CommandFramework.RegularExpressions.IRegularExpressionProvider
+  ctor()
+  ctor(Icod.CommandFramework.RegularExpressions.IRegularExpressionCharacterClassProvider characterClassProvider)
+  method Icod.CommandFramework.RegularExpressions.RegularExpressionCompileResult Compile(string pattern, Icod.CommandFramework.RegularExpressions.RegularExpressionOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+  method System.Threading.Tasks.ValueTask<Icod.CommandFramework.RegularExpressions.RegularExpressionCompileResult> CompileAsync(string pattern, Icod.CommandFramework.RegularExpressions.RegularExpressionOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+  property static Icod.CommandFramework.RegularExpressions.GnuBasicRegularExpressionProvider Default { get; }
+sealed class Icod.CommandFramework.RegularExpressions.GnuEmacsRegularExpressionProvider : Icod.CommandFramework.RegularExpressions.IRegularExpressionProvider
+  ctor()
+  ctor(Icod.CommandFramework.RegularExpressions.IRegularExpressionCharacterClassProvider characterClassProvider)
+  method Icod.CommandFramework.RegularExpressions.RegularExpressionCompileResult Compile(string pattern, Icod.CommandFramework.RegularExpressions.RegularExpressionOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+  method System.Threading.Tasks.ValueTask<Icod.CommandFramework.RegularExpressions.RegularExpressionCompileResult> CompileAsync(string pattern, Icod.CommandFramework.RegularExpressions.RegularExpressionOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+  property static Icod.CommandFramework.RegularExpressions.GnuEmacsRegularExpressionProvider Default { get; }
+sealed class Icod.CommandFramework.RegularExpressions.GnuExtendedRegularExpressionProvider : Icod.CommandFramework.RegularExpressions.IRegularExpressionProvider
+  ctor()
+  ctor(Icod.CommandFramework.RegularExpressions.IRegularExpressionCharacterClassProvider characterClassProvider)
+  method Icod.CommandFramework.RegularExpressions.RegularExpressionCompileResult Compile(string pattern, Icod.CommandFramework.RegularExpressions.RegularExpressionOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+  method System.Threading.Tasks.ValueTask<Icod.CommandFramework.RegularExpressions.RegularExpressionCompileResult> CompileAsync(string pattern, Icod.CommandFramework.RegularExpressions.RegularExpressionOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+  property static Icod.CommandFramework.RegularExpressions.GnuExtendedRegularExpressionProvider Default { get; }
+enum Icod.CommandFramework.RegularExpressions.GnuRegularExpressionSyntax : System.IComparable, System.IConvertible, System.IFormattable, System.ISpanFormattable
+  Basic = 0
+  Emacs = 1
+  Extended = 2
+interface Icod.CommandFramework.RegularExpressions.ICompiledRegularExpression
+  method Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchResult Match(System.ReadOnlyMemory<byte> input, Icod.CommandFramework.RegularExpressions.RegularExpressionInputOptions? inputOptions = null, Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchOptions? matchOptions = null, System.Threading.CancellationToken cancellationToken = default)
+  method Icod.CommandFramework.RegularExpressions.RegularExpressionMatchResult Match(string input, Icod.CommandFramework.RegularExpressions.RegularExpressionMatchOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+  method System.Threading.Tasks.ValueTask<Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchResult> MatchAsync(System.ReadOnlyMemory<byte> input, Icod.CommandFramework.RegularExpressions.RegularExpressionInputOptions? inputOptions = null, Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchOptions? matchOptions = null, System.Threading.CancellationToken cancellationToken = default)
+  method System.Threading.Tasks.ValueTask<Icod.CommandFramework.RegularExpressions.RegularExpressionMatchResult> MatchAsync(string input, Icod.CommandFramework.RegularExpressions.RegularExpressionMatchOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+  property int CaptureCount { get; }
+  property string Pattern { get; }
+interface Icod.CommandFramework.RegularExpressions.IRegularExpressionCharacterClassProvider
+  method bool AreCharactersEqual(System.Text.Rune left, System.Text.Rune right, bool ignoreCase)
+  method bool AreCollatingElementsEquivalent(System.Text.Rune left, System.Text.Rune right, bool ignoreCase)
+  method bool IsCharacterClass(System.Text.Rune value, string className, bool ignoreCase)
+  method bool IsSupportedClass(string className)
+  method bool IsWordCharacter(System.Text.Rune value)
+  method int Compare(System.Text.Rune left, System.Text.Rune right, bool ignoreCase)
+interface Icod.CommandFramework.RegularExpressions.IRegularExpressionProvider
+  method Icod.CommandFramework.RegularExpressions.RegularExpressionCompileResult Compile(string pattern, Icod.CommandFramework.RegularExpressions.RegularExpressionOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+  method System.Threading.Tasks.ValueTask<Icod.CommandFramework.RegularExpressions.RegularExpressionCompileResult> CompileAsync(string pattern, Icod.CommandFramework.RegularExpressions.RegularExpressionOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+sealed class Icod.CommandFramework.RegularExpressions.PosixCLocaleRegularExpressionCharacterClassProvider : Icod.CommandFramework.RegularExpressions.IRegularExpressionCharacterClassProvider
+  method bool AreCharactersEqual(System.Text.Rune left, System.Text.Rune right, bool ignoreCase)
+  method bool AreCollatingElementsEquivalent(System.Text.Rune left, System.Text.Rune right, bool ignoreCase)
+  method bool IsCharacterClass(System.Text.Rune value, string className, bool ignoreCase)
+  method bool IsSupportedClass(string className)
+  method bool IsWordCharacter(System.Text.Rune value)
+  method int Compare(System.Text.Rune left, System.Text.Rune right, bool ignoreCase)
+  property static Icod.CommandFramework.RegularExpressions.PosixCLocaleRegularExpressionCharacterClassProvider Instance { get; }
+sealed class Icod.CommandFramework.RegularExpressions.RegularExpressionByteCapture : System.IEquatable<Icod.CommandFramework.RegularExpressions.RegularExpressionByteCapture>
+  ctor(bool Success, int ByteIndex, int ByteLength, System.ReadOnlyMemory<byte> Value)
+  method Icod.CommandFramework.RegularExpressions.RegularExpressionByteCapture <Clone>$()
+  method bool Equals(Icod.CommandFramework.RegularExpressions.RegularExpressionByteCapture? other)
+  method bool Equals(object? obj)
+  method int GetHashCode()
+  method static bool op_Equality(Icod.CommandFramework.RegularExpressions.RegularExpressionByteCapture? left, Icod.CommandFramework.RegularExpressions.RegularExpressionByteCapture? right)
+  method static bool op_Inequality(Icod.CommandFramework.RegularExpressions.RegularExpressionByteCapture? left, Icod.CommandFramework.RegularExpressions.RegularExpressionByteCapture? right)
+  method string ToString()
+  method void Deconstruct(out bool Success, out int ByteIndex, out int ByteLength, out System.ReadOnlyMemory<byte> Value)
+  property System.ReadOnlyMemory<byte> Value { get; init; }
+  property bool Success { get; init; }
+  property int ByteIndex { get; init; }
+  property int ByteLength { get; init; }
+sealed class Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatch
+  ctor(int byteIndex, int byteLength, System.ReadOnlyMemory<byte> value, System.Collections.Generic.IReadOnlyList<Icod.CommandFramework.RegularExpressions.RegularExpressionByteCapture> captures)
+  property System.Collections.Generic.IReadOnlyList<Icod.CommandFramework.RegularExpressions.RegularExpressionByteCapture> Captures { get; }
+  property System.ReadOnlyMemory<byte> Value { get; }
+  property int ByteIndex { get; }
+  property int ByteLength { get; }
+sealed class Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchOptions : System.IEquatable<Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchOptions>
+  ctor()
+  method Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchOptions <Clone>$()
+  method bool Equals(Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchOptions? other)
+  method bool Equals(object? obj)
+  method int GetHashCode()
+  method static bool op_Equality(Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchOptions? left, Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchOptions? right)
+  method static bool op_Inequality(Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchOptions? left, Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchOptions? right)
+  method string ToString()
+  property bool RequireMatchAtStart { get; init; }
+  property int StartByteOffset { get; init; }
+sealed class Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchResult
+  method static Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchResult Failed(Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic diagnostic)
+  method static Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatchResult Succeeded(Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatch? match)
+  property Icod.CommandFramework.RegularExpressions.RegularExpressionByteMatch? Match { get; }
+  property Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic? Diagnostic { get; }
+  property bool IsMatch { get; }
+  property bool IsSuccess { get; }
+sealed class Icod.CommandFramework.RegularExpressions.RegularExpressionCapture : System.IEquatable<Icod.CommandFramework.RegularExpressions.RegularExpressionCapture>
+  ctor(bool Success, int Index, int Length, string? Value)
+  method Icod.CommandFramework.RegularExpressions.RegularExpressionCapture <Clone>$()
+  method bool Equals(Icod.CommandFramework.RegularExpressions.RegularExpressionCapture? other)
+  method bool Equals(object? obj)
+  method int GetHashCode()
+  method static bool op_Equality(Icod.CommandFramework.RegularExpressions.RegularExpressionCapture? left, Icod.CommandFramework.RegularExpressions.RegularExpressionCapture? right)
+  method static bool op_Inequality(Icod.CommandFramework.RegularExpressions.RegularExpressionCapture? left, Icod.CommandFramework.RegularExpressions.RegularExpressionCapture? right)
+  method string ToString()
+  method void Deconstruct(out bool Success, out int Index, out int Length, out string? Value)
+  property bool Success { get; init; }
+  property int Index { get; init; }
+  property int Length { get; init; }
+  property string? Value { get; init; }
+sealed class Icod.CommandFramework.RegularExpressions.RegularExpressionCompileResult
+  method static Icod.CommandFramework.RegularExpressions.RegularExpressionCompileResult Failed(Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic diagnostic)
+  method static Icod.CommandFramework.RegularExpressions.RegularExpressionCompileResult Succeeded(Icod.CommandFramework.RegularExpressions.ICompiledRegularExpression expression)
+  property Icod.CommandFramework.RegularExpressions.ICompiledRegularExpression? Expression { get; }
+  property Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic? Diagnostic { get; }
+  property bool IsSuccess { get; }
+sealed class Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic : System.IEquatable<Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic>
+  ctor(Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnosticCode Code, string Message, int? PatternIndex = default)
+  method Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic <Clone>$()
+  method bool Equals(Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic? other)
+  method bool Equals(object? obj)
+  method int GetHashCode()
+  method static bool op_Equality(Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic? left, Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic? right)
+  method static bool op_Inequality(Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic? left, Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic? right)
+  method string ToString()
+  method void Deconstruct(out Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnosticCode Code, out string Message, out int? PatternIndex)
+  property Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnosticCode Code { get; init; }
+  property int? PatternIndex { get; init; }
+  property string Message { get; init; }
+enum Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnosticCode : System.IComparable, System.IConvertible, System.IFormattable, System.ISpanFormattable
+  InvalidBackReference = 6
+  InvalidCharacterClass = 8
+  InvalidInterval = 5
+  InvalidRange = 7
+  InvalidRepetitionOperator = 4
+  InvalidStartByteOffset = 12
+  InvalidStartIndex = 11
+  MatchResourceLimitExceeded = 13
+  NestingDepthExceeded = 10
+  TrailingEscape = 0
+  UnmatchedClosingSubexpression = 3
+  UnsupportedCollatingElement = 9
+  UnterminatedBracketExpression = 1
+  UnterminatedSubexpression = 2
+sealed class Icod.CommandFramework.RegularExpressions.RegularExpressionInputOptions : System.IEquatable<Icod.CommandFramework.RegularExpressions.RegularExpressionInputOptions>
+  ctor()
+  method Icod.CommandFramework.RegularExpressions.RegularExpressionInputOptions <Clone>$()
+  method bool Equals(Icod.CommandFramework.RegularExpressions.RegularExpressionInputOptions? other)
+  method bool Equals(object? obj)
+  method int GetHashCode()
+  method static bool op_Equality(Icod.CommandFramework.RegularExpressions.RegularExpressionInputOptions? left, Icod.CommandFramework.RegularExpressions.RegularExpressionInputOptions? right)
+  method static bool op_Inequality(Icod.CommandFramework.RegularExpressions.RegularExpressionInputOptions? left, Icod.CommandFramework.RegularExpressions.RegularExpressionInputOptions? right)
+  method string ToString()
+  property Icod.CommandFramework.Text.InvalidEncodingPolicy InvalidEncodingPolicy { get; init; }
+  property Icod.CommandFramework.Text.TextDecodingMode DecodingMode { get; init; }
+sealed class Icod.CommandFramework.RegularExpressions.RegularExpressionMatch
+  ctor(int index, int length, string value, System.Collections.Generic.IReadOnlyList<Icod.CommandFramework.RegularExpressions.RegularExpressionCapture> captures)
+  property System.Collections.Generic.IReadOnlyList<Icod.CommandFramework.RegularExpressions.RegularExpressionCapture> Captures { get; }
+  property int Index { get; }
+  property int Length { get; }
+  property string Value { get; }
+sealed class Icod.CommandFramework.RegularExpressions.RegularExpressionMatchOptions : System.IEquatable<Icod.CommandFramework.RegularExpressions.RegularExpressionMatchOptions>
+  ctor()
+  method Icod.CommandFramework.RegularExpressions.RegularExpressionMatchOptions <Clone>$()
+  method bool Equals(Icod.CommandFramework.RegularExpressions.RegularExpressionMatchOptions? other)
+  method bool Equals(object? obj)
+  method int GetHashCode()
+  method static bool op_Equality(Icod.CommandFramework.RegularExpressions.RegularExpressionMatchOptions? left, Icod.CommandFramework.RegularExpressions.RegularExpressionMatchOptions? right)
+  method static bool op_Inequality(Icod.CommandFramework.RegularExpressions.RegularExpressionMatchOptions? left, Icod.CommandFramework.RegularExpressions.RegularExpressionMatchOptions? right)
+  method string ToString()
+  property bool RequireMatchAtStart { get; init; }
+  property int StartIndex { get; init; }
+sealed class Icod.CommandFramework.RegularExpressions.RegularExpressionMatchResult
+  method static Icod.CommandFramework.RegularExpressions.RegularExpressionMatchResult Failed(Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic diagnostic)
+  method static Icod.CommandFramework.RegularExpressions.RegularExpressionMatchResult Succeeded(Icod.CommandFramework.RegularExpressions.RegularExpressionMatch? match)
+  property Icod.CommandFramework.RegularExpressions.RegularExpressionDiagnostic? Diagnostic { get; }
+  property Icod.CommandFramework.RegularExpressions.RegularExpressionMatch? Match { get; }
+  property bool IsMatch { get; }
+  property bool IsSuccess { get; }
+sealed class Icod.CommandFramework.RegularExpressions.RegularExpressionOptions : System.IEquatable<Icod.CommandFramework.RegularExpressions.RegularExpressionOptions>
+  ctor()
+  method Icod.CommandFramework.RegularExpressions.RegularExpressionOptions <Clone>$()
+  method bool Equals(Icod.CommandFramework.RegularExpressions.RegularExpressionOptions? other)
+  method bool Equals(object? obj)
+  method int GetHashCode()
+  method static bool op_Equality(Icod.CommandFramework.RegularExpressions.RegularExpressionOptions? left, Icod.CommandFramework.RegularExpressions.RegularExpressionOptions? right)
+  method static bool op_Inequality(Icod.CommandFramework.RegularExpressions.RegularExpressionOptions? left, Icod.CommandFramework.RegularExpressions.RegularExpressionOptions? right)
+  method string ToString()
+  property Icod.CommandFramework.RegularExpressions.GnuRegularExpressionSyntax Syntax { get; init; }
+  property System.Text.Rune LineSeparator { get; init; }
+  property bool AllowEmptyRanges { get; init; }
+  property bool AllowInvalidRepetitionOperators { get; init; }
+  property bool DotMatchesNull { get; init; }
+  property bool IgnoreCase { get; init; }
+  property bool NewLineSensitive { get; init; }
+  property int MaximumMatchStates { get; init; }
+  property int MaximumNestingDepth { get; init; }
+  property static Icod.CommandFramework.RegularExpressions.RegularExpressionOptions GnuEmacsCompatibility { get; }
+  property static Icod.CommandFramework.RegularExpressions.RegularExpressionOptions GnuExprCompatibility { get; }
+  property static Icod.CommandFramework.RegularExpressions.RegularExpressionOptions GnuExtendedCompatibility { get; }
+sealed class Icod.CommandFramework.RegularExpressions.RegularExpressionPreparedByteInput
+  method static Icod.CommandFramework.RegularExpressions.RegularExpressionPreparedByteInput Prepare(System.ReadOnlyMemory<byte> source, Icod.CommandFramework.RegularExpressions.RegularExpressionInputOptions? inputOptions = null, System.Threading.CancellationToken cancellationToken = default)
+  property Icod.CommandFramework.RegularExpressions.RegularExpressionInputOptions InputOptions { get; }
+  property int Length { get; }
+sealed class Icod.CommandFramework.RegularExpressions.UnicodeRegularExpressionCharacterClassProvider : Icod.CommandFramework.RegularExpressions.IRegularExpressionCharacterClassProvider
+  ctor(System.Globalization.CultureInfo culture)
+  method bool AreCharactersEqual(System.Text.Rune left, System.Text.Rune right, bool ignoreCase)
+  method bool AreCollatingElementsEquivalent(System.Text.Rune left, System.Text.Rune right, bool ignoreCase)
+  method bool IsCharacterClass(System.Text.Rune value, string className, bool ignoreCase)
+  method bool IsSupportedClass(string className)
+  method bool IsWordCharacter(System.Text.Rune value)
+  method int Compare(System.Text.Rune left, System.Text.Rune right, bool ignoreCase)
+  property System.Globalization.CultureInfo Culture { get; }
+  property static Icod.CommandFramework.RegularExpressions.UnicodeRegularExpressionCharacterClassProvider CurrentCulture { get; }
+  property static Icod.CommandFramework.RegularExpressions.UnicodeRegularExpressionCharacterClassProvider InvariantCulture { get; }
+enum Icod.CommandFramework.Text.InvalidEncodingPolicy : System.IComparable, System.IConvertible, System.IFormattable, System.ISpanFormattable
+  PreserveBytes = 0
+  Replace = 1
+  Throw = 2
+enum Icod.CommandFramework.Text.TextDecodingMode : System.IComparable, System.IConvertible, System.IFormattable, System.ISpanFormattable
+  Bytes = 0
+  Utf8 = 1
